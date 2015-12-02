@@ -2,7 +2,7 @@ GFAKluge
 --------------------
 
 ## What is it?  
-GFAKluge is a parser/manipulator for [GFA files]{http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format/}. It parses
+GFAKluge is a parser/manipulator for [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format/). It parses
 GFA to a set of graph components that represent the encoded graph.
 You can use these components and their fields/members to build up your own
 graph representation.
@@ -27,5 +27,5 @@ You should then be able to parse and manipulate gfa from your program.
 
 ## Who do I bother if it's broken?  
 Eric T Dawson  
-github: edawson  
+github: [edawson](https://github.com/edawson/https://github.com/edawson/GFAKluge)
 Please post an issue for help or file a bug report to report a bug.
