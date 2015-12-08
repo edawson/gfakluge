@@ -2,12 +2,19 @@
 #define GFAK_HPP
 #include <string>
 #include <fstream>
+#include <map>
+#include <vector>
 
 
 using namespace std;
 struct header_elem{
     string key;
     string val;
+};
+
+struct annotation_elem{
+    string key;
+    string info;
 };
 
 struct sequence_elem{
@@ -23,7 +30,7 @@ struct sequence_elem{
 struct link_elem{
 
     // Source sequence
-    string ssource_name;
+    string source_name;
     string sink_name;
     bool source_orientation;
     bool sink_orientation;
@@ -48,8 +55,10 @@ class GFAK{
     public:
         bool set_gfa_file(string filename);
         bool parse_gfa_file(fstream gfa_stream);
-        map<sequence_elem, vector<link_elem>> seq_to_links;
-        map<sequence_elem, vector<contained_elem>> seq_to_contained;
+        map<sequence_elem, vector<link_elem> > seq_to_links;
+        map<sequence_elem, vector<contained_elem> > seq_to_contained;
+        // bool write_gfa(map<sequence_elem, vector<link_elem>> seq_to_links, map<sequence_elem, vector<contained_elem>> seq_to_contained);
+        // bool write_gfa(stream_of_elems el_stream);
     private:
 
 
