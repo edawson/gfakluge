@@ -5,63 +5,65 @@
 #include <map>
 #include <vector>
 
-
 using namespace std;
-struct header_elem{
-    string key;
-    string val;
+namespace gfak{
+    struct header_elem{
+        std::string key;
+        std::string val;
+    };
+
+    struct annotation_elem{
+        std::string key;
+        std::string info;
+    };
+
+    struct sequence_elem{
+        // A list of links to neighbors
+
+        // Node sequence
+        std::string seq;
+        std::string name;
+        long id;
+
+    };
+
+    struct link_elem{
+
+        // Source sequence
+        std::string source_name;
+        // Sink sequence
+        std::string sink_name;
+        bool source_orientation;
+        bool sink_orientation;
+        std::string cigar;
+    };
+
+    struct contained_elem{
+        std::string source_name;
+        std::string sink_name;
+        bool source_orientation;
+        bool sink_orientation;
+        int pos;
+        std::string cigar;
+    };
+
+    class GFAKluge{
+        public:
+            bool parse_gfa_file(std::string filename);
+            bool parse_gfa_file(std::fstream gfa_stream);
+            void add_link(sequence_elem, link_elem);
+            void add_contained(sequence_elem, contained_elem);
+            vector<link_elem> get_links(sequence_elem seq);
+            vector<contained_elem> get_contained(sequence_elem seq);
+            std::string to_string();
+        private:
+            map<std::string, std::string> header;
+            map<sequence_elem, vector<contained_elem> > seq_to_contained;
+            map<sequence_elem, vector<link_elem> > seq_to_link;
+
+
+
+    };
+    std::ostream& operator<<(std::ostream& os, const GFAKluge g);
 };
-
-struct annotation_elem{
-    string key;
-    string info;
-};
-
-struct sequence_elem{
-    // A list of links to neighbors
-
-    // Node sequence
-    string seq;
-    string name;
-    long id;
-
-};
-
-struct link_elem{
-
-    // Source sequence
-    string source_name;
-    string sink_name;
-    bool source_orientation;
-    bool sink_orientation;
-    string cigar;
-    // Sink sequence
-    //
-    //
-};
-
-struct contained_elem{
-    string ssource_name;
-    string sink_name;
-    bool source_orientation;
-    bool sink_orientation;
-    int pos;
-    string cigar;
-
-};
-
-// TODO devise a clever data structure for gfa entries
-class GFAK{
-    public:
-        bool set_gfa_file(string filename);
-        bool parse_gfa_file(fstream gfa_stream);
-        map<sequence_elem, vector<link_elem> > seq_to_links;
-        map<sequence_elem, vector<contained_elem> > seq_to_contained;
-        // bool write_gfa(map<sequence_elem, vector<link_elem>> seq_to_links, map<sequence_elem, vector<contained_elem>> seq_to_contained);
-        // bool write_gfa(stream_of_elems el_stream);
-    private:
-
-
-};
-
 #endif
