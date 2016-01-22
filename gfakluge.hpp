@@ -1,5 +1,4 @@
-#ifndef GFAK_HPP
-#define GFAK_HPP
+
 #include <string>
 #include <fstream>
 #include <map>
@@ -37,16 +36,16 @@ namespace gfak{
         std::string source_name;
         // Sink sequence
         std::string sink_name;
-        bool source_orientation;
-        bool sink_orientation;
+        bool source_orientation_forward;
+        bool sink_orientation_forward;
         std::string cigar;
     };
 
     struct contained_elem{
         std::string source_name;
         std::string sink_name;
-        bool source_orientation;
-        bool sink_orientation;
+        bool source_orientation_forward;
+        bool sink_orientation_forward;
         int pos;
         std::string cigar;
     };
@@ -74,10 +73,10 @@ namespace gfak{
             // we cheat and use their names (which are sort of guaranteed to be
             // unique.
             map<string, sequence_elem> name_to_seq;
+            std::vector<std::string> split(string s, char delim);
 
 
 
     };
     std::ostream& operator<<(std::ostream& os, const GFAKluge g);
 };
-#endif
