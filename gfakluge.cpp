@@ -147,6 +147,7 @@ bool GFAKluge::parse_gfa_file(string filename){
 
     std::string GFAKluge::to_string(){
         string ret = "";
+        int i;
         //First print header lines.
         if (header.size() > 0){
           map<std::string, std::string>::iterator it;
@@ -159,8 +160,25 @@ bool GFAKluge::parse_gfa_file(string filename){
           for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
               ret += "S\t" + (st->second).name + "\t" + (st->second).seq + "\n";
               //TODO iterate over links
+              //L    segName1,segOri1,segName2,segOri2,CIGAR      Link
+              if (seq_to_links[st->first].size() > 0){
+                for (i = 0; i < seq_to_links[st->first]; i++){
+                    ret += "L\t" + seq_to_links[st->first].source_name + "\t" + \
+                            seq_to_links[st->first].source_orientation_forward + "\t" + \
+                            seq_to_links[st->first].sink_name + "\t" + \
+                            seq_to_links[st->first].sink_orientation_forward + "\t" + \
+                            seq_to_links[st->first].cigar + \
+                            "\n";
+                }
+
+              }
               
               //TODO iterate over contains
+              if (seq_to_contained[st->first].size() > 0){
+                for (i = 0; i < seq_to_contained[st->first]; i++){
+                    ret += "C\t" + seq_to_contained[st->first] + "\t" + "\n";
+                }
+              }
           }
         }
         //TODO iterate over annotation lines.
