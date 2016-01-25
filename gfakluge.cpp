@@ -161,25 +161,28 @@ bool GFAKluge::parse_gfa_file(string filename){
               ret += "S\t" + (st->second).name + "\t" + (st->second).seq + "\n";
               //TODO iterate over links
               //L    segName1,segOri1,segName2,segOri2,CIGAR      Link
-              if (seq_to_links[st->first].size() > 0){
-                for (i = 0; i < seq_to_links[st->first]; i++){
-                    ret += "L\t" + seq_to_links[st->first].source_name + "\t" + \
-                            seq_to_links[st->first].source_orientation_forward + "\t" + \
-                            seq_to_links[st->first].sink_name + "\t" + \
-                            seq_to_links[st->first].sink_orientation_forward + "\t" + \
-                            seq_to_links[st->first].cigar + \
+           /**   if (seq_to_link[st->first].size() > 0){
+                for (i = 0; i < seq_to_link[st->first].size(); i++){
+                    ret += "L\t" + seq_to_link[st->first][i].source_name + "\t" + \
+                            seq_to_link[st->first][i].source_orientation_forward + "\t" + \
+                            seq_to_link[st->first][i].sink_name + "\t" + \
+                            seq_to_link[st->first][i].sink_orientation_forward + "\t" + \
+                            seq_to_link[st->first][i].cigar + \
                             "\n";
                 }
 
               }
               
-              //TODO iterate over contains
+              //TODO iterate over contained segments
               if (seq_to_contained[st->first].size() > 0){
-                for (i = 0; i < seq_to_contained[st->first]; i++){
-                    ret += "C\t" + seq_to_contained[st->first] + "\t" + "\n";
+                for (i = 0; i < seq_to_contained[st->first].size(); i++){
+                    ret += "C\t" + seq_to_contained[st->first][i] + "\t" + "\n";
                 }
-              }
+              } **/
           }
+          // This is a magic comment
+
+
         }
         //TODO iterate over annotation lines.
 
