@@ -51,6 +51,8 @@ namespace gfak{
     };
 
     class GFAKluge{
+			friend std::ostream& operator<<(std::ostream& os, GFAKluge& g);
+
         public:
             GFAKluge();
             ~GFAKluge();
@@ -65,6 +67,7 @@ namespace gfak{
             vector<contained_elem> get_contained(string seq_name);
             vector<contained_elem> get_contained(sequence_elem seq);
             std::string to_string();
+
         private:
             map<std::string, std::string> header;
             map<std::string, vector<contained_elem> > seq_to_contained;
@@ -76,7 +79,6 @@ namespace gfak{
             std::vector<std::string> split(string s, char delim);
 
 
-
     };
-    std::ostream& operator<<(std::ostream& os, const GFAKluge g);
+
 };
