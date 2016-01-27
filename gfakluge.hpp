@@ -20,6 +20,14 @@ namespace gfak{
         std::string info;
     };
 
+		struct alignment_elem{
+				std::string source_name;
+				int position;
+				std::string ref;
+				bool source_orientation_forward;
+				int length;
+		}
+
     struct sequence_elem{
         // A list of links to neighbors
 

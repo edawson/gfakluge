@@ -16,12 +16,12 @@ converting them to GFA with GFAKluge.
 You can build a toy example by simply cloning the repo, entering it
 and typing ```make; make test```. To use GFAKluge in your program, you'll need to
 add a few lines to your code. First, add the necessary include line to your C++ code.
-        #include "gfa_kluge.hpp"
+				#include "gfa_kluge.hpp"
 
 Then, add a make target to you makefile and make sure that the object/include files
 are on the proper system paths:
-        gfa_kluge.o: gfakluge.cpp gfakluge.hpp
-            $(CC) $(CFLAGS) -c -o gfakluge.o gfakluge.cpp
+				gfa_kluge.o: gfakluge.cpp gfakluge.hpp
+							$(CC) $(CFLAGS) -c -o gfakluge.o gfakluge.cpp
 
 You should then be able to parse and manipulate gfa from your program.
 
