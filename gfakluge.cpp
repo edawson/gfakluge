@@ -6,6 +6,7 @@ namespace gfak{
         map<std::string, std::string> header;
         map<std::string, vector<contained_elem> > seq_to_contained;
         map<std::string, vector<link_elem> > seq_to_link;
+        map<std::string, vector<alignment_elem> > seq_to_alignment;
         //Since we can't compare sequence elements for hashing,
         // we cheat and use their names (which are sort of guaranteed to be
         // unique.
@@ -92,9 +93,13 @@ namespace gfak{
                 x.info = tokens[2];
             }
             else if (tokens[0] == "a"){
-                annotation_elem a;
-                a.key = tokens[1];
-                a.info = tokens[2];
+                alignment_elem a;
+                a.source_name = tokens[1];
+                a.position = atoi(tokens[2].c_str());
+                a.ref = tokens[3];
+                a.source_orientation_forward = tokens[4] == "+" ? true : false;
+                a.length = atoi(tokens[5].c_str());
+                seq_to_alignment[tokens[1]] = a;
             }
             else{
                 cerr << "Unknown line identifier  encountered: " << tokens[0] <<  " . Exiting." << endl;

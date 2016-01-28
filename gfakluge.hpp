@@ -26,7 +26,7 @@ namespace gfak{
 				std::string ref;
 				bool source_orientation_forward;
 				int length;
-		}
+		};
 
     struct sequence_elem{
         // A list of links to neighbors
@@ -85,6 +85,7 @@ namespace gfak{
             // unique.
             map<string, sequence_elem> name_to_seq;
             std::vector<std::string> split(string s, char delim);
+            map<string, vector<alignment_elem> > seq_to_alignment;
 
 
     };
