@@ -70,6 +70,8 @@ namespace gfak{
             void add_link(sequence_elem s, link_elem l);
             void add_contained(string seq_name, contained_elem c);
             void add_contained(sequence_elem s, contained_elem c);
+            void add_alignment(string s, alignment_elem a);
+            void add_alignment(sequence_elem s, alignment_elem a);
             vector<link_elem> get_links(sequence_elem seq);
             vector<link_elem> get_links(string seq_name);
             vector<contained_elem> get_contained(string seq_name);

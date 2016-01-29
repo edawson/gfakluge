@@ -85,7 +85,7 @@ namespace gfak{
                 c.sink_orientation_forward = tokens[4] == "+" ? true : false;
                 c.pos = atoi(tokens[5].c_str());
                 c.cigar = tokens[6];
-                add_contained(c.sink_name, c);
+                add_contained(c.source_name, c);
             }
             else if (tokens[0] == "x"){
                 annotation_elem x;
@@ -99,7 +99,7 @@ namespace gfak{
                 a.ref = tokens[3];
                 a.source_orientation_forward = tokens[4] == "+" ? true : false;
                 a.length = atoi(tokens[5].c_str());
-                seq_to_alignment[tokens[1]] = a;
+                add_alignment(a.source_name, a);
             }
             else{
                 cerr << "Unknown line identifier  encountered: " << tokens[0] <<  " . Exiting." << endl;
@@ -126,6 +126,14 @@ namespace gfak{
 
     void GFAKluge::add_link(string seq_name, link_elem link){
         seq_to_link[seq_name].push_back(link);
+    }
+
+    void GFAKluge::add_alignment(string seq_name, alignment_elem a){
+        seq_to_alignment[seq_name].push_back(a);
+    }
+
+    void GFAKluge::add_alignment(sequence_elem seq, alignment_elem a){
+        seq_to_alignment[seq.name].push_back(a);
     }
 
     void GFAKluge::add_contained(string seq_name, contained_elem con){
