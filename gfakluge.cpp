@@ -158,6 +158,14 @@ namespace gfak{
         return seq_to_contained[seq_name];
     }
 
+    map<string, sequence_elem> GFAKluge::get_name_to_seq(){
+        return name_to_seq;
+    }
+
+    map<string, string> GFAKluge::get_header(){
+        return header;
+    }
+
     std::string GFAKluge::to_string(){
         string ret = "";
         int i;
