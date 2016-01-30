@@ -20,33 +20,30 @@ namespace gfak{
         std::string info;
     };
 
-		struct alignment_elem{
+	struct alignment_elem{
 				std::string source_name;
 				int position;
 				std::string ref;
 				bool source_orientation_forward;
 				int length;
-		};
+                map<string, string> opt_fields;
+	};
 
     struct sequence_elem{
-        // A list of links to neighbors
-
-        // Node sequence
-        std::string seq;
+        std::string sequence;
         std::string name;
+        map<string, string> opt_fields;
         long id;
 
     };
 
     struct link_elem{
-
-        // Source sequence
         std::string source_name;
-        // Sink sequence
         std::string sink_name;
         bool source_orientation_forward;
         bool sink_orientation_forward;
         std::string cigar;
+        map<string, string> opt_fields;
     };
 
     struct contained_elem{
@@ -56,6 +53,7 @@ namespace gfak{
         bool sink_orientation_forward;
         int pos;
         std::string cigar;
+        map<string, string> opt_fields;
     };
 
     class GFAKluge{
@@ -66,13 +64,21 @@ namespace gfak{
             ~GFAKluge();
             bool parse_gfa_file(std::string filename);
             bool parse_gfa_file(std::fstream gfa_stream);
-
+            
+            //TODO: we should enforce graph structure,
+            //i.e.:
+            //1. Throw errors on dangling edges
+            //2. Guarantee contained elements fall in valid sequences
+            //3. Perhaps links and containeds should be added using methods like
+            //  add_contained(contained_elem c)
+            // to guarantee that they are actually added by their source.
             void add_link(string seq_name, link_elem);
             void add_link(sequence_elem s, link_elem l);
             void add_contained(string seq_name, contained_elem c);
             void add_contained(sequence_elem s, contained_elem c);
             void add_alignment(string s, alignment_elem a);
             void add_alignment(sequence_elem s, alignment_elem a);
+            void add_sequence(sequence_elem s);
 
             vector<link_elem> get_links(sequence_elem seq);
             vector<link_elem> get_links(string seq_name);
@@ -83,10 +89,14 @@ namespace gfak{
             vector<alignment_elem> get_alignments(string seq_name);
             vector<alignment_elem> get_alignments(sequence_elem seq);
 
-            map<string, sequence_elem> get_name_to_seq();
             map<string, string> get_header();
+            map<string, sequence_elem> get_name_to_seq();
+            map<std::string, vector<link_elem> > get_seq_to_link();
+            map<std::string, vector<contained_elem> > get_seq_to_contained();
+            map<std::string, vector<alignment_elem> > get_seq_to_alignment();
 
-
+            // TODO check whether writing to file is functional
+            // Perhaps a write_gfa_file(string filename) method too?
             std::string to_string();
 
         private:
@@ -99,6 +109,7 @@ namespace gfak{
             map<string, sequence_elem> name_to_seq;
             std::vector<std::string> split(string s, char delim);
             map<string, vector<alignment_elem> > seq_to_alignment;
+            string opt_string(map<string, string>& opts);
 
 
     };

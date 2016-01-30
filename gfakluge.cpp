@@ -58,12 +58,27 @@ namespace gfak{
                 //that have not been handled yet.
                 sequence_elem s;
                 s.name = tokens[1];
-                s.seq = tokens[2];
+                s.sequence = tokens[2];
                 //s.id = atol(s.name.c_str());
+                int i;
+                if (tokens.size() > 3){
+                    for (i = 0; i < tokens.size(); i++){
+                        //opt fields are in key:val format
+                        vector<string> key_val = split(tokens[i], ':');
+                        if (key_val.size() != 2){
+                            cerr << "WARNING: Unknown pattern in optional field of a sequence entry." << endl;
+                            cerr << "FIELD WILL BE DISCARDED" << endl;
+                            continue;
+                        }
+                        else{
+                            s.opt_fields[key_val[0]] = key_val[1];
+                        }
+                    }
+                }
                 name_to_seq[s.name] = s;
             }
             else if (tokens[0] ==  "L"){
-                // TODO: we need to deal with links where the link is given before
+                // TODO: we need to deal with  where the link is given before
                 // its corresponding sequence in the file. TODO this is probably
                 // now fixed by using the string: sequence map.
                 link_elem l;
@@ -166,6 +181,19 @@ namespace gfak{
         return header;
     }
 
+    string GFAKluge::opt_string(map<string, string>& opts){
+        string ret = "";
+        map<string, string>::iterator it;
+        for (it = opts.begin(); it != opts.end(); it++){
+            // TODO needs to add a ';' between fields I think?
+            // Using a tab while building without the spec.
+            ret += it->first + ":" + it->second + "\t";
+        }
+        // There must be a better way to remove the last tab. TODO
+        // A join method would be nice.
+        return ret.substr(0, ret.size() - 1);
+    }
+
     std::string GFAKluge::to_string(){
         string ret = "";
         int i;
@@ -179,7 +207,7 @@ namespace gfak{
         if (name_to_seq.size() > 0){
             map<std::string, sequence_elem>::iterator st;
             for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-                ret += "S\t" + (st->second).name + "\t" + (st->second).seq + "\n";
+                ret += "S\t" + (st->second).name + "\t" + (st->second).sequence + "\n";
                 //TODO iterate over links
                 //L    segName1,segOri1,segName2,segOri2,CIGAR      Link
                 if (seq_to_link[st->first].size() > 0){
