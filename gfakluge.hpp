@@ -63,7 +63,7 @@ namespace gfak{
             GFAKluge();
             ~GFAKluge();
             bool parse_gfa_file(std::string filename);
-            bool parse_gfa_file(std::fstream gfa_stream);
+            bool parse_gfa_file(std::istream& gfa_stream);
             
             //TODO: we should enforce graph structure,
             //i.e.:
