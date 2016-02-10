@@ -176,6 +176,18 @@ namespace gfak{
         return name_to_seq;
     }
 
+    map<string, vector<link_elem> > GFAKluge::get_seq_to_link(){
+        return seq_to_link;
+    }
+
+    map<string, vector<contained_elem> > GFAKluge::get_seq_to_contained(){
+        return seq_to_contained;
+    }
+
+    map<string, vector<alignment_elem> > GFAKluge::get_seq_to_alignment(){
+        return seq_to_alignment;
+    }
+
     map<string, string> GFAKluge::get_header(){
         return header;
     }
