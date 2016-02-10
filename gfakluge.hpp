@@ -104,7 +104,7 @@ namespace gfak{
             map<std::string, vector<link_elem> > get_seq_to_link();
             map<std::string, vector<contained_elem> > get_seq_to_contained();
             map<std::string, vector<alignment_elem> > get_seq_to_alignment();
-            map<string, vector<path_elem> > get_paths();
+            map<string, vector<path_elem> > get_name_to_paths();
 
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
@@ -121,7 +121,7 @@ namespace gfak{
             std::vector<std::string> split(string s, char delim);
             map<string, vector<alignment_elem> > seq_to_alignment;
             string opt_string(map<string, string>& opts);
-            map<string, vector<path_elem> > paths;
+            map<string, vector<path_elem> > name_to_paths;
 
     };
 

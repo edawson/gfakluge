@@ -11,7 +11,7 @@ namespace gfak{
         // we cheat and use their names (which are sort of guaranteed to be
         // unique.
         map<string, sequence_elem> name_to_seq;
-        map<string, vector<path_elem> > paths;
+        map<string, vector<path_elem> > name_to_paths;
     }
 
     GFAKluge::~GFAKluge(){
@@ -114,7 +114,7 @@ namespace gfak{
                             //p.rank = ;
                             p.is_reverse = tokens[3] == "+" ? true : false;
                             p.cigar = tokens[4];
-                            add_path(p.name, p);
+                            add_path(p.source_name, p);
                     }
 					else if (tokens[0] == "x"){
 							annotation_elem x;
@@ -138,6 +138,10 @@ namespace gfak{
 
 			return true;
 
+    }
+
+    void GFAKluge::add_path(string seq_name, path_elem p){
+        name_to_paths[pathname].push_back(p);
     }
 
     void GFAKluge::add_link(sequence_elem seq, link_elem link){
