@@ -21,6 +21,14 @@ namespace gfak{
         std::string info;
     };
 
+    struct path_elem{
+        std::string source_name;
+        std::string name;
+        long rank;
+        bool is_reverse;
+        std::string cigar;
+    };
+
 	struct alignment_elem{
 				std::string source_name;
 				int position;
@@ -80,6 +88,7 @@ namespace gfak{
             void add_alignment(string s, alignment_elem a);
             void add_alignment(sequence_elem s, alignment_elem a);
             void add_sequence(sequence_elem s);
+            void add_path(std::string pathname, path_elem path);
 
             vector<link_elem> get_links(sequence_elem seq);
             vector<link_elem> get_links(string seq_name);
@@ -95,6 +104,7 @@ namespace gfak{
             map<std::string, vector<link_elem> > get_seq_to_link();
             map<std::string, vector<contained_elem> > get_seq_to_contained();
             map<std::string, vector<alignment_elem> > get_seq_to_alignment();
+            map<string, vector<path_elem> > get_paths();
 
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
@@ -111,7 +121,7 @@ namespace gfak{
             std::vector<std::string> split(string s, char delim);
             map<string, vector<alignment_elem> > seq_to_alignment;
             string opt_string(map<string, string>& opts);
-
+            map<string, vector<path_elem> > paths;
 
     };
 
