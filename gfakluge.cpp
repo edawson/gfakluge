@@ -2,6 +2,19 @@
 
 using namespace std;
 namespace gfak{
+
+    struct map_comp{
+        bool operator() (const char& lhs, const char& rhs) const{
+            // if ( isdigit(lhs) && isdigit(rhs)){
+            //     return (long) lhs > (long) rhs;
+            // }
+            // else{
+                return lhs - rhs;
+          //  }
+        }
+    };
+
+
     GFAKluge::GFAKluge(){
         map<std::string, std::string> header;
         map<std::string, vector<contained_elem> > seq_to_contained;
@@ -10,7 +23,7 @@ namespace gfak{
         //Since we can't compare sequence elements for hashing,
         // we cheat and use their names (which are sort of guaranteed to be
         // unique.
-        map<string, sequence_elem> name_to_seq;
+        map<string, sequence_elem, map_comp> name_to_seq;
         map<string, vector<path_elem> > seq_to_paths;
     }
 
@@ -138,6 +151,10 @@ namespace gfak{
 
 			return true;
 
+    }
+
+    void GFAKluge::add_sequence(sequence_elem s){
+        name_to_seq[s.name] = s;
     }
 
     void GFAKluge::add_path(string seq_name, path_elem p){
