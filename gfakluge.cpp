@@ -194,6 +194,10 @@ namespace gfak{
         return seq_to_link;
     }
 
+    map<string, vector<path_elem> > GFAKluge::get_seq_to_paths(){
+      return seq_to_paths;
+    }
+
     map<string, vector<contained_elem> > GFAKluge::get_seq_to_contained(){
         return seq_to_contained;
     }
