@@ -23,3 +23,4 @@ clean:
 	$(RM) $(EXE)
 	$(RM) *.o
 	$(RM) *.a
+	$(RM) test

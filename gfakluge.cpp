@@ -11,7 +11,7 @@ namespace gfak{
         // we cheat and use their names (which are sort of guaranteed to be
         // unique.
         map<string, sequence_elem> name_to_seq;
-        map<string, vector<path_elem> > name_to_paths;
+        map<string, vector<path_elem> > seq_to_paths;
     }
 
     GFAKluge::~GFAKluge(){
@@ -107,15 +107,15 @@ namespace gfak{
 							c.cigar = tokens[6];
 							add_contained(c.source_name, c);
 					}
-                    else if (tokens[0] == "P"){
-                            path_elem p;
-                            p.name = tokens[2];
-                            p.source_name = tokens[1];
-                            //p.rank = ;
-                            p.is_reverse = tokens[3] == "+" ? true : false;
-                            p.cigar = tokens[4];
-                            add_path(p.source_name, p);
-                    }
+          else if (tokens[0] == "P"){
+            path_elem p;
+            p.name = tokens[2];
+            p.source_name = tokens[1];
+            //p.rank = ;
+            p.is_reverse = tokens[3] == "+" ? false : true;
+            p.cigar = tokens[4];
+            add_path(p.source_name, p);
+          }
 					else if (tokens[0] == "x"){
 							annotation_elem x;
 							x.key = tokens[1];
@@ -141,7 +141,7 @@ namespace gfak{
     }
 
     void GFAKluge::add_path(string seq_name, path_elem p){
-        name_to_paths[pathname].push_back(p);
+        seq_to_paths[seq_name].push_back(p);
     }
 
     void GFAKluge::add_link(sequence_elem seq, link_elem link){
@@ -247,6 +247,17 @@ namespace gfak{
                         ret += link;
                     }
 
+                }
+
+                if (seq_to_paths[st->first].size() > 0){
+                    for (i = 0; i < seq_to_paths[st->first].size(); i++){
+                        string pat = "P\t" + seq_to_paths[st->first][i].source_name + "\t";
+                        pat += seq_to_paths[st->first][i].name + "\t";
+                        pat += seq_to_paths[st->first][i].is_reverse ? "-" : "+";
+                        pat+= "\t";
+                        pat += seq_to_paths[st->first][i].cigar + "\n";
+                        ret += pat;
+                    }
                 }
 
                 //TODO iterate over contained segments
