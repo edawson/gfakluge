@@ -1,5 +1,5 @@
 CXX:=g++
-CXXFLAGS:=-O3 -fopenmp
+CXXFLAGS:=-O3
 EXE:=example.exe
 LD_LIB_FLAGS=-L./
 LD_INC_FLAGS=-I./
@@ -10,6 +10,7 @@ lib: gfakluge.o
 test: main.o lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 	./test
+	diff q_redundant.gfa q_test.gfa
 
 main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)

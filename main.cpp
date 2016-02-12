@@ -7,10 +7,19 @@ int main(){
     gg.parse_gfa_file("q_redundant.gfa");
     cerr << "GFA file parsed successfully" << endl;
     cerr << "Testing to_string" << endl;
-    cout << gg.to_string() << endl;
-    cerr << "If it looks like GFA, it worked!" << endl;
-    cerr << "Testing ostream (<<) operator..." << endl;
-    cout << gg << endl;
-    cerr << "If it looks like GFA, it worked!" << endl;
+    
+    ofstream ff;
+    ff.open("q_test.gfa");
+    ff << gg.to_string();
+    ff.close();
+    
+    ff.open("test_test.gfa");
+
+    GFAKluge gt;
+    gt.parse_gfa_file("test.gfa");
+    ff << gt;
+    ff.close();
+
+
     return 0;
 }

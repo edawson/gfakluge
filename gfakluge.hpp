@@ -1,5 +1,6 @@
 
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <istream>
 #include <map>
@@ -11,8 +12,37 @@
 
 using namespace std;
 namespace gfak{
+
+    struct custom_key{
+        bool isdigit(const string s) const{
+            //const char* s_str = s.c_str();
+            string::const_iterator it;
+            for (it = s.begin(); it != s.end(); it++){
+                if (!std::isdigit(*it)){
+                    return false;
+                }
+            }
+            return true;
+        }
+        bool operator() (const string lhs, const string rhs) const{
+            if (isdigit(lhs) && isdigit(rhs)){
+                return atol(lhs.c_str()) < atol(rhs.c_str());
+            }
+            else{
+                return lhs < rhs;
+            }
+        }
+    };
+
     struct header_elem{
         std::string key;
+        std::string type;
+        std::string val;
+    };
+
+		struct opt_elem{
+        std::string key;
+        std::string type;
         std::string val;
     };
 
@@ -41,7 +71,7 @@ namespace gfak{
     struct sequence_elem{
         std::string sequence;
         std::string name;
-        map<string, string> opt_fields;
+        vector<opt_elem> opt_fields;
         long id;
 
     };
@@ -64,6 +94,7 @@ namespace gfak{
         std::string cigar;
         map<string, string> opt_fields;
     };
+
 
     class GFAKluge{
 			friend std::ostream& operator<<(std::ostream& os, GFAKluge& g);
@@ -99,8 +130,8 @@ namespace gfak{
             vector<alignment_elem> get_alignments(string seq_name);
             vector<alignment_elem> get_alignments(sequence_elem seq);
 
-            map<string, string> get_header();
-            map<string, sequence_elem> get_name_to_seq();
+            map<string, header_elem> get_header();
+            map<string, sequence_elem, custom_key> get_name_to_seq();
             map<std::string, vector<link_elem> > get_seq_to_link();
             map<std::string, vector<contained_elem> > get_seq_to_contained();
             map<std::string, vector<alignment_elem> > get_seq_to_alignment();
@@ -111,16 +142,16 @@ namespace gfak{
             std::string to_string();
 
         private:
-            map<std::string, std::string> header;
+            map<std::string, header_elem> header;
             map<std::string, vector<contained_elem> > seq_to_contained;
             map<std::string, vector<link_elem> > seq_to_link;
             //Since we can't compare sequence elements for hashing,
             // we cheat and use their names (which are only sort of guaranteed to be
             // unique.
-            map<string, sequence_elem> name_to_seq;
+            map<string, sequence_elem, custom_key> name_to_seq;
             std::vector<std::string> split(string s, char delim);
             map<string, vector<alignment_elem> > seq_to_alignment;
-            string opt_string(map<string, string>& opts);
+            string header_string(map<string, header_elem>& opts);
             map<string, vector<path_elem> > seq_to_paths;
 
     };
