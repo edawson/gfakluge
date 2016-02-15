@@ -283,10 +283,9 @@ namespace gfak{
         stringstream ret;
         int i;
         //First print header lines.
-        // if (header.size() > 0){
-				// 		ret << header_string(header) + "\n";
-        // }
-        ret << header_string(header) << "\n";
+        if (header.size() > 0){
+						ret << header_string(header) + "\n";
+        }
         if (name_to_seq.size() > 0){
             map<std::string, sequence_elem>::iterator st;
             for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
