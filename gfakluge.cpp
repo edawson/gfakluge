@@ -14,6 +14,11 @@ namespace gfak{
         // unique.
         map<string, sequence_elem, custom_key> name_to_seq;
         map<string, vector<path_elem> > seq_to_paths;
+        header_elem verz;
+        verz.key = "VN";
+        verz.type="Z";
+        verz.val = "1.0";
+        header[verz.key] = verz;
     }
 
     GFAKluge::~GFAKluge(){
@@ -278,13 +283,10 @@ namespace gfak{
         stringstream ret;
         int i;
         //First print header lines.
-        if (header.size() > 0){
-            // map<std::string, header_elem>::iterator it;
-            // for (it = header.begin(); it != header.end(); it++){
-            //     ret += "H\t" + it->first + "\t" + it->second + "\n";
-            // }
-						ret << header_string(header) + "\n";
-        }
+        // if (header.size() > 0){
+				// 		ret << header_string(header) + "\n";
+        // }
+        ret << header_string(header) << "\n";
         if (name_to_seq.size() > 0){
             map<std::string, sequence_elem>::iterator st;
             for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
