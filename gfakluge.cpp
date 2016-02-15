@@ -116,11 +116,21 @@ namespace gfak{
             }
             else if (tokens[0] == "P"){
                 path_elem p;
-                p.name = tokens[2];
                 p.source_name = tokens[1];
-                //p.rank = ;
-                p.is_reverse = tokens[3] == "+" ? false : true;
-                p.cigar = tokens[4];
+                p.name = tokens[2];
+                //TODO check wheteher the next token is rank or direction
+                if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
+                  p.rank = 0;
+                  p.is_reverse = tokens[3] == "+" ? false : true;
+                  p.cigar = tokens[4];
+
+                }
+                else{
+                  cerr << "Rank present" << endl;
+                  p.rank = atol(tokens[3].c_str());
+                  p.is_reverse = tokens[4] == "+" ? false : true;
+                  p.cigar = tokens[5];
+                }
                 add_path(p.source_name, p);
             }
             else if (tokens[0] == "x"){
@@ -288,12 +298,16 @@ namespace gfak{
                 //L    segName1,segOri1,segName2,segOri2,CIGAR      Link
                 if (seq_to_paths[st->first].size() > 0){
                     for (i = 0; i < seq_to_paths[st->first].size(); i++){
-                        string pat = "P\t" + seq_to_paths[st->first][i].source_name + "\t";
-                        pat += seq_to_paths[st->first][i].name + "\t";
-                        pat += seq_to_paths[st->first][i].is_reverse ? "-" : "+";
-                        pat+= "\t";
-                        pat += seq_to_paths[st->first][i].cigar + "\n";
-                        ret << pat;
+                        stringstream pat;
+                        pat << "P\t" + seq_to_paths[st->first][i].source_name << "\t";
+                        pat << seq_to_paths[st->first][i].name << "\t";
+                        if (!(seq_to_paths[st->first][i].rank ==  0L)){
+                            pat << seq_to_paths[st->first][i].rank << "\t";
+                        }
+                        pat << (seq_to_paths[st->first][i].is_reverse ? "-" : "+");
+                        pat << "\t";
+                        pat << seq_to_paths[st->first][i].cigar + "\n";
+                        ret << pat.str();
                     }
                 }
 
@@ -316,7 +330,7 @@ namespace gfak{
                 if (seq_to_contained[st->first].size() > 0){
                     for (i = 0; i < seq_to_contained[st->first].size(); i++){
                         stringstream cont;
-												cont <<  "C" << "\t" << seq_to_contained[st->first][i].source_name << "\t";
+						cont <<  "C" << "\t" << seq_to_contained[st->first][i].source_name << "\t";
                         cont << seq_to_contained[st->first][i].source_orientation_forward ? "+" : "-";
                         cont << "\t";
                         cont << seq_to_contained[st->first][i].sink_name << "\t";
