@@ -126,7 +126,6 @@ namespace gfak{
 
                 }
                 else{
-                  cerr << "Rank present" << endl;
                   p.rank = atol(tokens[3].c_str());
                   p.is_reverse = tokens[4] == "+" ? false : true;
                   p.cigar = tokens[5];
