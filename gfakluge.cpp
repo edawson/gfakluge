@@ -18,7 +18,7 @@ namespace gfak{
         verz.key = "VN";
         verz.type="Z";
         verz.val = "1.0";
-        header[verz.key] = verz;
+        this->header[verz.key] = verz;
     }
 
     GFAKluge::~GFAKluge(){
@@ -332,10 +332,10 @@ namespace gfak{
                     for (i = 0; i < seq_to_contained[st->first].size(); i++){
                         stringstream cont;
 						cont <<  "C" << "\t" << seq_to_contained[st->first][i].source_name << "\t";
-                        cont << seq_to_contained[st->first][i].source_orientation_forward ? "+" : "-";
+                        cont << (seq_to_contained[st->first][i].source_orientation_forward ? "+" : "-");
                         cont << "\t";
                         cont << seq_to_contained[st->first][i].sink_name << "\t";
-                        cont << seq_to_contained[st->first][i].sink_orientation_forward ? "+" : "-";
+                        cont << (seq_to_contained[st->first][i].sink_orientation_forward ? "+" : "-");
                         cont << "\t";
 												cont << seq_to_contained[st->first][i].pos << "\t";
                         cont << seq_to_contained[st->first][i].cigar << "\n";

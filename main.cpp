@@ -14,12 +14,12 @@ int main(){
     ff << gg;
     ff.close();
     
-    //ff.open("test_test.gfa");
+    ff.open("test_test.gfa");
 
-    //GFAKluge gt;
-    //gt.parse_gfa_file("test.gfa");
-    //ff << gt;
-    //ff.close();
+    GFAKluge gt;
+    gt.parse_gfa_file("test.gfa");
+    ff << gt;
+    ff.close();
 
 
     return 0;
