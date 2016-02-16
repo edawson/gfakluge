@@ -18,7 +18,7 @@ int main(){
 
     GFAKluge gt;
     gt.parse_gfa_file("test.gfa");
-    cerr << gt;
+    ff << gt;
     ff.close();
 
 
