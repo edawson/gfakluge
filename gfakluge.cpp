@@ -75,7 +75,7 @@ namespace gfak{
                 //s.id = atol(s.name.c_str());
                 int i;
                 if (tokens.size() > 3){
-                    for (i = 0; i < tokens.size(); i++){
+                    for (i = 3; i < tokens.size(); i++){
                         //opt fields are in key:val format
                         vector<string> opt_field = split(tokens[i], ':');
                         if (opt_field.size() == 3){
@@ -84,6 +84,9 @@ namespace gfak{
 													o.type = opt_field[1];
 													o.val = opt_field[2];
 													s.opt_fields.push_back(o);
+                        }
+                        else if (opt_field.size() == 0){
+                          continue;
                         }
                         else{
 														cerr << "WARNING: Unknown pattern in optional field of a sequence entry." << endl;
@@ -151,8 +154,12 @@ namespace gfak{
                 a.length = atoi(tokens[5].c_str());
                 add_alignment(a.source_name, a);
             }
+            else if (tokens[0] == "#"){
+              continue;
+            }
             else{
                 cerr << "Unknown line identifier  encountered: " << tokens[0] <<  " . Exiting." << endl;
+                exit(1);
             }
 
         }
