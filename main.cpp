@@ -21,6 +21,9 @@ int main(){
     ff << gt;
     ff.close();
 
+    //GFAKluge gc;
+    //gc.parse_gfa_file("comment.gfa");
+
 
     return 0;
 }
