@@ -14,15 +14,19 @@ namespace gfak{
         // unique.
         map<string, sequence_elem, custom_key> name_to_seq;
         map<string, vector<path_elem> > seq_to_paths;
-        header_elem verz;
-        verz.key = "VN";
-        verz.type="Z";
-        verz.val = "1.0";
-        this->header[verz.key] = verz;
+
     }
 
     GFAKluge::~GFAKluge(){
 
+    }
+
+    void GFAKluge::set_version(){
+      header_elem verz;
+      verz.key = "VN";
+      verz.type="Z";
+      verz.val = "1.0";
+      this->header[verz.key] = verz;
     }
 
     // Borrow from
@@ -322,10 +326,10 @@ namespace gfak{
                 if (seq_to_link[st->first].size() > 0){
                     for (i = 0; i < seq_to_link[st->first].size(); i++){
                         string link = "L\t" + seq_to_link[st->first][i].source_name + "\t";
-                        link += seq_to_link[st->first][i].source_orientation_forward ? "+" : "-";
+                        link += (seq_to_link[st->first][i].source_orientation_forward ? "+" : "-");
                         link += "\t";
                         link += seq_to_link[st->first][i].sink_name + "\t";
-                        link += seq_to_link[st->first][i].sink_orientation_forward ? "+" : "-";
+                        link += (seq_to_link[st->first][i].sink_orientation_forward ? "+" : "-");
                         link += "\t";
                         link += seq_to_link[st->first][i].cigar + "\n";
                         ret << link;

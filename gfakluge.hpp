@@ -120,6 +120,7 @@ namespace gfak{
             void add_alignment(sequence_elem s, alignment_elem a);
             void add_sequence(sequence_elem s);
             void add_path(std::string pathname, path_elem path);
+            void set_version();
 
             vector<link_elem> get_links(sequence_elem seq);
             vector<link_elem> get_links(string seq_name);
