@@ -141,6 +141,7 @@ namespace gfak{
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
             std::string to_string();
+            std::string block_order_string();
 
         private:
             map<std::string, header_elem> header;

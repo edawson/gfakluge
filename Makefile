@@ -4,6 +4,10 @@ EXE:=example.exe
 LD_LIB_FLAGS=-L./
 LD_INC_FLAGS=-I./
 
+
+sort: lib
+	$(CXX) $(CXXFLAGS) -o gfa_sort gfa_sort.cpp $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
 lib: gfakluge.o
 	ar -rs libgfakluge.a $<
 
@@ -30,3 +34,4 @@ clean:
 	$(RM) y.sort
 	$(RM) test_test.gfa
 	$(RM) q_test.gfa
+	$(RM) gfa_sort

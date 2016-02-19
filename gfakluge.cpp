@@ -22,11 +22,11 @@ namespace gfak{
     }
 
     void GFAKluge::set_version(){
-      header_elem verz;
-      verz.key = "VN";
-      verz.type="Z";
-      verz.val = "1.0";
-      this->header[verz.key] = verz;
+        header_elem verz;
+        verz.key = "VN";
+        verz.type="Z";
+        verz.val = "1.0";
+        this->header[verz.key] = verz;
     }
 
     // Borrow from
@@ -83,17 +83,17 @@ namespace gfak{
                         //opt fields are in key:val format
                         vector<string> opt_field = split(tokens[i], ':');
                         if (opt_field.size() == 3){
-													opt_elem o;
-													o.key = opt_field[0];
-													o.type = opt_field[1];
-													o.val = opt_field[2];
-													s.opt_fields.push_back(o);
+                            opt_elem o;
+                            o.key = opt_field[0];
+                            o.type = opt_field[1];
+                            o.val = opt_field[2];
+                            s.opt_fields.push_back(o);
                         }
                         else if (opt_field.size() == 0){
-                          continue;
+                            continue;
                         }
                         else{
-														cerr << "WARNING: Unknown pattern in optional field of a sequence entry." << endl;
+                            cerr << "WARNING: Unknown pattern in optional field of a sequence entry." << endl;
                             cerr << "FIELD WILL BE DISCARDED" << endl;
                             continue;
                         }
@@ -132,15 +132,15 @@ namespace gfak{
                 p.name = tokens[2];
                 //TODO check wheteher the next token is rank or direction
                 if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
-                  p.rank = 0;
-                  p.is_reverse = tokens[3] == "+" ? false : true;
-                  p.cigar = tokens[4];
+                    p.rank = 0;
+                    p.is_reverse = tokens[3] == "+" ? false : true;
+                    p.cigar = tokens[4];
 
                 }
                 else{
-                  p.rank = atol(tokens[3].c_str());
-                  p.is_reverse = tokens[4] == "+" ? false : true;
-                  p.cigar = tokens[5];
+                    p.rank = atol(tokens[3].c_str());
+                    p.is_reverse = tokens[4] == "+" ? false : true;
+                    p.cigar = tokens[5];
                 }
                 add_path(p.source_name, p);
             }
@@ -159,7 +159,7 @@ namespace gfak{
                 add_alignment(a.source_name, a);
             }
             else if (tokens[0] == "#"){
-              continue;
+                continue;
             }
             else{
                 cerr << "Unknown line identifier  encountered: " << tokens[0] <<  " . Exiting." << endl;
@@ -247,64 +247,147 @@ namespace gfak{
     }
 
     string join(vector<string> splits, string glue){
-     string ret = "";
-     for (int i = 0; i < splits.size(); i++){
-         if (i != 0){
-             ret += glue;
-         }
-         ret += splits[i];
-     }
+        string ret = "";
+        for (int i = 0; i < splits.size(); i++){
+            if (i != 0){
+                ret += glue;
+            }
+            ret += splits[i];
+        }
 
-     return ret;
+        return ret;
     }
 
 
-		//TODO we should use a string stream here for efficiency.
+    //TODO we should use a string stream here for efficiency.
     string GFAKluge::header_string(map<string, header_elem>& headers){
         string ret = "H";
         map<string, header_elem>::iterator it;
         for (it = headers.begin(); it != headers.end(); it++){
-					ret += "\t";
-					header_elem h = it->second;
-					string t[] = {h.key, h.type, h.val};
-					vector<string> temp = vector<string> (t, t + sizeof(t) / sizeof(string));
-					ret += join(temp, ":");
+            ret += "\t";
+            header_elem h = it->second;
+            string t[] = {h.key, h.type, h.val};
+            vector<string> temp = vector<string> (t, t + sizeof(t) / sizeof(string));
+            ret += join(temp, ":");
         }
-				return ret;
+        return ret;
 
     }
 
-		string opt_string(vector<opt_elem> opts){
-			string ret = "";
-			for (int i = 0; i < opts.size(); i++){
-				opt_elem o = opts[i];
-					if (i != 0){
-						ret += "\t";
-					}
-					string t [] = {o.key, o.type, o.val};
-					vector<string> temp = vector<string> (t, t + sizeof(t) / sizeof(string));
-					ret += join(temp, ":");
+    string opt_string(vector<opt_elem> opts){
+        string ret = "";
+        for (int i = 0; i < opts.size(); i++){
+            opt_elem o = opts[i];
+            if (i != 0){
+                ret += "\t";
+            }
+            string t [] = {o.key, o.type, o.val};
+            vector<string> temp = vector<string> (t, t + sizeof(t) / sizeof(string));
+            ret += join(temp, ":");
+        }
+        return ret;
+    }
+
+    std::string GFAKluge::block_order_string(){
+			stringstream ret;
+			int i;
+			//First print header lines.
+			if (header.size() > 0){
+					ret << header_string(header) + "\n";
 			}
-			return ret;
-		}
+			map<std::string, sequence_elem>::iterator st;
+			if (name_to_seq.size() > 0){
+					for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+							ret << "S\t" + (st->second).name + "\t" + (st->second).sequence;
+							if ((st->second).opt_fields.size() > 0){
+									ret << "\t" + opt_string((st->second).opt_fields);
+							}
+							ret << "\n";
+					}
+				}
 
 
-		//TODO this should use stringstream too...
+						for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+							if (seq_to_link[st->first].size() > 0){
+									for (i = 0; i < seq_to_link[st->first].size(); i++){
+											string link = "L\t" + seq_to_link[st->first][i].source_name + "\t";
+											link += (seq_to_link[st->first][i].source_orientation_forward ? "+" : "-");
+											link += "\t";
+											link += seq_to_link[st->first][i].sink_name + "\t";
+											link += (seq_to_link[st->first][i].sink_orientation_forward ? "+" : "-");
+											link += "\t";
+											link += seq_to_link[st->first][i].cigar + "\n";
+											ret << link;
+									}
+
+							}
+						}
+
+							//TODO iterate over contained segments
+							for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+							if (seq_to_contained[st->first].size() > 0){
+									for (i = 0; i < seq_to_contained[st->first].size(); i++){
+											stringstream cont;
+											cont <<  "C" << "\t" << seq_to_contained[st->first][i].source_name << "\t";
+											cont << (seq_to_contained[st->first][i].source_orientation_forward ? "+" : "-");
+											cont << "\t";
+											cont << seq_to_contained[st->first][i].sink_name << "\t";
+											cont << (seq_to_contained[st->first][i].sink_orientation_forward ? "+" : "-");
+											cont << "\t";
+											cont << seq_to_contained[st->first][i].pos << "\t";
+											cont << seq_to_contained[st->first][i].cigar << "\n";
+											ret << cont.str();
+									}
+							}
+					}
+
+					//TODO iterate over links
+					//L    segName1,segOri1,segName2,segOri2,CIGAR      Link
+			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+					if (seq_to_paths[st->first].size() > 0){
+							for (i = 0; i < seq_to_paths[st->first].size(); i++){
+									stringstream pat;
+									pat << "P\t" + seq_to_paths[st->first][i].source_name << "\t";
+									pat << seq_to_paths[st->first][i].name << "\t";
+									if (!(seq_to_paths[st->first][i].rank ==  0L)){
+											pat << seq_to_paths[st->first][i].rank << "\t";
+									}
+									pat << (seq_to_paths[st->first][i].is_reverse ? "-" : "+");
+									pat << "\t";
+									pat << seq_to_paths[st->first][i].cigar + "\n";
+									ret << pat.str();
+							}
+					}
+				}
+
+
+
+			//TODO iterate over annotation lines.
+
+
+			//Print sequences and links in order, then annotation lines.
+
+			return ret.str();
+
+    }
+
+
+    //TODO this should use stringstream too...
     std::string GFAKluge::to_string(){
         stringstream ret;
         int i;
         //First print header lines.
         if (header.size() > 0){
-						ret << header_string(header) + "\n";
+            ret << header_string(header) + "\n";
         }
         if (name_to_seq.size() > 0){
             map<std::string, sequence_elem>::iterator st;
             for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                 ret << "S\t" + (st->second).name + "\t" + (st->second).sequence;
-								if ((st->second).opt_fields.size() > 0){
-									ret << "\t" + opt_string((st->second).opt_fields);
-								}
-								ret << "\n";
+                if ((st->second).opt_fields.size() > 0){
+                    ret << "\t" + opt_string((st->second).opt_fields);
+                }
+                ret << "\n";
                 //TODO iterate over links
                 //L    segName1,segOri1,segName2,segOri2,CIGAR      Link
                 if (seq_to_paths[st->first].size() > 0){
@@ -341,13 +424,13 @@ namespace gfak{
                 if (seq_to_contained[st->first].size() > 0){
                     for (i = 0; i < seq_to_contained[st->first].size(); i++){
                         stringstream cont;
-						cont <<  "C" << "\t" << seq_to_contained[st->first][i].source_name << "\t";
+                        cont <<  "C" << "\t" << seq_to_contained[st->first][i].source_name << "\t";
                         cont << (seq_to_contained[st->first][i].source_orientation_forward ? "+" : "-");
                         cont << "\t";
                         cont << seq_to_contained[st->first][i].sink_name << "\t";
                         cont << (seq_to_contained[st->first][i].sink_orientation_forward ? "+" : "-");
                         cont << "\t";
-												cont << seq_to_contained[st->first][i].pos << "\t";
+                        cont << seq_to_contained[st->first][i].pos << "\t";
                         cont << seq_to_contained[st->first][i].cigar << "\n";
                         ret << cont.str();
                     }
