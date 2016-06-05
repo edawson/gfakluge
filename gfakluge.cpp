@@ -80,23 +80,13 @@ namespace gfak{
                 int i;
                 if (tokens.size() > 3){
                     for (i = 3; i < tokens.size(); i++){
-                        //opt fields are in key:val format
+                        //opt fields are in key:type:val format
                         vector<string> opt_field = split(tokens[i], ':');
-                        if (opt_field.size() == 3){
-                            opt_elem o;
-                            o.key = opt_field[0];
-                            o.type = opt_field[1];
-                            o.val = opt_field[2];
-                            s.opt_fields.push_back(o);
-                        }
-                        else if (opt_field.size() == 0){
-                            continue;
-                        }
-                        else{
-                            cerr << "WARNING: Unknown pattern in optional field of a sequence entry." << endl;
-                            cerr << "FIELD WILL BE DISCARDED" << endl;
-                            continue;
-                        }
+                        opt_elem o;
+                        o.key = opt_field[0];
+                        o.type = opt_field[1];
+                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                        s.opt_fields.push_back(o);
                     }
                 }
                 name_to_seq[s.name] = s;
@@ -246,7 +236,7 @@ namespace gfak{
         return header;
     }
 
-    string join(vector<string> splits, string glue){
+    string GFAKluge::join(vector<string> splits, string glue){
         string ret = "";
         for (int i = 0; i < splits.size(); i++){
             if (i != 0){
@@ -274,7 +264,7 @@ namespace gfak{
 
     }
 
-    string opt_string(vector<opt_elem> opts){
+    string GFAKluge::opt_string(vector<opt_elem> opts){
         string ret = "";
         for (int i = 0; i < opts.size(); i++){
             opt_elem o = opts[i];
