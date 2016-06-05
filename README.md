@@ -92,6 +92,7 @@ You can then iterate over the aforementioned maps/structs and build out your own
 - **Now totally supports parsing to/from an istream**.  
 - GFAKluge is essentially a set of dumb containers - it does no error checking of your structure to detect if it is
 valid GFA. This may change as the GFA spec becomes more formal.  
+- Now parses JSON structs in optional fields of sequence lines (just as strings though).  
 
 
 ## Getting Help 
