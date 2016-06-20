@@ -5,8 +5,11 @@ LD_LIB_FLAGS=-L./
 LD_INC_FLAGS=-I./
 
 
-gfa_sort: gfa_sort.cpp lib
+gfa_sort: gfa_sort.o lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+gfa_sort.o: gfa_sort.cpp
+	$(CXX) $(CXXFLAGS) -c $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
 gfa_stats: gfa_stats.cpp lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
