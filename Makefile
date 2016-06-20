@@ -8,7 +8,7 @@ LD_INC_FLAGS=-I./
 gfa_sort: gfa_sort.o lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_sort.o: gfa_sort.cpp
+gfa_sort.o: gfa_sort.cpp lib
 	$(CXX) $(CXXFLAGS) -c $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
 gfa_stats: gfa_stats.cpp lib
@@ -23,7 +23,7 @@ test: main.o lib
 	diff q_redundant.gfa q_test.gfa
 	cat test.gfa | sort > x.sort; cat test_test.gfa | sort > y.sort; diff x.sort y.sort
 
-main.o: main.cpp
+main.o: main.cpp lib
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
 gfakluge.o: gfakluge.cpp gfakluge.hpp
