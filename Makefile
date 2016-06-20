@@ -1,4 +1,4 @@
-CXX:=g++
+CXX?=g++
 CXXFLAGS:=-O3
 EXE:=example.exe
 LD_LIB_FLAGS=-L./
