@@ -1,4 +1,5 @@
-
+#ifndef GFAK_HPP
+#define GFAK_HPP
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -161,3 +162,4 @@ namespace gfak{
     };
 
 };
+#endif
