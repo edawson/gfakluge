@@ -1,10 +1,5 @@
-/**
- * Merges a set of GFA files by:
- * 1. Coordinate their ID spaces (assume each one is an independent subgraph)
- * 2. Add both to a single GFAKluge instance. This will provide a sort.
- * 3. Push out the new GFA files to stdout.
- */
 #include "gfakluge.hpp"
+#include <iostream>
 #include <getopt.h>
 #include <string>
 #include <iostream>
@@ -28,7 +23,7 @@ int main(int argc, char** argv){
             {"gfa-file", required_argument, 0, 'i'},
             {0,0,0,0}
         };
-    
+
         int option_index = 0;
         c = getopt_long(argc, argv, "hbi:", long_options, &option_index);
         if (c == -1){
@@ -52,15 +47,7 @@ int main(int argc, char** argv){
             default:
                 abort();
         }
+
     }
-
-    // TODO how to merge the various GFAKLuge objs?
-    // Merge their backing containers??
-    for (auto gfi : g_files){
-        GFAKluge gg;
-        gg.parse_gfa_file(gfi);
-    }
-    // cout << big_gg.to_string;
-
-
 }
+

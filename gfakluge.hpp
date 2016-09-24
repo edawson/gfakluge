@@ -39,6 +39,9 @@ namespace gfak{
         std::string key;
         std::string type;
         std::string val;
+        // TODO make the val a vector<string>; this should handle every case
+        // essentially, a single header_elem will encode all lines beginning with that key.
+        // e.g. multiple program lines.
     };
 
 		struct opt_elem{
