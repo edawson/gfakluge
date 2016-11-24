@@ -35,6 +35,10 @@ namespace gfak{
         }
     };
 
+    struct comment_elem{
+        std::vector<string> comments;
+    };
+
     struct header_elem{
         std::string key;
         std::string type;
@@ -58,6 +62,12 @@ namespace gfak{
         long rank;
         bool is_reverse;
         std::string cigar;
+    };
+
+    struct das_path_elem{
+        std::string name;
+        std::vector<string> segments;
+        std::vector<string> overlaps;
     };
 
 	struct alignment_elem{
