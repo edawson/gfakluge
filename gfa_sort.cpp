@@ -16,6 +16,7 @@ int main(int argc, char** argv){
     }
 
     int c;
+    optind = 1;
     while (true){
         static struct option long_options[] =
         {
@@ -49,6 +50,7 @@ int main(int argc, char** argv){
                 abort();
         }
     }
+    gfa_file = argv[optind];
 
     GFAKluge gg;
     gg.parse_gfa_file(gfa_file);
