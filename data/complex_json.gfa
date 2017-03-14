@@ -1,0 +1,2 @@
+H	VN:Z:1.0
+S	11	ACCTT	PG:J:[{ "target":"chr1", "pos": 1500, "strand": true, "species":"human" }, { "target":"chr2", "pos":2000, "strand":false, "species":"mouse" }, { "target":"chr1", "pos":2000, "strand":false, "species":"ecoli" }, {"target":"chr1", "pos":3000, "strand":true,"species":"ecoli"}]

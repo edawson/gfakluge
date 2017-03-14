@@ -1,13 +1,17 @@
+/**
+ * Merges a set of GFA files by:
+ * 1. Coordinate their ID spaces (assume each one is an independent subgraph)
+ * 2. Add both to a single GFAKluge instance. This will provide a sort.
+ * 3. Push out the new GFA files to stdout.
+ */
 #include "gfakluge.hpp"
 #include <getopt.h>
 #include <string>
 #include <iostream>
 
 
-using namespace std;
-using namespace gfak;
 int main(int argc, char** argv){
-    string gfa_file = "";
+    vector<string> g_files;
     bool block_order = false;
 
     if (argc == 1){
@@ -33,12 +37,12 @@ int main(int argc, char** argv){
 
         switch (c){
             case 'i':
-                gfa_file = optarg;
+                g_files.push_back( optarg );
                 break;
 
             case '?':
             case 'h':
-                cerr << "gfa_sort [-b --block-order ] -i <GFA_File> >> my_sorted_gfa.gfa" << endl;
+                cerr << "gfa_merge [-b --block-order ] -i <GFA_File> -i <OTHER_GFA_FILE> >> my_sorted_gfa.gfa" << endl;
                 exit(0);
 
             case 'b':
@@ -50,15 +54,13 @@ int main(int argc, char** argv){
         }
     }
 
-    GFAKluge gg;
-    gg.parse_gfa_file(gfa_file);
+    // TODO how to merge the various GFAKLuge objs?
+    // Merge their backing containers??
+    for (auto gfi : g_files){
+        GFAKluge gg;
+        gg.parse_gfa_file(gfi);
+    }
+    // cout << big_gg.to_string;
 
-    if (block_order){
-        cout << gg.block_order_string();
-    }
-    else{
-        cout << gg;
-    }
-    
-    return 0;
+
 }

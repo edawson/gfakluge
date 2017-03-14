@@ -35,10 +35,17 @@ namespace gfak{
         }
     };
 
+    struct comment_elem{
+        std::vector<string> comments;
+    };
+
     struct header_elem{
         std::string key;
         std::string type;
         std::string val;
+        // TODO make the val a vector<string>; this should handle every case
+        // essentially, a single header_elem will encode all lines beginning with that key.
+        // e.g. multiple program lines.
     };
 
 		struct opt_elem{
@@ -58,6 +65,12 @@ namespace gfak{
         long rank;
         bool is_reverse;
         std::string cigar;
+    };
+
+    struct das_path_elem{
+        std::string name;
+        std::vector<string> segments;
+        std::vector<string> overlaps;
     };
 
 	struct alignment_elem{

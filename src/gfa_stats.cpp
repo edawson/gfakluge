@@ -54,10 +54,14 @@ int main(int argc, char** argv){
             case 'n':
                 show_nodes = true;
                 break;
+            case 'l':
+                show_length = true;
+                break;
             case 's':
                 show_nodes = true;
                 show_length = true;
                 show_edges = true;
+                break;
 
             
             default:
@@ -74,9 +78,14 @@ int main(int argc, char** argv){
     if (show_edges){
         
         int num_edges = 0;
-        map<string, vector<link_ele> >::iterator it;
-        for (gg.get_seq_to_link().size();
+        map<string, vector<link_elem> >::iterator it;
+        map<string, vector<link_elem> > s_to_l = gg.get_seq_to_link();
+        for (it = s_to_l.begin(); it != s_to_l.end(); it++){
+            num_edges += (it->second).size();
+        }
+        
         cout << "Number of edges: " << num_edges << endl;
+        
     }
     if (show_length){
         //This one's exciting. Let's iterate over the sequence elements and sum
@@ -84,6 +93,7 @@ int main(int argc, char** argv){
         map<string, sequence_elem, custom_key> my_seqs = gg.get_name_to_seq();
         map<string, sequence_elem, custom_key>::iterator it;
         int64_t total_len = 0;
+
         for (it = my_seqs.begin(); it != my_seqs.end(); it++){
             total_len += (it->second).sequence.size();
         }
