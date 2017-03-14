@@ -113,7 +113,9 @@ namespace gfak{
                 c.source_orientation_forward = tokens[2] == "+" ? true : false;
                 c.sink_orientation_forward = tokens[4] == "+" ? true : false;
                 c.pos = atoi(tokens[5].c_str());
-                c.cigar = tokens[6];
+                if (tokens.size() > 6){
+                    c.cigar = tokens[6];
+                }
                 add_contained(c.source_name, c);
             }
             else if (tokens[0] == "P"){
