@@ -5,15 +5,26 @@ LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./
 
 
-gfa_sort: src/gfa_sort.o lib
+gfa_sort: src/gfa_sort.cpp lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
-
-src/gfa_sort.o: src/gfa_sort.cpp lib
-	$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
 gfa_stats: src/gfa_stats.cpp lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
+gfa_verify: src/gfa_verify.cpp lib
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+gfa_diff: src/gfa_diff.cpp lib
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+gfa_merge: src/gfa_merge.cpp lib
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+gfa_ids: src/gfa_ids.cpp lib
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+gfa_spec_convert: src/gfa_spec_convert.o lib
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 lib: src/gfakluge.o
 	ar -rs libgfakluge.a $<
 
