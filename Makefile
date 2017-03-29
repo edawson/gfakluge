@@ -4,6 +4,7 @@ EXE:=example.exe
 LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./
 
+all: gfa_sort gfa_stats gfa_diff gfa_merge gfa_ids gfa_spec_convert lib
 
 gfa_sort: src/gfa_sort.cpp lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
@@ -31,8 +32,8 @@ lib: src/gfakluge.o
 test: src/main.o lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 	./test
-	diff q_redundant.gfa q_test.gfa
-	cat test.gfa | sort > x.sort; cat test_test.gfa | sort > y.sort; diff x.sort y.sort
+	diff data/q_redundant.gfa data/q_test.gfa
+	cat data/test.gfa | sort > data/x.sort; cat data/test_test.gfa | sort > data/y.sort; diff data/x.sort data/y.sort
 
 src/main.o: src/main.cpp lib
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
@@ -40,7 +41,7 @@ src/main.o: src/main.cpp lib
 src/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
-.PHONY: clean
+.PHONY: clean all
 
 clean:
 	$(RM) $(EXE)

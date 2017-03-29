@@ -10,7 +10,8 @@
 #include <string>
 #include <iostream>
 
-
+using namespace std;
+using namespace gfak;
 int main(int argc, char** argv){
     vector<string> g_files;
     bool block_order = false;

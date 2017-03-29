@@ -60,11 +60,17 @@ namespace gfak{
     };
 
     struct path_elem{
-        std::string source_name;
         std::string name;
-        long rank;
-        bool is_reverse;
-        std::string cigar;
+        vector<string> segment_names;
+        vector<string> overlaps;
+    };
+
+    struct walk_elem{
+	std::string source_name;
+	std::string name;
+	long rank;
+	bool is_reverse;
+	std::string cigar;
     };
 
     struct das_path_elem{
@@ -134,6 +140,9 @@ namespace gfak{
             void add_alignment(sequence_elem s, alignment_elem a);
             void add_sequence(sequence_elem s);
             void add_path(std::string pathname, path_elem path);
+            void add_walk(std::string walkname, walk_elem w);
+            double get_version();
+            void set_version(double version);
             void set_version();
 
             vector<link_elem> get_links(sequence_elem seq);
@@ -150,7 +159,8 @@ namespace gfak{
             map<std::string, vector<link_elem> > get_seq_to_link();
             map<std::string, vector<contained_elem> > get_seq_to_contained();
             map<std::string, vector<alignment_elem> > get_seq_to_alignment();
-            map<string, vector<path_elem> > get_seq_to_paths();
+            map<string, vector<walk_elem> > get_seq_to_walks();
+            map<string, path_elem> get_name_to_path();
 
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
@@ -158,6 +168,8 @@ namespace gfak{
             std::string block_order_string();
 
         private:
+            bool use_walks = false;
+            double version = 0.0;
             map<std::string, header_elem> header;
             map<std::string, vector<contained_elem> > seq_to_contained;
             map<std::string, vector<link_elem> > seq_to_link;
@@ -170,8 +182,8 @@ namespace gfak{
             map<string, vector<alignment_elem> > seq_to_alignment;
             string header_string(map<string, header_elem>& opts);
             string opt_string(vector<opt_elem> opts);
-            map<string, vector<path_elem> > seq_to_paths;
-
+            map<string, vector<walk_elem> > seq_to_walks;
+	        map<string, path_elem> name_to_path;
     };
 
 };

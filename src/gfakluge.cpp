@@ -13,7 +13,8 @@ namespace gfak{
         // we cheat and use their names (which are sort of guaranteed to be
         // unique.
         map<string, sequence_elem, custom_key> name_to_seq;
-        map<string, vector<path_elem> > seq_to_paths;
+        map<string, vector<path_elem> > seq_to_walks;
+        map<string, path_elem> name_to_path;
 
     }
 
@@ -21,11 +22,23 @@ namespace gfak{
 
     }
 
+    double GFAKluge::get_version(){
+        return this->version;
+    }
+
+    void GFAKluge::set_version(double v){
+        header_elem verz;
+        verz.key = "VN";
+        verz.type="Z";
+        this->version = v;
+        verz.val = this->version;
+        this->header[verz.key] = verz;
+    }
     void GFAKluge::set_version(){
         header_elem verz;
         verz.key = "VN";
         verz.type="Z";
-        verz.val = "1.0";
+        verz.val = this->version;
         this->header[verz.key] = verz;
     }
 
@@ -66,6 +79,9 @@ namespace gfak{
                 //TODO this is not well implemented
                 // GFA places no guarantees on header format
                 h.key = line_tokens[0];
+                if (h.key.compare("VN") == 0){
+                    version = stoi(h.val);
+                }
                 h.type = line_tokens[1];
                 h.val = line_tokens[2];
                 header[h.key] = h;
@@ -118,23 +134,33 @@ namespace gfak{
                 }
                 add_contained(c.source_name, c);
             }
-            else if (tokens[0] == "P"){
-                path_elem p;
-                p.source_name = tokens[1];
-                p.name = tokens[2];
+            else if (tokens[0] == "W"){
+                walk_elem w;
+                w.source_name = tokens[1];
+                w.name = tokens[2];
                 //TODO check wheteher the next token is rank or direction
                 if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
-                    p.rank = 0;
-                    p.is_reverse = tokens[3] == "+" ? false : true;
-                    p.cigar = tokens[4];
+                    w.rank = 0;
+                    w.is_reverse = tokens[3] == "+" ? false : true;
+                    w.cigar = tokens[4];
 
                 }
                 else{
-                    p.rank = atol(tokens[3].c_str());
-                    p.is_reverse = tokens[4] == "+" ? false : true;
-                    p.cigar = tokens[5];
+                    w.rank = atol(tokens[3].c_str());
+                    w.is_reverse = tokens[4] == "+" ? false : true;
+                    w.cigar = tokens[5];
                 }
-                add_path(p.source_name, p);
+                add_walk(w.source_name, w);
+            }
+            else if (tokens[0] == "P" && version > 0.1){
+                // Parse a GFA 1.0 path element
+                path_elem p;
+                p.name = tokens[1];
+                p.segment_names = split(tokens[2], ',');
+                if (tokens.size() > 3){
+                    p.overlaps = split(tokens[3], ',');
+                }
+                name_to_path[p.name] = p;
             }
             else if (tokens[0] == "x"){
                 annotation_elem x;
@@ -168,8 +194,12 @@ namespace gfak{
         name_to_seq[s.name] = s;
     }
 
-    void GFAKluge::add_path(string seq_name, path_elem p){
-        seq_to_paths[seq_name].push_back(p);
+    void GFAKluge::add_path(string path_name, path_elem p){
+        name_to_path[path_name] = p;
+    }
+
+    void GFAKluge::add_walk(string seq_name, walk_elem w){
+        seq_to_walks[seq_name].push_back(w);
     }
 
     void GFAKluge::add_link(sequence_elem seq, link_elem link){
@@ -222,8 +252,12 @@ namespace gfak{
         return seq_to_link;
     }
 
-    map<string, vector<path_elem> > GFAKluge::get_seq_to_paths(){
-        return seq_to_paths;
+    map<string, path_elem> GFAKluge::get_name_to_path(){
+        return name_to_path;
+    }
+
+    map<string, vector<walk_elem> > GFAKluge::get_seq_to_walks(){
+        return seq_to_walks;
     }
 
     map<string, vector<contained_elem> > GFAKluge::get_seq_to_contained(){
@@ -335,22 +369,35 @@ namespace gfak{
 
 					//TODO iterate over links
 					//L    segName1,segOri1,segName2,segOri2,CIGAR      Link
+            
 			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-					if (seq_to_paths[st->first].size() > 0){
-							for (i = 0; i < seq_to_paths[st->first].size(); i++){
-									stringstream pat;
-									pat << "P\t" + seq_to_paths[st->first][i].source_name << "\t";
-									pat << seq_to_paths[st->first][i].name << "\t";
-									if (!(seq_to_paths[st->first][i].rank ==  0L)){
-											pat << seq_to_paths[st->first][i].rank << "\t";
-									}
-									pat << (seq_to_paths[st->first][i].is_reverse ? "-" : "+");
-									pat << "\t";
-									pat << seq_to_paths[st->first][i].cigar + "\n";
-									ret << pat.str();
-							}
+                if (use_walks && seq_to_walks[st->first].size() > 0){
+                    for (i = 0; i < seq_to_walks[st->first].size(); i++){
+								stringstream pat;
+								pat << "W\t" + seq_to_walks[st->first][i].source_name << "\t";
+								pat << seq_to_walks[st->first][i].name << "\t";
+								if (!(seq_to_walks[st->first][i].rank ==  0L)){
+										pat << seq_to_walks[st->first][i].rank << "\t";
+								}
+								pat << (seq_to_walks[st->first][i].is_reverse ? "-" : "+");
+								pat << "\t";
+								pat << seq_to_walks[st->first][i].cigar + "\n";
+								ret << pat.str();
 					}
+                }
 				}
+            if (name_to_path.size() > 0){
+                map<string, path_elem>::iterator pt;
+                for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
+                    stringstream pat;
+                    pat << "P\t" << pt->second.name << "\t" << join(pt->second.segment_names, ",");
+                    if (pt->second.overlaps.size() > 0){
+                        pat << "\t" << join(pt->second.overlaps, ",");
+                    }
+                    pat << "\n";
+                    ret << pat.str();
+                }
+            }
 
 
 
@@ -372,6 +419,18 @@ namespace gfak{
         if (header.size() > 0){
             ret << header_string(header) + "\n";
         }
+        if (name_to_path.size() > 0){
+                map<string, path_elem>::iterator pt;
+                for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
+                    stringstream pat;
+                    pat << "P\t" << pt->second.name << "\t" << join(pt->second.segment_names, ",");
+                    if (pt->second.overlaps.size() > 0){
+                        pat << "\t" << join(pt->second.overlaps, ",");
+                    }
+                    pat << "\n";
+                    ret << pat.str();
+                }
+        }
         if (name_to_seq.size() > 0){
             map<std::string, sequence_elem>::iterator st;
             for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
@@ -382,17 +441,17 @@ namespace gfak{
                 ret << "\n";
                 //TODO iterate over links
                 //L    segName1,segOri1,segName2,segOri2,CIGAR      Link
-                if (seq_to_paths[st->first].size() > 0){
-                    for (i = 0; i < seq_to_paths[st->first].size(); i++){
+                if (seq_to_walks[st->first].size() > 0){
+                    for (i = 0; i < seq_to_walks[st->first].size(); i++){
                         stringstream pat;
-                        pat << "P\t" + seq_to_paths[st->first][i].source_name << "\t";
-                        pat << seq_to_paths[st->first][i].name << "\t";
-                        if (!(seq_to_paths[st->first][i].rank ==  0L)){
-                            pat << seq_to_paths[st->first][i].rank << "\t";
+                        pat << "W\t" + seq_to_walks[st->first][i].source_name << "\t";
+                        pat << seq_to_walks[st->first][i].name << "\t";
+                        if (!(seq_to_walks[st->first][i].rank ==  0L)){
+                            pat << seq_to_walks[st->first][i].rank << "\t";
                         }
-                        pat << (seq_to_paths[st->first][i].is_reverse ? "-" : "+");
+                        pat << (seq_to_walks[st->first][i].is_reverse ? "-" : "+");
                         pat << "\t";
-                        pat << seq_to_paths[st->first][i].cigar + "\n";
+                        pat << seq_to_walks[st->first][i].cigar + "\n";
                         ret << pat.str();
                     }
                 }

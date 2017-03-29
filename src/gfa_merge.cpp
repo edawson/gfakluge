@@ -1,14 +1,16 @@
+#include "gfakluge.hpp"
+#include <getopt.h>
+#include <string>
+#include <iostream>
+
+using namespace gfak;
+using namespace std;
 /**
  * Merges a set of GFA files by:
  * 1. Coordinate their ID spaces (assume each one is an independent subgraph)
  * 2. Add both to a single GFAKluge instance. This will provide a sort.
  * 3. Push out the new GFA files to stdout.
  */
-#include "gfakluge.hpp"
-#include <getopt.h>
-#include <string>
-#include <iostream>
-
 
 int main(int argc, char** argv){
     vector<string> g_files;
@@ -57,10 +59,10 @@ int main(int argc, char** argv){
     // TODO how to merge the various GFAKLuge objs?
     // Merge their backing containers??
     for (auto gfi : g_files){
-        GFAKluge gg;
+        gfak::GFAKluge gg;
         gg.parse_gfa_file(gfi);
     }
-    // cout << big_gg.to_string;
+   // cout << big_gg.to_string;
 
 
 }
