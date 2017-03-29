@@ -491,7 +491,14 @@ namespace gfak{
                 map<string, path_elem>::iterator pt;
                 for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                     stringstream pat;
-                    pat << "P\t" << pt->second.name << "\t" << join(pt->second.segment_names, ",");
+                    pat << "P\t" << pt->second.name << "\t";
+                    vector<string> ovec;
+                    for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
+                        stringstream o_str;
+                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[i] ? "-" : "+");
+                        ovec.push_back(o_str.str());
+                    }
+                    pat << join(ovec, ",");
                     if (pt->second.overlaps.size() > 0){
                         pat << "\t" << join(pt->second.overlaps, ",");
                     }
@@ -527,7 +534,14 @@ namespace gfak{
                 map<string, path_elem>::iterator pt;
                 for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                     stringstream pat;
-                    pat << "P\t" << pt->second.name << "\t" << join(pt->second.segment_names, ",");
+                    pat << "P" << "\t";
+                    vector<string> ovec;
+                    for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
+                        stringstream o_str;
+                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[i] ? "-" : "+");
+                        ovec.push_back(o_str.str());
+                    }
+                    pat << join(ovec, ",");
                     if (pt->second.overlaps.size() > 0){
                         pat << "\t" << join(pt->second.overlaps, ",");
                     }
