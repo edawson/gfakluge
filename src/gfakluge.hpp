@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 namespace gfak{
@@ -144,6 +145,7 @@ namespace gfak{
             double get_version();
             void set_version(double version);
             void set_version();
+            void set_walks(bool ws);
 
             vector<link_elem> get_links(sequence_elem seq);
             vector<link_elem> get_links(string seq_name);
@@ -162,10 +164,14 @@ namespace gfak{
             map<string, vector<walk_elem> > get_seq_to_walks();
             map<string, path_elem> get_name_to_path();
 
+            map<string, vector<walk_elem> > paths_as_walks();
+            map<string, path_elem> walks_as_paths();
+
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
             std::string to_string();
             std::string block_order_string();
+
 
         private:
             bool use_walks = false;
