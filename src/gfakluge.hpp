@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <istream>
+#include <regex>
 #include <map>
 #include <vector>
 #include <sstream>
@@ -63,6 +64,7 @@ namespace gfak{
     struct path_elem{
         std::string name;
         vector<string> segment_names;
+        vector<bool> orientations;
         vector<string> overlaps;
     };
 

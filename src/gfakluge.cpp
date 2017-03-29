@@ -71,6 +71,9 @@ namespace gfak{
     }
 
     bool GFAKluge::parse_gfa_file(istream& instream){
+        regex forward_re("\\+");
+        regex reverse_re("\\-");
+        regex id_re("[0-9A-Za-z]*");
         string line;
         vector<string> line_tokens;
         while (getline(instream, line)){
@@ -160,7 +163,14 @@ namespace gfak{
                     // Parse a GFA 1.0 path element
                     path_elem p;
                     p.name = tokens[1];
-                    p.segment_names = split(tokens[2], ',');
+                    vector<string> ids_and_orientations = split(tokens[2], ',');
+                    for (auto x : ids_and_orientations){
+                        bool orientation = regex_search(x, reverse_re);
+                        string id = x.substr(0, x.length() - 1);
+                        p.segment_names.push_back(id);
+                        p.orientations.push_back(orientation);
+                    }
+
                     if (tokens.size() > 3){
                         p.overlaps = split(tokens[3], ',');
                     }
@@ -345,7 +355,7 @@ namespace gfak{
                 w.source_name = it->second.segment_names[i];
                 if (!it->second.overlaps.empty()){
                     w.cigar = it->second.overlaps[i];
-                    w.is_reverse = (it->second.overlaps[i].find("R") != string::npos) ? true : false;
+                    w.is_reverse = (it->second.orientations[i]);
                 }
                 add_walk(w.source_name, w);
             }
@@ -371,14 +381,14 @@ namespace gfak{
             path_elem p;
             p.name = name;
             p.segment_names = pathname_to_seqnames[name];
-
+            p.orientations = pathname_to_reverse[name];
             for (int i = 0; i < pathname_to_overlaps.size(); i++){
                 stringstream ssr;
                 string cigar = pathname_to_overlaps[name][i];
                 ssr << cigar;
-                if (pathname_to_reverse[name][i]){
-                    ssr << "R";
-                }
+                // if (pathname_to_reverse[name][i]){
+                //     ssr << "R";
+                // }
                 pathname_to_overlaps[name][i] = ssr.str();
             }
             p.overlaps = pathname_to_overlaps[name];
