@@ -6,14 +6,14 @@ namespace gfak{
 
     GFAKluge::GFAKluge(){
         map<std::string, header_elem> header;
-        map<std::string, vector<contained_elem> > seq_to_contained;
-        map<std::string, vector<link_elem> > seq_to_link;
-        map<std::string, vector<alignment_elem> > seq_to_alignment;
+        map<std::string, vector<contained_elem>, custom_key > seq_to_contained;
+        map<std::string, vector<link_elem>, custom_key > seq_to_link;
+        map<std::string, vector<alignment_elem> , custom_key> seq_to_alignment;
         //Since we can't compare sequence elements for hashing,
         // we cheat and use their names (which are sort of guaranteed to be
         // unique.
         map<string, sequence_elem, custom_key> name_to_seq;
-        map<string, vector<path_elem> > seq_to_walks;
+        map<string, vector<walk_elem>, custom_key > seq_to_walks;
         map<string, path_elem> name_to_path;
         //cout << fixed << setprecision(2);
 
@@ -352,6 +352,7 @@ namespace gfak{
             for (int i = 0; i < it->second.segment_names.size(); i++){
                 walk_elem w;
                 w.name = it->second.name;
+                w.rank = i;
                 w.source_name = it->second.segment_names[i];
                 if (!it->second.overlaps.empty()){
                     w.cigar = it->second.overlaps[i];
@@ -360,41 +361,34 @@ namespace gfak{
                 add_walk(w.source_name, w);
             }
         }
+        this->normalized_paths = true;
         return seq_to_walks;
     }
 
     map<string, path_elem> GFAKluge::walks_as_paths(){
-        map<string, vector<walk_elem> >::iterator it;
-        map<string, vector<string> > pathname_to_seqnames;
-        map<string, vector<string> > pathname_to_overlaps;
-        map<string, vector<bool> > pathname_to_reverse;
-        for (it = seq_to_walks.begin(); it != seq_to_walks.end(); it++){
-            for (int i = 0; i < it->second.size(); i++){
-                walk_elem w = it->second[i];
-                pathname_to_seqnames[w.name].push_back(w.source_name);
-                pathname_to_overlaps[w.name].push_back(w.cigar);
-                pathname_to_reverse[w.name].push_back(w.is_reverse);
-            }
-        }
-        for (auto iter : pathname_to_seqnames){
-            string name = iter.first;
-            path_elem p;
-            p.name = name;
-            p.segment_names = pathname_to_seqnames[name];
-            p.orientations = pathname_to_reverse[name];
-            for (int i = 0; i < pathname_to_overlaps.size(); i++){
-                stringstream ssr;
-                string cigar = pathname_to_overlaps[name][i];
-                ssr << cigar;
-                // if (pathname_to_reverse[name][i]){
-                //     ssr << "R";
-                // }
-                pathname_to_overlaps[name][i] = ssr.str();
-            }
-            p.overlaps = pathname_to_overlaps[name];
-            add_path(p.name, p);
 
+        map<string, vector<walk_elem> > pathname_to_walk_elems;
+        for(auto n_to_s : name_to_seq){
+            for (auto w : seq_to_walks[n_to_s.first]){
+                pathname_to_walk_elems[w.name].push_back(w);
+            }
         }
+
+        for (auto x : pathname_to_walk_elems){
+            path_elem p;
+            p.name = x.first;
+            //cout << x.first << "\t";
+            for (auto y : x.second){
+              //  cout << y.source_name << "\t";
+                p.segment_names.push_back(y.source_name);
+                p.overlaps.push_back(y.cigar);
+                p.orientations.push_back(y.is_reverse);
+            }
+            //cout << endl;
+            add_path(p.name, p);
+        }
+        
+        this->normalized_walks = true;
         return name_to_path;
 
     }
@@ -420,8 +414,12 @@ namespace gfak{
 			if (header.size() > 0){
 					ret << header_string(header) + "\n";
 			}
-            //walks_as_paths();
-            //paths_as_walks();
+            if (!normalized_paths){
+                walks_as_paths();
+            }
+            if (!normalized_walks){
+                paths_as_walks();
+            }
 			map<std::string, sequence_elem>::iterator st;
 			if (name_to_seq.size() > 0){
 					for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
@@ -527,18 +525,23 @@ namespace gfak{
         if (header.size() > 0){
             ret << header_string(header) + "\n";
         }
-
-        //paths_as_walks();
-        //walks_as_paths();
+        
+        if (!normalized_walks){
+            walks_as_paths();
+        }
+        if (!normalized_paths){
+            paths_as_walks();
+        }
         if (name_to_path.size() > 0 && this->version >= 1.0){
                 map<string, path_elem>::iterator pt;
                 for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                     stringstream pat;
                     pat << "P" << "\t";
+                    pat << pt->second.name << "\t";
                     vector<string> ovec;
-                    for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
+                    for (int seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
                         stringstream o_str;
-                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[i] ? "-" : "+");
+                        o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "-" : "+");
                         ovec.push_back(o_str.str());
                     }
                     pat << join(ovec, ",");

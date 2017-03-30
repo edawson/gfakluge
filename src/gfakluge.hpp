@@ -177,6 +177,9 @@ namespace gfak{
 
         private:
             bool use_walks = false;
+            // Store whether we've already gone walks->paths and paths->walks
+            bool normalized_paths = false;
+            bool normalized_walks = false;
             double version = 0.0;
             map<std::string, header_elem> header;
             map<std::string, vector<contained_elem> > seq_to_contained;
@@ -190,6 +193,7 @@ namespace gfak{
             map<string, vector<alignment_elem> > seq_to_alignment;
             string header_string(map<string, header_elem>& opts);
             string opt_string(vector<opt_elem> opts);
+            
             map<string, vector<walk_elem> > seq_to_walks;
 	        map<string, path_elem> name_to_path;
     };
