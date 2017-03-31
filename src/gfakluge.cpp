@@ -347,7 +347,7 @@ namespace gfak{
     }
 
     void GFAKluge::paths_as_walks(){
-        if (!this->normalized_paths && seq_to_walks.empty()){
+        if (!this->normalized_paths && seq_to_walks.empty() && !name_to_path.empty()){
             if (name_to_path.empty() && !this->normalized_walks){
                 walks_as_paths();
             }
@@ -373,7 +373,7 @@ namespace gfak{
     }
 
     void GFAKluge::walks_as_paths(){
-        if (!this->normalized_walks && name_to_path.empty()){
+        if (!this->normalized_walks && name_to_path.empty() && !seq_to_walks.empty()){
             if (seq_to_walks.empty() && !this->normalized_paths){
                 paths_as_walks();
             }
