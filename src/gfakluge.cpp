@@ -185,7 +185,7 @@ namespace gfak{
 
                     }
                     else{
-                        w.rank = atol(tokens[3].c_str());
+                        w.rank = stol(tokens[3].c_str());
                         w.is_reverse = tokens[4] == "+" ? false : true;
                         w.cigar = tokens[5];
                     }
