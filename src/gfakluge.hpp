@@ -4,7 +4,6 @@
 #include <sstream>
 #include <fstream>
 #include <istream>
-#include <regex>
 #include <map>
 #include <vector>
 #include <sstream>
@@ -166,8 +165,8 @@ namespace gfak{
             map<string, vector<walk_elem> > get_seq_to_walks();
             map<string, path_elem> get_name_to_path();
 
-            map<string, vector<walk_elem> > paths_as_walks();
-            map<string, path_elem> walks_as_paths();
+            void paths_as_walks();
+            void walks_as_paths();
 
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
