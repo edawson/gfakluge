@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <istream>
+#include <algorithm>
 #include <map>
 #include <vector>
 #include <sstream>

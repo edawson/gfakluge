@@ -384,11 +384,20 @@ namespace gfak{
                 }   
             }
 
+            struct walk_sort_key{
+                inline bool operator() (walk_elem first, walk_elem second){
+                    return (first.rank != 0 && second.rank != 0) ? (first.rank < second.rank) : false;
+                }
+            };
+            
+
             for (auto x : pathname_to_walk_elems){
                 path_elem p;
                 p.name = x.first;
                 //cout << x.first << "\t";
+                std::sort(x.second.begin(), x.second.end(), walk_sort_key());
                 for (auto y : x.second){
+                    
                 //  cout << y.source_name << "\t";
                     p.segment_names.push_back(y.source_name);
                     p.overlaps.push_back(y.cigar);
