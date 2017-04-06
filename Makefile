@@ -24,7 +24,7 @@ gfa_merge: src/gfa_merge.cpp lib
 gfa_ids: src/gfa_ids.cpp lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_spec_convert: src/gfa_spec_convert.o lib
+gfa_spec_convert: src/gfa_spec_convert.cpp lib
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 lib: src/gfakluge.o
 	ar -rs libgfakluge.a $<
