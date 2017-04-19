@@ -121,7 +121,12 @@ namespace gfak{
                 l.source_orientation_forward = tokens[2] == "+" ? true : false;
                 l.sink_orientation_forward = tokens[4] == "+" ? true : false;
                 //l.pos = tokens[0];
-                l.cigar = tokens[5];
+                if (tokens.size() >= 6){
+                    l.cigar = tokens[5];
+                }
+                else{
+                    l.cigar = "*";
+                }
                 add_link(l.source_name, l);
             }
             else if (tokens[0] == "C"){
@@ -134,6 +139,9 @@ namespace gfak{
                 c.pos = atoi(tokens[5].c_str());
                 if (tokens.size() > 6){
                     c.cigar = tokens[6];
+                }
+                else{
+                    c.cigar = "*";
                 }
                 add_contained(c.source_name, c);
             }
@@ -162,14 +170,24 @@ namespace gfak{
                     p.name = tokens[1];
                     vector<string> ids_and_orientations = split(tokens[2], ',');
                     for (auto x : ids_and_orientations){
-                        bool orientation = (x.back()) == '+';
+                        bool orientation = ((x.back()) == '+' || x.front() == '+');
                         string id = x.substr(0, x.length() - 1);
                         p.segment_names.push_back(id);
                         p.orientations.push_back(orientation);
                     }
 
                     if (tokens.size() > 3){
-                        p.overlaps = split(tokens[3], ',');
+                        vector<string> spltz = split(tokens[3], ',');
+                        for (auto z : spltz){
+                            p.overlaps.push_back(z);
+                        }
+                        //p.overlaps.assign( spltz.begin(), spltz.end());
+                    }
+                    else{
+                        //p.overlaps.assign(p.segment_names.size(), "*");
+                        for (auto z : p.segment_names){
+                            p.overlaps.push_back("*");
+                        }
                     }
                     name_to_path[p.name] = p;
                 }
@@ -360,9 +378,12 @@ namespace gfak{
                     w.name = it->second.name;
                     w.rank = i;
                     w.source_name = it->second.segment_names[i];
-                    if (!it->second.overlaps.empty()){
-                        w.cigar = it->second.overlaps[i];
-                        w.is_reverse = (it->second.orientations[i]);
+                    w.is_reverse = (it->second.orientations[i]);
+                    for (int z = 0; z < it->second.overlaps.size(); z++){
+                        w.cigar = it->second.overlaps[z];
+                    }
+                    for (int z = it->second.overlaps.size(); z < it->second.segment_names.size(); z++ ){
+                        w.cigar = "*";
                     }
                     add_walk(w.source_name, w);
                 }

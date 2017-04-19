@@ -73,7 +73,7 @@ namespace gfak{
 	std::string name;
 	long rank;
 	bool is_reverse;
-	std::string cigar;
+	std::string cigar = "*";
     };
 
     struct das_path_elem{
