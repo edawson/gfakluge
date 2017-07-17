@@ -94,6 +94,7 @@ namespace gfak{
     struct sequence_elem{
         std::string sequence;
         std::string name;
+        int length;
         vector<opt_elem> opt_fields;
         long id;
 
@@ -118,6 +119,27 @@ namespace gfak{
         map<string, string> opt_fields;
     };
 
+
+    // These elements, along with the <length> field in sequence_elem,
+    // are all that's needed to parse to GFA2
+    struct edge_elem{
+    
+    };
+
+    struct gap_elem{
+
+    };
+
+    struct fragment_elem{
+
+    };
+
+    struct group_elem{
+        std::string id;
+        bool ordered = false;
+        std::vector<string> items;
+        std::vector<string> orientations;
+    };
 
     class GFAKluge{
 			friend std::ostream& operator<<(std::ostream& os, GFAKluge& g);
