@@ -11,7 +11,8 @@ int main(int argc, char** argv){
     bool block_order = false;
 
     if (argc == 1){
-        cerr << "gfa_sort [-b ]  <GFA_File> >> my_sorted_gfa.gfa" << endl;
+        cerr << "gfa_sort [-b ]  <GFA_File> > my_sorted_gfa.gfa" << endl
+            << "    -b / --block-order    enforce block-order (HSLC) style GFA output." << endl;
         exit(0);
     }
 
