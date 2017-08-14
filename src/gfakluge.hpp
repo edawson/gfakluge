@@ -76,11 +76,6 @@ namespace gfak{
 	std::string cigar = "*";
     };
 
-    struct das_path_elem{
-        std::string name;
-        std::vector<string> segments;
-        std::vector<string> overlaps;
-    };
 
 	struct alignment_elem{
 				std::string source_name;
@@ -94,7 +89,7 @@ namespace gfak{
     struct sequence_elem{
         std::string sequence;
         std::string name;
-        int length;
+        int32_t length;
         vector<opt_elem> opt_fields;
         long id;
 
@@ -123,23 +118,46 @@ namespace gfak{
     // These elements, along with the <length> field in sequence_elem,
     // are all that's needed to parse to GFA2
     struct edge_elem{
-    
+        string id;
+        string source_name;
+        string sink_name;
+        bool source_orientation_forward;
+        bool sink_orientation_forward;
+        int32_t source_begin;
+        int32_t source_end;
+        int32_t sink_begin;
+        int32_t sink_end;
+        string alignment;
+        vector<opt_elem> tags;
     };
 
     struct gap_elem{
-
+        string id;
+        string source_name;
+        string sink_name;
+        int32_t dist;
+        map<string, string> tags;
     };
 
     struct fragment_elem{
-
+        string id;
+        string ref;
+        string source_name;
+        string sink_name;
+        int32_t source_pos;
+        int32_t sink_pos;
+        string alignment;
+        map<string, string> tags;
     };
 
     struct group_elem{
         std::string id;
         bool ordered = false;
         std::vector<string> items;
-        std::vector<string> orientations;
+        std::vector<bool> orientations;
+        std::vector<opt_elem> tags;
     };
+
 
     class GFAKluge{
 			friend std::ostream& operator<<(std::ostream& os, GFAKluge& g);
@@ -157,15 +175,37 @@ namespace gfak{
             //3. Perhaps links and containeds should be added using methods like
             //  add_contained(contained_elem c)
             // to guarantee that they are actually added by their source.
-            void add_link(string seq_name, link_elem);
+            void add_link(string seq_name, link_elem l);
             void add_link(sequence_elem s, link_elem l);
+
+            /**
+             * GFA2.0 handlers
+             */
+            void add_edge(string seqname, edge_elem e);
+            void add_edge(sequence_elem s, edge_elem e);
+
+            void add_fragment(string seqname, fragment_elem f);
+            void add_fragment(sequence_elem s, fragment_elem f);
+
+            void add_gap(sequence_elem s, gap_elem g);
+            void add_gap(string seqname, gap_elem g);
+
+            void add_group(group_elem g);
+
+
+
+            /** End GFA2.0. Begin 1.0 / 0.1 **/
+
             void add_contained(string seq_name, contained_elem c);
             void add_contained(sequence_elem s, contained_elem c);
+
             void add_alignment(string s, alignment_elem a);
             void add_alignment(sequence_elem s, alignment_elem a);
+
             void add_sequence(sequence_elem s);
             void add_path(std::string pathname, path_elem path);
             void add_walk(std::string walkname, walk_elem w);
+
             double get_version();
             void set_version(double version);
             void set_version();
@@ -194,6 +234,7 @@ namespace gfak{
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
             std::string to_string();
+            std::string gfa_v2_to_string();
             std::string block_order_string();
 
 
@@ -218,6 +259,13 @@ namespace gfak{
             
             map<string, vector<walk_elem> > seq_to_walks;
 	        map<string, path_elem> name_to_path;
+
+            /** GFA 2.0 containers **/
+            map<std::string, vector<fragment_elem> > seq_to_fragments;
+            map<std::string, vector<edge_elem> > seq_to_edges;
+            map<std::string, vector<gap_elem> > seq_to_gaps;
+            map<string, group_elem> groups;
+
     };
 
 };

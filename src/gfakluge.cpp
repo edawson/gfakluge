@@ -4,6 +4,35 @@ using namespace std;
 namespace gfak{
 
 
+    void GFAKluge::add_edge(string seqname, edge_elem e){
+
+    }
+    void GFAKluge::add_edge(sequence_elem s, edge_elem e){
+
+    }
+
+    void GFAKluge::add_fragment(string seqname, fragment_elem f){
+
+    }
+
+    void GFAKluge::add_fragment(sequence_elem s, fragment_elem f){
+
+    }
+
+    void GFAKluge::add_gap(sequence_elem s, gap_elem g){
+
+    }
+
+    void GFAKluge::add_gap(string seqname, gap_elem g){
+    
+    }
+
+    void GFAKluge::add_group(group_elem g){
+
+    }
+
+
+
     GFAKluge::GFAKluge(){
         map<std::string, header_elem> header;
         map<std::string, vector<contained_elem>, custom_key > seq_to_contained;
@@ -17,6 +46,12 @@ namespace gfak{
         map<string, path_elem> name_to_path;
         //cout << fixed << setprecision(2);
 
+
+        /** GFA 2.0 containers **/
+        map<std::string, vector<fragment_elem> > seq_to_fragments;
+        map<std::string, vector<edge_elem> > seq_to_edges;
+        map<std::string, vector<gap_elem> > seq_to_gaps;
+        map<string, group_elem> groups;
     }
 
     GFAKluge::~GFAKluge(){
@@ -92,13 +127,22 @@ namespace gfak{
             else if (tokens[0] ==  "S"){
                 //TODO: we've got some tokens at the end of the line
                 //that have not been handled yet.
+                int tag_index = 3;
                 sequence_elem s;
                 s.name = tokens[1];
-                s.sequence = tokens[2];
+                if (this->version >= 2.0){
+                   s.length = stoi(tokens[2]); 
+                   s.sequence = tokens[3];
+                   tag_index = 4;
+                }
+                else{
+                    s.sequence = tokens[2];
+                    tag_index = 3;
+                }
                 //s.id = atol(s.name.c_str());
                 int i;
                 if (tokens.size() > 3){
-                    for (i = 3; i < tokens.size(); i++){
+                    for (i = tag_index; i < tokens.size(); i++){
                         //opt fields are in key:type:val format
                         vector<string> opt_field = split(tokens[i], ':');
                         opt_elem o;
@@ -109,6 +153,54 @@ namespace gfak{
                     }
                 }
                 name_to_seq[s.name] = s;
+            }
+            else if (tokens[0] == "E"){
+                edge_elem e;
+                e.id = tokens[1];
+
+                string x = tokens[2];
+                e.source_name = x.substr(0, x.length() - 1);
+                e.source_orientation_forward = (x.back() == '+');
+                x = tokens[3];
+                e.sink_name = x.substr(0, x.length() - 1);
+                e.sink_orientation_forward = (x.back() == '+');
+
+                e.source_begin = stoi(tokens[4]);
+                e.source_end = stoi(tokens[5]);
+                e.sink_begin = stoi(tokens[6]);
+                e.sink_end = stoi(tokens[7]);
+
+                e.alignment = tokens[8];
+
+                if (tokens.size() > 9){
+                    for (int i = 9; i < tokens.size(); i++){
+                         //opt fields are in key:type:val format
+                        vector<string> opt_field = split(tokens[i], ':');
+                        opt_elem o;
+                        o.key = opt_field[0];
+                        o.type = opt_field[1];
+                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                        e.tags.push_back(o);
+           
+                    }
+                }
+
+            }
+            else if (tokens[0] == "G"){
+            }
+            else if (tokens[0] == "F"){
+            }
+            else if (tokens[0] == "O"){
+                group_elem g;
+                g.ordered = true;
+                g.id = tokens[1];
+                vector<string> g_ids = split(tokens[2], ' ');
+                for (int i = 0 ; i < g_ids.size(); i++){
+                        g.items.push_back(g_ids[i].substr(0, g_ids[i].length() - 1));
+                        g.orientations.push_back(g_ids[i].back() == '+');
+                }
+            }
+            else if (tokens[0] == "U"){
             }
             else if (tokens[0] ==  "L"){
                 // TODO: we need to deal with  where the link is given before
@@ -554,6 +646,10 @@ namespace gfak{
 			//Print sequences and links in order, then annotation lines.
 
 			return ret.str();
+
+    }
+
+    std::string gfa_v2_to_string(){
 
     }
 
