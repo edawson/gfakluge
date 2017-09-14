@@ -19,12 +19,8 @@ namespace gfak{
 
     }
 
-    void GFAKluge::add_gap(sequence_elem s, gap_elem g){
+    void GFAKluge::add_gap(gap_elem g){
 
-    }
-
-    void GFAKluge::add_gap(string seqname, gap_elem g){
-    
     }
 
     void GFAKluge::add_group(group_elem g){

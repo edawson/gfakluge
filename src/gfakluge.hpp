@@ -187,10 +187,15 @@ namespace gfak{
             void add_fragment(string seqname, fragment_elem f);
             void add_fragment(sequence_elem s, fragment_elem f);
 
-            void add_gap(sequence_elem s, gap_elem g);
-            void add_gap(string seqname, gap_elem g);
+            void add_gap(gap_elem g);
 
             void add_group(group_elem g);
+
+            void paths_as_groups();
+            void groups_as_paths();
+            void edges_as_links();
+            void links_as_edges();
+
 
 
 

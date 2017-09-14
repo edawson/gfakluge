@@ -11,7 +11,7 @@ int main(int argc, char** argv){
     bool block_order = false;
 
     if (argc == 1){
-        cerr << "gfa_sort [-b ] -i <GFA_File> >> my_sorted_gfa.gfa" << endl;
+        cerr << "gfa_diff <a> <b> " << endl;
         exit(0);
     }
 

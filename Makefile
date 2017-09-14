@@ -6,7 +6,7 @@ LD_INC_FLAGS=-I./src/ -I./
 
 BIN_DIR:=bin
 
-all: gfa_sort gfa_stats gfa_diff gfa_merge gfa_ids gfa_spec_convert lib
+all: gfa_sort gfa_stats gfa_diff gfa_merge gfa_ids gfa_spec_convert gfa_extract lib
 
 gfa_sort: src/gfa_sort.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
@@ -28,6 +28,10 @@ gfa_ids: src/gfa_ids.cpp lib .GFAK_pre-build
 
 gfa_spec_convert: src/gfa_spec_convert.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+gfa_extract: src/gfa_extract.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
 lib: src/gfakluge.o
 	ar -rs libgfakluge.a $<
 
