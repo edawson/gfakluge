@@ -55,6 +55,11 @@ namespace gfak{
         std::string key;
         std::string type;
         std::string val;
+        std::string to_string(){
+            stringstream st;
+            st << key << ":" << type << ":" << val;
+            return st.str();
+        }
     };
 
     struct annotation_elem{
@@ -94,7 +99,24 @@ namespace gfak{
         uint64_t length;
         vector<opt_elem> opt_fields;
         long id;
-
+        std::string to_string_2(){
+            stringstream st;
+            st << "S" << "\t" << name << "\t" << length << "\t" << sequence;
+            if (opt_fields.size() > 0){
+                for (auto i : opt_fields){
+                    st << "\t" << i.to_string();
+                }
+            }
+        }
+        std::string to_string(){
+            stringstream st;
+            st << "S" << "\t" << name << "\t" << sequence;
+            if (opt_fields.size() > 0){
+                for (auto i : opt_fields){
+                    st << "\t" << i.to_string();
+                }
+            }
+        }
     };
 
     struct link_elem{
