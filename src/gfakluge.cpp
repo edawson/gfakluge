@@ -5,26 +5,97 @@ namespace gfak{
 
 
     void GFAKluge::add_edge(string seqname, edge_elem e){
-
+        seq_to_edges[seqname].push_back(e);
     }
     void GFAKluge::add_edge(sequence_elem s, edge_elem e){
-
+        add_edge(s.name, e);
     }
 
     void GFAKluge::add_fragment(string seqname, fragment_elem f){
-
+        seq_to_fragments[seqname].push_back(f);
     }
 
     void GFAKluge::add_fragment(sequence_elem s, fragment_elem f){
-
+        add_fragment(s.name, f);
     }
 
     void GFAKluge::add_gap(gap_elem g){
-
+        seq_to_gaps[g.source_name].push_back(g);
     }
 
     void GFAKluge::add_group(group_elem g){
+        this->groups[g.id] = g;
+    }
 
+    void gfa_1_ize(){
+        /**
+        * Swap edges to links
+        * Ordered groups -> paths,
+        * warn about missing sets
+        * warn about missing fragments (we could output them as seqs)
+        * warn about missing gaps (we could remove them)
+        * 
+        */
+
+    }
+
+    void GFAKluge::gfa_2_ize(){
+        if (!two_compat){
+            // Fix S line length field if needed.
+            for (auto s : name_to_seq){
+                s.second.length = (uint64_t) s.second.sequence.length();
+            }
+            // L and C lines -> E lines
+            uint32_t next_link_id = 0;
+            for (auto s : seq_to_link){
+                sequence_elem s_seq = name_to_seq[s.first];
+                for (auto l : s.second){
+                    edge_elem e;
+                    e.id = ++next_link_id;
+                    e.source_name = l.source_name;
+                    e.source_begin = s_seq.length;
+                    e.source_end = s_seq.length;
+                    e.sink_name = l.sink_name;
+                    sequence_elem sink_seq = name_to_seq[l.sink_name];
+                    e.sink_begin = sink_seq.length;
+                    e.sink_end = sink_seq.length;
+
+                    e.source_orientation_forward = l.source_orientation_forward;
+                    e.sink_orientation_forward = l.sink_orientation_forward;
+                    e.alignment = l.cigar;
+                    e.tags = l.opt_fields;
+                    add_edge(e.source_name, e);
+                }
+            }
+            uint32_t next_contained_id = 0;
+            for (auto s : seq_to_contained){
+                for (auto c : s.second){
+                    edge_elem e;
+                    e.id = ++next_contained_id;
+                    e.source_name = c.source_name;
+                    e.sink_name = c.sink_name;
+                    e.source_orientation_forward = c.source_orientation_forward;
+                    e.sink_orientation_forward = c.sink_orientation_forward;
+                    e.alignment = c.cigar;
+                    e.tags = c.opt_fields;
+                    add_edge(e.source_name, e);
+                }
+            }
+
+            // Paths -> ordered groups
+            walks_as_paths();
+            for (auto p : name_to_path){
+                group_elem g;
+                g.id = p.first;
+                g.ordered = true;
+                g.items = p.second.segment_names;
+                g.orientations = p.second.orientations;
+
+                g.tags = p.second.opt_fields;
+            }
+            this->two_compat = true;
+        }
+        
     }
 
 
@@ -133,6 +204,7 @@ namespace gfak{
                 }
                 else{
                     s.sequence = tokens[2];
+                    s.length = s.sequence.length();
                     tag_index = 3;
                 }
                 //s.id = atol(s.name.c_str());
@@ -176,15 +248,42 @@ namespace gfak{
                         o.key = opt_field[0];
                         o.type = opt_field[1];
                         o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
-                        e.tags.push_back(o);
+                        e.tags[o.key] = o;
            
                     }
                 }
 
             }
             else if (tokens[0] == "G"){
+                // <- G <gid:opt_id> <sid1:ref> <sid2:ref> <dist:int> (* | <var:int>) <tag>*
+                gap_elem g;
+                g.id = tokens[1];
+                g.source_name = tokens[2];
+                g.sink_name = tokens[3];
+                g.distance = stoul(tokens[4]);
+
             }
             else if (tokens[0] == "F"){
+                fragment_elem f;
+                f.id = tokens[1];
+                f.ref = tokens[2];
+                f.seg_begin = stoul(tokens[3]);
+                f.seg_end = stoul(tokens[4]);
+                f.frag_begin = stoul(tokens[5]);
+                f.frag_end = stoul(tokens[6]);
+                f.alignment = tokens[7];
+                if (tokens.size() > 8){
+                    for (int i = 9; i < tokens.size(); i++){
+                         //opt fields are in key:type:val format
+                        vector<string> opt_field = split(tokens[i], ':');
+                        opt_elem o;
+                        o.key = opt_field[0];
+                        o.type = opt_field[1];
+                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                        f.tags[o.key] = o;
+           
+                    }
+                }
             }
             else if (tokens[0] == "O"){
                 group_elem g;
@@ -195,8 +294,36 @@ namespace gfak{
                         g.items.push_back(g_ids[i].substr(0, g_ids[i].length() - 1));
                         g.orientations.push_back(g_ids[i].back() == '+');
                 }
+                if (tokens.size() > 8){
+                    for (int i = 9; i < tokens.size(); i++){
+                         //opt fields are in key:type:val format
+                        vector<string> opt_field = split(tokens[i], ':');
+                        opt_elem o;
+                        o.key = opt_field[0];
+                        o.type = opt_field[1];
+                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                        g.tags[o.key] = o;
+           
+                    }
+                }
             }
             else if (tokens[0] == "U"){
+                group_elem g;
+                g.ordered = false;
+                g.id = tokens[0];
+                g.items = split(tokens[2], ' ');
+                if (tokens.size() > 8){
+                    for (int i = 9; i < tokens.size(); i++){
+                         //opt fields are in key:type:val format
+                        vector<string> opt_field = split(tokens[i], ':');
+                        opt_elem o;
+                        o.key = opt_field[0];
+                        o.type = opt_field[1];
+                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                        g.tags[o.key] = o;
+           
+                    }
+                }
             }
             else if (tokens[0] ==  "L"){
                 // TODO: we need to deal with  where the link is given before
@@ -231,6 +358,7 @@ namespace gfak{
                 else{
                     c.cigar = "*";
                 }
+
                 add_contained(c.source_name, c);
             }
             else if (tokens[0] == "W"){
@@ -645,13 +773,72 @@ namespace gfak{
 
     }
 
-    std::string gfa_v2_to_string(){
+    // std::string gfa_v2_block_order_string(){
+    //     stringstream ret;
+    //     // Header
+    //     if (header.size() > 0){
+    //         ret << header_string(header) + "\n";
+    //     }
+    //     // Sequences
+    //     for (auto s : name_to_seq){
 
+    //     }
+    //     // Fragments
+    //     for (auto s : name_to_seq){
+
+    //     }
+    //     // Gaps
+    //     for (auto s : name_to_seq){
+            
+    //     }
+    //     // Edges
+
+    //     // Paths
+    // }
+
+    std::string GFAKluge::gfa_v2_to_string(){
+        stringstream ret;
+        // Header
+        if (header.size() > 0){
+            ret << header_string(header) + "\n";
+        }
+        // Sequences
+        for (auto s : name_to_seq){
+
+        }
+        // Fragments
+        for (auto s : name_to_seq){
+            for (auto f : seq_to_fragments[s.first]){
+
+            }
+
+        }
+        // Gaps
+        for (auto s : name_to_seq){
+            for (auto g : seq_to_gaps[s.first]){
+
+            }
+        }
+        // Edges
+        for (auto s : name_to_seq){
+            for (auto e : seq_to_edges[s.first]){
+
+            }
+        }
+
+        // Paths
+        for (auto g : groups){
+
+        }
     }
 
 
     //TODO this should use stringstream too...
     std::string GFAKluge::to_string(){
+        if (this->version >= 2.0){
+            gfa_v2_to_string();
+        }
+
         stringstream ret;
         int i;
         //First print header lines.

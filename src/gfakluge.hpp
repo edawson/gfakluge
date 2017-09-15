@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
+#include <bitset>
 
 using namespace std;
 namespace gfak{
@@ -66,6 +67,7 @@ namespace gfak{
         vector<string> segment_names;
         vector<bool> orientations;
         vector<string> overlaps;
+        map<string, opt_elem> opt_fields;
     };
 
     struct walk_elem{
@@ -89,7 +91,7 @@ namespace gfak{
     struct sequence_elem{
         std::string sequence;
         std::string name;
-        int32_t length;
+        uint64_t length;
         vector<opt_elem> opt_fields;
         long id;
 
@@ -101,7 +103,7 @@ namespace gfak{
         bool source_orientation_forward;
         bool sink_orientation_forward;
         std::string cigar;
-        map<string, string> opt_fields;
+        map<string, opt_elem> opt_fields;
     };
 
     struct contained_elem{
@@ -111,7 +113,7 @@ namespace gfak{
         bool sink_orientation_forward;
         int pos;
         std::string cigar;
-        map<string, string> opt_fields;
+        map<string, opt_elem> opt_fields;
     };
 
 
@@ -123,31 +125,35 @@ namespace gfak{
         string sink_name;
         bool source_orientation_forward;
         bool sink_orientation_forward;
-        int32_t source_begin;
-        int32_t source_end;
-        int32_t sink_begin;
-        int32_t sink_end;
+        uint32_t source_begin;
+        bool sb_end = false;
+        uint32_t source_end;
+        bool se_end = false;
+        uint32_t sink_begin;
+        bool kb_end = false;
+        uint32_t sink_end;
+        bool ke_end = false;
         string alignment;
-        vector<opt_elem> tags;
+        map<string, opt_elem> tags;
     };
 
     struct gap_elem{
         string id;
         string source_name;
         string sink_name;
-        int32_t dist;
+        int32_t distance;
         map<string, string> tags;
     };
 
     struct fragment_elem{
         string id;
         string ref;
-        string source_name;
-        string sink_name;
-        int32_t source_pos;
-        int32_t sink_pos;
+        uint32_t seg_begin;
+        uint32_t seg_end;
+        uint32_t frag_begin;
+        uint32_t frag_end;
         string alignment;
-        map<string, string> tags;
+        map<string, opt_elem> tags;
     };
 
     struct group_elem{
@@ -155,7 +161,7 @@ namespace gfak{
         bool ordered = false;
         std::vector<string> items;
         std::vector<bool> orientations;
-        std::vector<opt_elem> tags;
+        std::map<string, opt_elem> tags;
     };
 
 
@@ -236,6 +242,9 @@ namespace gfak{
             void paths_as_walks();
             void walks_as_paths();
 
+            void gfa_2_ize();
+            void gfa_1_ize();
+
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
             std::string to_string();
@@ -248,6 +257,13 @@ namespace gfak{
             // Store whether we've already gone walks->paths and paths->walks
             bool normalized_paths = false;
             bool normalized_walks = false;
+            bool two_compat = false;
+            bool one_compat = false;
+
+            uint64_t next_set_or_path_id = 0;
+            uint64_t base_seq_id = 0;
+            uint64_t base_edge_id = 0;
+
             double version = 0.0;
             map<std::string, header_elem> header;
             map<std::string, vector<contained_elem> > seq_to_contained;
@@ -270,6 +286,8 @@ namespace gfak{
             map<std::string, vector<edge_elem> > seq_to_edges;
             map<std::string, vector<gap_elem> > seq_to_gaps;
             map<string, group_elem> groups;
+
+            
 
     };
 
