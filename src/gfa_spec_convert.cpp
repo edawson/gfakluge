@@ -95,6 +95,11 @@ int main(int argc, char** argv){
     }
     else if (spec_version == 1.0){
         gg.set_version(1.0);
+        gg.gfa_1_ize();
+    }
+    else if (spec_version == 2.0){
+        gg.set_version(2.0);
+        gg.gfa_2_ize();
     }
     else if (spec_version != 0.0){
         cerr << "Invalid specification number: " << spec_version << endl

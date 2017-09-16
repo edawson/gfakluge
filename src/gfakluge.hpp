@@ -73,6 +73,9 @@ namespace gfak{
         vector<bool> orientations;
         vector<string> overlaps;
         map<string, opt_elem> opt_fields;
+        std::string to_string(){
+            
+        }
     };
 
     struct walk_elem{
@@ -107,6 +110,7 @@ namespace gfak{
                     st << "\t" << i.to_string();
                 }
             }
+            return st.str();
         }
         std::string to_string(){
             stringstream st;
@@ -116,6 +120,7 @@ namespace gfak{
                     st << "\t" << i.to_string();
                 }
             }
+            return st.str();
         }
     };
 
@@ -126,6 +131,18 @@ namespace gfak{
         bool sink_orientation_forward;
         std::string cigar;
         map<string, opt_elem> opt_fields;
+        std::string to_string(){
+            stringstream st;
+            st << "L" << "\t" << source_name << 
+                "\t" << source_orientation_forward << "\t" <<
+                sink_name << "\t" << sink_orientation_forward;
+             if (opt_fields.size() > 0){
+                for (auto i : opt_fields){
+                    st << "\t" << i.second.to_string();
+                }
+            }
+            return st.str();
+        }
     };
 
     struct contained_elem{
@@ -142,21 +159,91 @@ namespace gfak{
     // These elements, along with the <length> field in sequence_elem,
     // are all that's needed to parse to GFA2
     struct edge_elem{
-        string id;
+        string id = "*";
+        // 0: unset, 1: link, 2: containment, 3: generic edge or both C/L set (impossible)
+        std::bitset<4> type;
         string source_name;
         string sink_name;
         bool source_orientation_forward;
         bool sink_orientation_forward;
+        std::bitset<4> ends;
         uint32_t source_begin;
-        bool sb_end = false;
         uint32_t source_end;
-        bool se_end = false;
         uint32_t sink_begin;
-        bool kb_end = false;
         uint32_t sink_end;
-        bool ke_end = false;
         string alignment;
         map<string, opt_elem> tags;
+        int determine_type(){
+            if (!type.test(3)){
+                if (type.test(0)){
+                    // Convert a link to an Edge by filling in the remaining fields.
+                    // ?? nothing to be done ??
+                }
+                else if (type.test(1)){
+                    // Convert a containment to an edge by filling in the remaining fields
+                    // ?? nothing to be done ??
+                }
+                else{
+                    // Determine if an edge is a link or a containment and fill in the right fields.
+                    if (ends.test(0) && ends.test(1) && !ends.test(2) && !ends.test(3) ){
+                        type.set(0, 1);
+                        return 1;
+                    }
+                    else if (!ends.test(0) && !ends.test(2)){
+                        type.set(1, 1);
+                        return 2;
+                    }
+                    else{
+                        return 3;
+                    }
+                }
+                type.set(3, 1);
+            }
+            
+        }
+        std::string to_string_2(){
+            stringstream st;
+            st << "E" << "\t" << id << "\t" <<
+                source_name << (source_orientation_forward ? "+" : "-") <<
+                 "\t" << sink_name << (sink_orientation_forward ? "+" : "-") <<"\t" <<
+                source_begin;
+                if (ends.test(0)){
+                     st << '$';
+                }
+                st << "\t" << source_end;
+                if (ends.test(1)){
+                     st << '$';
+                }
+                st << "\t" << sink_begin;
+                if (ends.test(2)){
+                    st << "$";
+                }
+                st << "\t" << sink_end;
+                if (ends.test(3)){
+                    st << '$';
+                }
+                st << "\t" << alignment;
+                for (auto i : tags){
+                    st << "\t" << i.second.to_string();
+                }
+
+                return st.str();
+        }
+        std::string to_string_1(){
+            int t = determine_type();
+            if (t > 2 || t == 0){
+                cerr << "warning: unexpressable edge \"" << to_string_2()  << "\"" << endl
+                << "will not appear in stdout." << endl;
+            }
+            stringstream st;
+            st << (t == 1 ? "L" : "C") << "\t" << source_name << "\t" << 
+                (source_orientation_forward ? "+" : "-") << "\t" <<
+                sink_name << "\t" << (sink_orientation_forward ? "+" : "-") <<
+                alignment;
+            for (auto i : tags){
+                st << "\t" << i.second.to_string();
+            }
+        }
     };
 
     struct gap_elem{
@@ -164,7 +251,16 @@ namespace gfak{
         string source_name;
         string sink_name;
         int32_t distance;
-        map<string, string> tags;
+        map<string, opt_elem> tags;
+        std::string to_string_2(){
+            stringstream st;
+            st << "G" << "\t" << id << "\t" <<
+                source_name << "\t" << sink_name << "\t" <<
+                distance;
+            for (auto t : tags){
+                st << "\t" << t.second.to_string();
+            }
+        }
     };
 
     struct fragment_elem{
@@ -174,8 +270,26 @@ namespace gfak{
         uint32_t seg_end;
         uint32_t frag_begin;
         uint32_t frag_end;
+        std::bitset<4> ends;
         string alignment;
         map<string, opt_elem> tags;
+        std::string to_string_2(){
+            stringstream st;
+            st << "F" << "\t" << id << "\t" << ref <<
+                ref << "\t" <<
+                seg_begin << (ends[0] ? "$" : "") << "\t" <<
+                seg_end << (ends[1] ? "$" : "") << "\t" <<
+                frag_begin << (ends[2] ? "$" : "") << "\t" <<
+                frag_end << (ends[3] ? "$" : "") << "\t" <<
+                alignment;
+                if (tags.size() > 0){
+                    for (auto i : tags){
+                        st << "\t" << i.second.to_string();
+                    }
+                }
+                return st.str();
+        
+        }
     };
 
     struct group_elem{
@@ -184,6 +298,18 @@ namespace gfak{
         std::vector<string> items;
         std::vector<bool> orientations;
         std::map<string, opt_elem> tags;
+        std::string to_string_2(){
+            stringstream st;
+            st << (ordered ? "O" : "U") << "\t" << id << "\t";
+            st << items[0] << (ordered ? (orientations[0] ? "+" : "-") : "" );
+            for (int i = 1; i < items.size(); ++i){
+                st << " " << items[i] << (ordered ? (orientations[i] ? "+" : "-") : "");
+            }
+            for (auto i : tags){
+                st << "\t" << i.second.to_string();
+            }
+            return st.str();
+        }
     };
 
 
@@ -223,6 +349,11 @@ namespace gfak{
             void groups_as_paths();
             void edges_as_links();
             void links_as_edges();
+
+            // Minimize memory consumption by converting everything
+            // to GFA2 compatible containers. We can then convert
+            // this if we want to go back to GFA1.
+            //void compact();
 
 
 
@@ -273,6 +404,10 @@ namespace gfak{
             std::string gfa_v2_to_string();
             std::string block_order_string();
 
+            // ID manipulators
+            tuple<uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
+            void re_id(std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>& new_mx);
+
 
         private:
             bool use_walks = false;
@@ -285,6 +420,9 @@ namespace gfak{
             uint64_t next_set_or_path_id = 0;
             uint64_t base_seq_id = 0;
             uint64_t base_edge_id = 0;
+            uint64_t base_gap_id = 0;
+            uint64_t base_frag_id = 0;
+            
 
             double version = 0.0;
             map<std::string, header_elem> header;
