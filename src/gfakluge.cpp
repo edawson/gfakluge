@@ -3,6 +3,18 @@
 using namespace std;
 namespace gfak{
 
+    map<string, vector<edge_elem>> GFAKluge::get_seq_to_edges(){
+        return seq_to_edges;
+    }
+    map<string, vector<fragment_elem>> GFAKluge::get_seq_to_fragments(){
+        return seq_to_fragments;
+    }
+    map<string, vector<gap_elem>> GFAKluge::get_seq_to_gaps(){
+        return seq_to_gaps;
+    }
+    map<string, group_elem> GFAKluge::get_groups(){
+        return groups;
+    }
 
     void GFAKluge::add_edge(string seqname, edge_elem e){
         seq_to_edges[seqname].push_back(e);

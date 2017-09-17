@@ -346,10 +346,8 @@ namespace gfak{
 
             void add_group(group_elem g);
 
-            void paths_as_groups();
             void groups_as_paths();
             void edges_as_links();
-            void links_as_edges();
 
             // Minimize memory consumption by converting everything
             // to GFA2 compatible containers. We can then convert
@@ -392,6 +390,12 @@ namespace gfak{
             map<std::string, vector<alignment_elem> > get_seq_to_alignment();
             map<string, vector<walk_elem> > get_seq_to_walks();
             map<string, path_elem> get_name_to_path();
+
+            // GFA2 getters
+            map<string, vector<edge_elem>> get_seq_to_edges();
+            map<string, vector<fragment_elem>> get_seq_to_fragments();
+            map<string, vector<gap_elem>> get_seq_to_gaps();
+            map<string, group_elem> get_groups();
 
             void paths_as_walks();
             void walks_as_paths();
