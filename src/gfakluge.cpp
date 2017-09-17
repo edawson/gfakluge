@@ -221,6 +221,8 @@ namespace gfak{
         this->version = v;
         verz.val = std::to_string((double) this->version).substr(0,3);
         this->header[verz.key] = verz;
+        gfa_1_ize();
+        gfa_2_ize();
     }
     void GFAKluge::set_version(){
         header_elem verz;
@@ -310,6 +312,8 @@ namespace gfak{
             else if (tokens[0] == "E"){
                 edge_elem e;
                 e.id = tokens[1];
+                
+                
 
                 string x = tokens[2];
                 e.source_name = x.substr(0, x.length() - 1);
@@ -1056,6 +1060,17 @@ namespace gfak{
              this->base_frag_id, this->base_gap_id, this->base_group_id);
     }
 
+    std::string GFAKluge::max_ids_string(){
+        tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> x = max_ids();
+        std::vector<string> max_str(5);
+        max_str[0] = std::to_string(std::get<0>(x));
+        max_str[1] = std::to_string(std::get<1>(x));
+        max_str[2] = std::to_string(std::get<2>(x));
+        max_str[3] = std::to_string(std::get<3>(x));
+        max_str[4] = std::to_string(std::get<4>(x));
+        return join(max_str, ":");
+    }
+
     void GFAKluge::re_id(std::string new_mx_str){
         vector<uint64_t> starts(5);
         vector<string> starts_strs = split(new_mx_str, ':');
@@ -1154,6 +1169,55 @@ namespace gfak{
         groups = g_g;
         
     }
+
+    // TODO check incompatible version numbers
+    // TODO Check colliding groups, headers
+    void GFAKluge::merge(GFAKluge& gg){
+        std::unordered_set<string> seg_ids;
+        // Merge headers
+        for (auto h : gg.get_header()){
+            header[h.first] = h.second;
+        }
+        for (auto s : this->get_name_to_seq()){
+            seg_ids.insert(s.first);
+        }
+
+        map<string, sequence_elem, custom_key> ss = gg.get_name_to_seq();
+        map<string, vector<fragment_elem>> sf = gg.get_seq_to_fragments();
+        map<string, vector<gap_elem>> sg = gg.get_seq_to_gaps();
+        map<string, vector<edge_elem>> se = gg.get_seq_to_edges();
+        cerr << se.size() << endl;
+
+        if (this->two_compat){
+            for (auto s : ss){
+                if (!seg_ids.count(s.second.name)){
+                    this->add_sequence(s.second);
+                    for (auto e : se){
+                        seq_to_edges.insert(e);
+                        //this->add_edge(e.source_name, e);
+                    }
+                    for (auto g : sg[s.first]){
+                        this->add_gap(g);
+                    }
+                    for (auto f : sf[s.first]){
+                        this->add_fragment(s.first, f);
+                    }
+                }
+                else{
+                    cerr << "WARNING: DUPLICATE IDS " << s.second.name << endl <<
+                    " will be lost." << endl;
+                }
+                for (auto g : gg.get_groups()){
+                    this->add_group(g.second);
+                }
+            }
+        }
+        else if (one_compat){
+
+        }
+        
+    }
+    
 
     std::ostream& operator<<(std::ostream& os, GFAKluge& g){
         os << g.to_string();

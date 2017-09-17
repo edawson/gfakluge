@@ -13,6 +13,7 @@
 #include <iostream>
 #include <iomanip>
 #include <bitset>
+#include <unordered_set>
 
 using namespace std;
 namespace gfak{
@@ -412,17 +413,21 @@ namespace gfak{
 
             // ID manipulators
             tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
+            std::string max_ids_string();
             void re_id(std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>& new_mx);
             void re_id(std::string new_mx_str);
 
+            void merge(GFAKluge& gg);
 
+            
         private:
             bool use_walks = false;
             // Store whether we've already gone walks->paths and paths->walks
             bool normalized_paths = false;
             bool normalized_walks = false;
-            bool two_compat = false;
+            
             bool one_compat = false;
+            bool two_compat = false;
 
             uint64_t next_set_or_path_id = 0;
             uint64_t base_seq_id = 0;

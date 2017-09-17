@@ -36,9 +36,6 @@ int main(int argc, char** argv){
         }
 
         switch (c){
-            case 'i':
-                g_files.push_back( optarg );
-                break;
 
             case '?':
             case 'h':
@@ -54,13 +51,26 @@ int main(int argc, char** argv){
         }
     }
 
+    while(optind < argc){
+        g_files.push_back(argv[optind]);
+        optind++;
+    }
+
+    cerr << "Merging " << g_files.size() << " graphs..." << endl;
+
     // This does the same thing as IDs,
     // Just uses more memory...
+    GFAKluge base;
+    base.gfa_2_ize();
     for (auto gfi : g_files){
         gfak::GFAKluge gg;
         gg.parse_gfa_file(gfi);
+        base.merge(gg);
     }
-   // cout << big_gg.to_string;
+    base.gfa_2_ize();
+    base.set_version(2.0);
+    cout << base.to_string();
+    cerr << "Done." << endl;
 
 
 }
