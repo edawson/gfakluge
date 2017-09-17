@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS:=-O0 -g -std=c++11
+CXXFLAGS:=-O3 -std=c++11
 EXE:=example.exe
 LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./

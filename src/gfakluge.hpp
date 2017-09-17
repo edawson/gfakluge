@@ -266,6 +266,7 @@ namespace gfak{
     struct fragment_elem{
         string id;
         string ref;
+        bool ref_orientation = true;
         uint32_t seg_begin;
         uint32_t seg_end;
         uint32_t frag_begin;
@@ -276,7 +277,7 @@ namespace gfak{
         std::string to_string_2(){
             stringstream st;
             st << "F" << "\t" << id << "\t" << ref <<
-                ref << "\t" <<
+                ref << (ref_orientation ? "+" : "-") << "\t" <<
                 seg_begin << (ends[0] ? "$" : "") << "\t" <<
                 seg_end << (ends[1] ? "$" : "") << "\t" <<
                 frag_begin << (ends[2] ? "$" : "") << "\t" <<
@@ -401,8 +402,9 @@ namespace gfak{
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
             std::string to_string();
-            std::string gfa_v2_to_string();
+            std::string to_string_2();
             std::string block_order_string();
+            std::string block_order_string_2();
 
             // ID manipulators
             tuple<uint64_t, uint64_t, uint64_t, uint64_t> max_ids();

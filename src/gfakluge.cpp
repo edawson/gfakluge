@@ -338,6 +338,7 @@ namespace gfak{
            
                     }
                 }
+                add_edge(e.source_name, e);
 
             }
             else if (tokens[0] == "G"){
@@ -347,12 +348,14 @@ namespace gfak{
                 g.source_name = tokens[2];
                 g.sink_name = tokens[3];
                 g.distance = stoul(tokens[4]);
+                add_gap(g);
 
             }
             else if (tokens[0] == "F"){
                 fragment_elem f;
                 f.id = tokens[1];
-                f.ref = tokens[2];
+                f.ref = tokens[2].substr(0, tokens[2].length() - 1);
+                f.ref_orientation = (tokens[2].back() == '+');
                 f.seg_begin = stoul(tokens[3]);
                 f.seg_end = stoul(tokens[4]);
                 f.frag_begin = stoul(tokens[5]);
@@ -370,6 +373,7 @@ namespace gfak{
            
                     }
                 }
+                add_fragment(f.id, f);
             }
             else if (tokens[0] == "O"){
                 group_elem g;
@@ -392,6 +396,7 @@ namespace gfak{
            
                     }
                 }
+                add_group(g);
             }
             else if (tokens[0] == "U"){
                 group_elem g;
@@ -410,6 +415,7 @@ namespace gfak{
            
                     }
                 }
+                add_group(g);
             }
             else if (tokens[0] ==  "L"){
                 // TODO: we need to deal with  where the link is given before
@@ -752,7 +758,7 @@ namespace gfak{
 
     std::string GFAKluge::block_order_string(){
         if (version >= 2.0){
-            return gfa_v2_to_string();
+            return block_order_string_2();
         }
 			stringstream ret;
 			int i;
@@ -862,7 +868,33 @@ namespace gfak{
 
     }
 
-    std::string GFAKluge::gfa_v2_to_string(){
+    std::string GFAKluge::to_string_2(){
+        this->gfa_2_ize();
+        
+        stringstream ret;
+        // Header
+        if (header.size() > 0){
+            ret << header_string(header) + "\n";
+        }
+        for (auto p : groups){
+            ret << p.second.to_string_2() << endl;
+        }
+        for (auto s : name_to_seq){
+            ret << s.second.to_string_2() << "\n";
+            for (auto f : seq_to_fragments[s.first]){
+                ret << f.to_string_2() << endl;
+            }
+            for (auto e : seq_to_edges[s.first]){
+                ret << e.to_string_2() << endl;
+            }
+            for (auto g : seq_to_gaps[s.first]){
+                ret << g.to_string_2() << endl;
+            }
+        }
+        return ret.str();
+    }
+
+    std::string GFAKluge::block_order_string_2(){
         this->gfa_2_ize();
 
         stringstream ret;
@@ -875,7 +907,7 @@ namespace gfak{
             ret << s.second.to_string_2() << "\n";
         }
         // Fragments
-        for (auto s : name_to_seq){
+        for (auto s : seq_to_fragments){
             for (auto f : seq_to_fragments[s.first]){
                 ret << f.to_string_2() << "\n";
             }
@@ -905,7 +937,7 @@ namespace gfak{
     //TODO this should use stringstream too...
     std::string GFAKluge::to_string(){
         if (this->version >= 2.0){
-            return gfa_v2_to_string();
+            return to_string_2();
         }
 
         stringstream ret;
@@ -1012,15 +1044,20 @@ namespace gfak{
     }
     void GFAKluge::re_id(tuple<uint64_t, uint64_t, uint64_t, uint64_t>& new_mx){
 
-        // Segments
-        // Links
-        // Contains
-        // Paths
-
-        // Edges
-        // Fragments
-        // Gaps
-        // Groups
+        if (one_compat){
+            // Segments
+            // Links
+            // Contains
+            // Paths
+        }
+        
+        if (two_compat){
+            // Edges
+            // Fragments
+            // Gaps
+            // Groups
+        }
+        
     }
 
     std::ostream& operator<<(std::ostream& os, GFAKluge& g){
