@@ -308,21 +308,22 @@ namespace gfak{
                 e.sink_orientation_forward = (x.back() == '+');
 
                 x = tokens[4];
-                e.source_begin = stoi(x.substr(0, x.length() - 1));
                 e.ends.set(0, (x.back() == '+' ? 1 : 0));
+                e.source_begin = (e.ends.test(0) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
                 x = tokens[5];
-                e.source_end = stoi(x.substr(0, x.length() - 1));
                 e.ends.set(1, (x.back() == '+' ? 1 : 0));
+                e.source_end = (e.ends.test(1) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
                 x = tokens[6];
-                e.sink_begin = stoi(x.substr(0, x.length() - 1));
                 e.ends.set(2, (x.back() == '+' ? 1 : 0));
-                
-                x = tokens[7];
-                e.sink_end = stoi(x.substr(0, x.length() - 1));
-                e.ends.set(3, (x.back() == '+' ? 1 : 0));
+                e.sink_begin = (e.ends.test(2) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
+
+                x = tokens[7];
+                e.ends.set(3, (x.back() == '+' ? 1 : 0));
+                e.sink_end = (e.ends.test(3) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+                
                 e.alignment = tokens[8];
 
                 if (tokens.size() > 9){
