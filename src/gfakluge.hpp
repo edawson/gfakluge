@@ -205,7 +205,7 @@ namespace gfak{
             stringstream st;
             st << "E" << "\t" << id << "\t" <<
                 source_name << (source_orientation_forward ? "+" : "-") <<
-                 "\t" << sink_name << (sink_orientation_forward ? "+" : "-") <<"\t" <<
+                 "\t" << sink_name << (sink_orientation_forward ? "+" : "-") << "\t" <<
                 source_begin;
                 if (ends.test(0)){
                      st << '$';
@@ -411,8 +411,9 @@ namespace gfak{
             std::string block_order_string_2();
 
             // ID manipulators
-            tuple<uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
-            void re_id(std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>& new_mx);
+            tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
+            void re_id(std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>& new_mx);
+            void re_id(std::string new_mx_str);
 
 
         private:
@@ -428,6 +429,7 @@ namespace gfak{
             uint64_t base_edge_id = 0;
             uint64_t base_gap_id = 0;
             uint64_t base_frag_id = 0;
+            uint64_t base_group_id = 0;
             
 
             double version = 0.0;
