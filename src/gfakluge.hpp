@@ -176,11 +176,11 @@ namespace gfak{
         map<string, opt_elem> tags;
         int determine_type(){
             if (!type.test(3)){
-                if (type.test(0)){
+                if (type.test(0) & type.test(1) & !(type.test(2) | type.test(3))){
                     // Convert a link to an Edge by filling in the remaining fields.
                     // ?? nothing to be done ??
                 }
-                else if (type.test(1)){
+                else if (true){
                     // Convert a containment to an edge by filling in the remaining fields
                     // ?? nothing to be done ??
                 }
