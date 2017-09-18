@@ -6,31 +6,34 @@ LD_INC_FLAGS=-I./src/ -I./
 
 BIN_DIR:=bin
 
-all: gfa_sort gfa_stats gfa_diff gfa_merge gfa_ids gfa_spec_convert gfa_extract lib
+all: $(BIN_DIR)/gfa_sort $(BIN_DIR)/gfa_subset $(BIN_DIR)/gfa_stats $(BIN_DIR)/gfa_diff $(BIN_DIR)/gfa_merge $(BIN_DIR)/gfa_ids $(BIN_DIR)/gfa_spec_convert $(BIN_DIR)/gfa_extract lib
 
-gfa_sort: src/gfa_sort.cpp lib .GFAK_pre-build
-	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BIN_DIR)/gfa_sort: src/gfa_sort.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_stats: src/gfa_stats.cpp lib .GFAK_pre-build
-	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BIN_DIR)/gfa_stats: src/gfa_stats.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_verify: src/gfa_verify.cpp lib .GFAK_pre-build
-	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BIN_DIR)/gfa_verify: src/gfa_verify.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_diff: src/gfa_diff.cpp lib .GFAK_pre-build
-	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BIN_DIR)/gfa_diff: src/gfa_diff.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_merge: src/gfa_merge.cpp lib .GFAK_pre-build
-	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BIN_DIR)/gfa_merge: src/gfa_merge.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_ids: src/gfa_ids.cpp lib .GFAK_pre-build
-	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BIN_DIR)/gfa_ids: src/gfa_ids.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_spec_convert: src/gfa_spec_convert.cpp lib .GFAK_pre-build
-	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BIN_DIR)/gfa_spec_convert: src/gfa_spec_convert.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_extract: src/gfa_extract.cpp lib .GFAK_pre-build
-	$(CXX) $(CXXFLAGS) -o $(BIN_DIR)/$@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BIN_DIR)/gfa_extract: src/gfa_extract.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+$(BIN_DIR)/gfa_subset: src/gfa_subset.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
 lib: src/gfakluge.o
 	ar -rs libgfakluge.a $<
