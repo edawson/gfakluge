@@ -81,9 +81,7 @@ namespace gfak{
                         e->ends.set(0,1);
                         e->ends.set(1,1);
                         e->ends.set(2,0);
-                        e->ends.set(3,0);
-                        
-                        
+                        e->ends.set(3,0);            
                         e->source_begin = s->second.length;
                         e->source_end = s->second.length;
                         e->sink_begin = 0;
@@ -607,6 +605,22 @@ namespace gfak{
     }
 
     map<string, vector<link_elem> > GFAKluge::get_seq_to_link(){
+        for (auto s : name_to_seq){
+            for (auto e = seq_to_edges[s.first].begin(); e != seq_to_edges[s.first].end(); e++){
+                if (e->determine_type() == 1){
+                    link_elem l;
+                    l.source_name = e->source_name;
+                    l.sink_name = e->sink_name;
+                    l.cigar = e->alignment;
+                    l.source_orientation_forward = e->source_orientation_forward;
+                    l.sink_orientation_forward = e->sink_orientation_forward;
+                    l.opt_fields = e->tags;
+                    add_link(s.second, l);
+                }
+                
+            }
+        }
+        
         return seq_to_link;
     }
 
@@ -619,6 +633,22 @@ namespace gfak{
     }
 
     map<string, vector<contained_elem> > GFAKluge::get_seq_to_contained(){
+        for (auto s : name_to_seq){
+            for (auto e = seq_to_edges[s.first].begin(); e != seq_to_edges[s.first].end(); e++){
+                if (e->determine_type() == 2){
+                    contained_elem c;
+                    c.source_name = e->source_name;
+                    c.sink_name = e->sink_name;
+                    c.cigar = e->alignment;
+                    c.pos = e->source_begin;
+                    c.source_orientation_forward = e->source_orientation_forward;
+                    c.sink_orientation_forward = e->sink_orientation_forward;
+                    c.opt_fields = e->tags;
+                    add_contained(s.second, c);
+                }
+                
+            }
+        }
         return seq_to_contained;
     }
 

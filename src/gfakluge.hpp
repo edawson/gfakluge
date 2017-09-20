@@ -151,7 +151,7 @@ namespace gfak{
         std::string sink_name;
         bool source_orientation_forward;
         bool sink_orientation_forward;
-        int pos;
+        uint64_t pos;
         std::string cigar;
         map<string, opt_elem> opt_fields;
     };
