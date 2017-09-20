@@ -270,7 +270,7 @@ namespace gfak{
         map<string, opt_elem> tags;
         std::string to_string_2(){
             stringstream st;
-            st << "F" << "\t" << id << "\t" << ref <<
+            st << "F" << "\t" << id << "\t" <<
                 ref << (ref_orientation ? "+" : "-") << "\t" <<
                 seg_begin << (ends[0] ? "$" : "") << "\t" <<
                 seg_end << (ends[1] ? "$" : "") << "\t" <<

@@ -93,11 +93,11 @@ namespace gfak{
                         }
                     }
                     else if (t == 2){
-                        sequence_elem sink = name_to_seq[e.sink_name];
-                        e->ends.set(0,0);
-                        e->ends.set(1,0);
-                        e->ends.set(2,1);
-                        e->ends.set(3,1);
+                        sequence_elem sink = name_to_seq[e->sink_name];
+                        e->ends.set(0,(e->source_begin == s->second.length));
+                        e->ends.set(1,(e->source_end == s->second.length));
+                        e->ends.set(2,(e->sink_begin == sink.length));
+                        e->ends.set(3, (e->sink_end == sink.length));
                     }
                     else{
                         cerr << "Skipping edge not expressable in GFA2: \"" << e->to_string_2() << "\"" << endl;
@@ -323,6 +323,10 @@ namespace gfak{
                 f.seg_end = stoul(tokens[4]);
                 f.frag_begin = stoul(tokens[5]);
                 f.frag_end = stoul(tokens[6]);
+                f.ends.set(0, (tokens[3].back() == '$' ? 1 : 0));
+                f.ends.set(1, (tokens[4].back() == '$' ? 1 : 0));
+                f.ends.set(2, (tokens[5].back() == '$' ? 1 : 0));
+                f.ends.set(3, (tokens[6].back() == '$' ? 1 : 0));
                 f.alignment = tokens[7];
                 if (tokens.size() > 8){
                     for (int i = 9; i < tokens.size(); i++){
@@ -753,50 +757,30 @@ namespace gfak{
                 paths_as_walks();
             }
 			map<std::string, sequence_elem>::iterator st;
-			if (name_to_seq.size() > 0){
-					for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-							ret << "S\t" + (st->second).name + "\t" + (st->second).sequence;
-							if ((st->second).opt_fields.size() > 0){
-									ret << "\t" + opt_string((st->second).opt_fields);
-							}
-							ret << "\n";
-					}
-				}
+
+			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+				ret << st->second.to_string_1() << endl;
+			}
 
 
-						for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-							if (seq_to_link[st->first].size() > 0){
-									for (i = 0; i < seq_to_link[st->first].size(); i++){
-											string link = "L\t" + seq_to_link[st->first][i].source_name + "\t";
-											link += (seq_to_link[st->first][i].source_orientation_forward ? "+" : "-");
-											link += "\t";
-											link += seq_to_link[st->first][i].sink_name + "\t";
-											link += (seq_to_link[st->first][i].sink_orientation_forward ? "+" : "-");
-											link += "\t";
-											link += seq_to_link[st->first][i].cigar + "\n";
-											ret << link;
-									}
 
-							}
-						}
+			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+                for (auto e : seq_to_edges[st->first]){
+                    if (e.type == 1){
+                        ret << e.to_string_1() << endl;
+                    }
 
-							//TODO iterate over contained segments
-							for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-							if (seq_to_contained[st->first].size() > 0){
-									for (i = 0; i < seq_to_contained[st->first].size(); i++){
-											stringstream cont;
-											cont <<  "C" << "\t" << seq_to_contained[st->first][i].source_name << "\t";
-											cont << (seq_to_contained[st->first][i].source_orientation_forward ? "+" : "-");
-											cont << "\t";
-											cont << seq_to_contained[st->first][i].sink_name << "\t";
-											cont << (seq_to_contained[st->first][i].sink_orientation_forward ? "+" : "-");
-											cont << "\t";
-											cont << seq_to_contained[st->first][i].pos << "\t";
-											cont << seq_to_contained[st->first][i].cigar << "\n";
-											ret << cont.str();
-									}
-							}
-					}
+                }
+            }
+            for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+                for (auto e : seq_to_edges[st->first]){
+                    if (e.type == 2){
+                        ret << e.to_string_1() << endl;
+                    }
+
+                }
+            }
+			
 
 					//TODO iterate over links
 					//L    segName1,segOri1,segName2,segOri2,CIGAR      Link
@@ -816,7 +800,7 @@ namespace gfak{
 								ret << pat.str();
 					}
                 }
-				}
+			}
             if (name_to_path.size() > 0 && this->version >= 1.0){
                 map<string, path_elem>::iterator pt;
                 for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
