@@ -60,7 +60,7 @@ int main(int argc, char** argv){
         cout << gg.block_order_string();
     }
     else{
-        cout << gg;
+        cout << gg.to_string();
     }
     
     return 0;
