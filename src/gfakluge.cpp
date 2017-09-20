@@ -55,40 +55,10 @@ namespace gfak{
         }
     }
 
-    // MISNOMER: also converts edges -> containments
-    void GFAKluge::edges_as_links(){
-        for (auto s : name_to_seq){
-            for (auto e : seq_to_edges[s.first]){
-                int t = e.determine_type();
-                if (t == 1){
-                    link_elem l;
-                    l.source_name = e.source_name;
-                    l.sink_name = e.sink_name;
-                    l.source_orientation_forward = e.source_orientation_forward;
-                    l.sink_orientation_forward = e.sink_orientation_forward;
-                    l.cigar = e.alignment;
-                    l.opt_fields = e.tags;
-                    add_link(l.source_name, l);
-                }
-                else if (t == 2){
-                    contained_elem c;
-                    c.source_name = e.source_name;
-                    c.sink_name = e.sink_name;
-                    c.source_orientation_forward = e.source_orientation_forward;
-                    c.sink_orientation_forward = e.sink_orientation_forward;
-                    c.pos = e.source_begin;
-                    c.cigar = e.alignment;
-                    c.opt_fields = e.tags;
-                    add_contained(c.source_name, c);
-                }
-                else{
-                    cerr << "Skipping edge not expressable in GFA2: \"" << e.to_string_2() << "\"" << endl;
-                }
-            }
-        }
-    }
-
     void GFAKluge::gfa_1_ize(){
+        if (true){
+
+        
         /**
         * Swap edges to links
         * Ordered groups -> paths,
@@ -97,75 +67,54 @@ namespace gfak{
         * warn about missing gaps (we could remove them)
         * 
         */
-        groups_as_paths();
-        edges_as_links();
+            groups_as_paths();
+            for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
+                if (s->second.sequence != "*"){
+                    s->second.length = s->second.sequence.length();
+                }
+                for (auto e = seq_to_edges[s->first].begin(); e != seq_to_edges[s->first].end(); e++){
+                    int t = e->determine_type();
+                    if (e->id == "*"){
+                        e->id = std::to_string(++base_edge_id);
+                    }
+                    if (t == 1){
+                        e->ends.set(0,1);
+                        e->ends.set(1,1);
+                        e->ends.set(2,0);
+                        e->ends.set(3,0);
+                        
+                        
+                        e->source_begin = s->second.length;
+                        e->source_end = s->second.length;
+                        e->sink_begin = 0;
+                        e->sink_end = 0;
+                        if (e->id == "*"){
+                            e->id = std::to_string(++base_edge_id);
+                        }
+                    }
+                    else if (t == 2){
+                        sequence_elem sink = name_to_seq[e.sink_name];
+                        e->ends.set(0,0);
+                        e->ends.set(1,0);
+                        e->ends.set(2,1);
+                        e->ends.set(3,1);
+                    }
+                    else{
+                        cerr << "Skipping edge not expressable in GFA2: \"" << e->to_string_2() << "\"" << endl;
+                    }
+                }
+            }
+            this->one_compat = true;
+        }
     }
 
     void GFAKluge::gfa_2_ize(){
-        if (!two_compat){
+        if (true){
             // Fix S line length field if needed.
             for (auto s : name_to_seq){
-                s.second.length = (uint64_t) s.second.sequence.length();
+                s.second.length = (s.second.sequence != "*" ? (uint64_t) s.second.sequence.length() : s.second.length);
             }
-            // L and C lines -> E lines
-            for (auto s : seq_to_link){
-                sequence_elem s_seq = name_to_seq[s.first];
-                for (auto l : s.second){
-                    edge_elem e;
-
-                    e.id = std::to_string(++base_edge_id);
-                    e.type.set(0, 1);
-                    e.source_name = l.source_name;
-                    e.source_begin = (l.source_orientation_forward ? s_seq.length : 0);
-                    e.source_end = (l.source_orientation_forward ? s_seq.length : 0);
-                    e.sink_name = l.sink_name;
-                    sequence_elem sink_seq = name_to_seq[l.sink_name];
-                    e.sink_begin = (l.sink_orientation_forward ? 0 : sink_seq.length);
-                    e.sink_end = (l.sink_orientation_forward ? 0 : sink_seq.length);
-
-                    e.source_orientation_forward = l.source_orientation_forward;
-                    e.sink_orientation_forward = l.sink_orientation_forward;
-                    e.alignment = l.cigar;
-                    e.tags = l.opt_fields;
-                    if (l.source_orientation_forward){
-                        e.ends.set(0,1);
-                        e.ends.set(1,1);
-                    }
-                    if (!l.sink_orientation_forward){
-                        e.ends.set(2,1);
-                        e.ends.set(3,1);
-                    }
-                    
-                    
-                    
-                    add_edge(e.source_name, e);
-                }
-            }
-            for (auto s : seq_to_contained){
-                for (auto c : s.second){
-                    edge_elem e;
-                    e.id = std::to_string(++base_edge_id);
-                    e.type.set(1,1);
-                    e.source_name = c.source_name;
-                    e.sink_name = c.sink_name;
-                    e.source_orientation_forward = c.source_orientation_forward;
-                    e.sink_orientation_forward = c.sink_orientation_forward;
-                    e.source_begin = c.pos;
-                    e.source_end = c.pos + name_to_seq[c.sink_name].length;
-                    if (c.pos == name_to_seq[c.source_name].length){
-                        e.ends.set(0, 1);
-                        e.ends.set(1, 1);
-                    }
-                    e.sink_begin = 0;
-                    e.sink_end = name_to_seq[c.sink_name].length;
-                    e.ends.set(2, (c.sink_orientation_forward ? 0 : 1));
-                    e.ends.set(3, (c.sink_orientation_forward ? 1 : 0));
-                
-                    e.alignment = c.cigar;
-                    e.tags = c.opt_fields;
-                    add_edge(e.source_name, e);
-                }
-            }
+            // L and C lines are now always handled as edge lines.
 
             // Paths -> ordered groups
             walks_as_paths();
@@ -177,6 +126,7 @@ namespace gfak{
                 g.orientations = p.second.orientations;
 
                 g.tags = p.second.opt_fields;
+                add_group(g);
             }
             this->two_compat = true;
         }
@@ -221,8 +171,6 @@ namespace gfak{
         this->version = v;
         verz.val = std::to_string((double) this->version).substr(0,3);
         this->header[verz.key] = verz;
-        gfa_1_ize();
-        gfa_2_ize();
     }
     void GFAKluge::set_version(){
         header_elem verz;
@@ -311,10 +259,9 @@ namespace gfak{
             }
             else if (tokens[0] == "E"){
                 edge_elem e;
+
                 e.id = tokens[1];
                 
-                
-
                 string x = tokens[2];
                 e.source_name = x.substr(0, x.length() - 1);
                 e.source_orientation_forward = (x.back() == '+');
@@ -324,20 +271,20 @@ namespace gfak{
                 e.sink_orientation_forward = (x.back() == '+');
 
                 x = tokens[4];
-                e.ends.set(0, (x.back() == '+' ? 1 : 0));
+                e.ends.set(0, (x.back() == '$' ? 1 : 0));
                 e.source_begin = (e.ends.test(0) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
                 x = tokens[5];
-                e.ends.set(1, (x.back() == '+' ? 1 : 0));
+                e.ends.set(1, (x.back() == '$' ? 1 : 0));
                 e.source_end = (e.ends.test(1) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
                 x = tokens[6];
-                e.ends.set(2, (x.back() == '+' ? 1 : 0));
+                e.ends.set(2, (x.back() == '$' ? 1 : 0));
                 e.sink_begin = (e.ends.test(2) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
 
                 x = tokens[7];
-                e.ends.set(3, (x.back() == '+' ? 1 : 0));
+                e.ends.set(3, (x.back() == '$' ? 1 : 0));
                 e.sink_end = (e.ends.test(3) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
                 
                 e.alignment = tokens[8];
@@ -437,37 +384,50 @@ namespace gfak{
                 // TODO: we need to deal with  where the link is given before
                 // its corresponding sequence in the file. TODO this is probably
                 // now fixed by using the string: sequence map.
-                link_elem l;
-                l.source_name = tokens[1];
-                l.sink_name = tokens[3];
+                //link_elem l;
+                edge_elem e;
+                e.type = 1;
+                ///l.source_name = tokens[1];
+                e.source_name = tokens[1];
+                //l.sink_name = tokens[3];
+                e.sink_name = tokens[3];
                 //TODO: search the input strings for "-" and "+" and set using ternary operator
-                l.source_orientation_forward = tokens[2] == "+" ? true : false;
-                l.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                //l.source_orientation_forward = tokens[2] == "+" ? true : false;
+                e.source_orientation_forward = tokens[2] == "+" ? true : false;
+                //l.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                e.sink_orientation_forward = tokens[4] == "+" ? true : false;
                 //l.pos = tokens[0];
                 if (tokens.size() >= 6){
-                    l.cigar = tokens[5];
+                    //l.cigar = tokens[5];
+                    e.alignment = tokens[5];
                 }
                 else{
-                    l.cigar = "*";
+                    //l.cigar = "*";
+                    e.alignment = "*";
                 }
-                add_link(l.source_name, l);
+                //add_link(l.source_name, l);
+                add_edge(e.source_name, e);
             }
             else if (tokens[0] == "C"){
-                contained_elem c;
+                //contained_elem c;
+                edge_elem e;
+                e.type = 2;
                 //TODO fix token indices here
-                c.source_name = tokens[1];
-                c.sink_name = tokens[3];
-                c.source_orientation_forward = tokens[2] == "+" ? true : false;
-                c.sink_orientation_forward = tokens[4] == "+" ? true : false;
-                c.pos = atoi(tokens[5].c_str());
+                //c.source_name = tokens[1];
+                e.source_name = tokens[1];
+                //c.sink_name = tokens[3];
+                e.sink_name = tokens[3];
+                e.source_orientation_forward = tokens[2] == "+" ? true : false;
+                e.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                e.source_begin = stoul(tokens[5]);
                 if (tokens.size() > 6){
-                    c.cigar = tokens[6];
+                    e.alignment = tokens[6];
                 }
                 else{
-                    c.cigar = "*";
+                    e.alignment = "*";
                 }
 
-                add_contained(c.source_name, c);
+                add_edge(e.source_name, e);
             }
             else if (tokens[0] == "W"){
                 walk_elem w;
@@ -569,7 +529,10 @@ namespace gfak{
         if (! ( this->normalized_walks)){
             paths_as_walks();
         }
+
+        gfa_1_ize();
         gfa_2_ize();
+        
 
         return true;
 
@@ -897,7 +860,7 @@ namespace gfak{
             ret << p.second.to_string_2() << endl;
         }
         for (auto s : name_to_seq){
-            ret << s.second.to_string_2() << endl;;
+            ret << s.second.to_string_2() << endl;
             for (auto f : seq_to_fragments[s.first]){
                 ret << f.to_string_2() << endl;
             }
@@ -951,7 +914,6 @@ namespace gfak{
     }
 
 
-    //TODO this should use stringstream too...
     std::string GFAKluge::to_string(){
         if (this->version >= 2.0){
             return to_string_2();
@@ -990,66 +952,17 @@ namespace gfak{
                     ret << pat.str();
                 }
         }
-        if (name_to_seq.size() > 0){
-            map<std::string, sequence_elem>::iterator st;
-            for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-                ret << "S\t" + (st->second).name + "\t" + (st->second).sequence;
-                if ((st->second).opt_fields.size() > 0){
-                    ret << "\t" + opt_string((st->second).opt_fields);
-                }
-                ret << "\n";
-
-                if (seq_to_walks[st->first].size() > 0 && this->version < 1.0){
-                    for (i = 0; i < seq_to_walks[st->first].size(); i++){
-                        stringstream pat;
-                        pat << (use_walks ? "W" : "P")<< "\t" + seq_to_walks[st->first][i].source_name << "\t";
-                        pat << seq_to_walks[st->first][i].name << "\t";
-                        if (!(seq_to_walks[st->first][i].rank ==  0L)){
-                            pat << seq_to_walks[st->first][i].rank << "\t";
-                        }
-                        pat << (seq_to_walks[st->first][i].is_reverse ? "-" : "+");
-                        pat << "\t";
-                        pat << seq_to_walks[st->first][i].cigar + "\n";
-                        ret << pat.str();
-                    }
-                }
-                if (seq_to_link[st->first].size() > 0){
-                    for (i = 0; i < seq_to_link[st->first].size(); i++){
-                        string link = "L\t" + seq_to_link[st->first][i].source_name + "\t";
-                        link += (seq_to_link[st->first][i].source_orientation_forward ? "+" : "-");
-                        link += "\t";
-                        link += seq_to_link[st->first][i].sink_name + "\t";
-                        link += (seq_to_link[st->first][i].sink_orientation_forward ? "+" : "-");
-                        link += "\t";
-                        link += seq_to_link[st->first][i].cigar + "\n";
-                        ret << link;
-                    }
-
-                }
-
-                //TODO iterate over contained segments
-                if (seq_to_contained[st->first].size() > 0){
-                    for (i = 0; i < seq_to_contained[st->first].size(); i++){
-                        stringstream cont;
-                        cont <<  "C" << "\t" << seq_to_contained[st->first][i].source_name << "\t";
-                        cont << (seq_to_contained[st->first][i].source_orientation_forward ? "+" : "-");
-                        cont << "\t";
-                        cont << seq_to_contained[st->first][i].sink_name << "\t";
-                        cont << (seq_to_contained[st->first][i].sink_orientation_forward ? "+" : "-");
-                        cont << "\t";
-                        cont << seq_to_contained[st->first][i].pos << "\t";
-                        cont << seq_to_contained[st->first][i].cigar << "\n";
-                        ret << cont.str();
-                    }
-                }
+        for (auto s : name_to_seq){
+            ret << (this->version < 2.0 ? s.second.to_string_1() : s.second.to_string_2()) << endl;
+            for (auto e : seq_to_edges[s.first]){
+                ret << (this->version < 2.0 ? e.to_string_1() : e.to_string_2()) << endl;;
             }
-
-
+            // for (auto f : seq_to_fragments[s.first]){
+            //     ret << f.second.to_string() << endl;
+            // }
         }
+
         //TODO iterate over annotation lines.
-
-
-        //Print sequences and links in order, then annotation lines.
 
 
         return ret.str();
@@ -1186,7 +1099,6 @@ namespace gfak{
         map<string, vector<fragment_elem>> sf = gg.get_seq_to_fragments();
         map<string, vector<gap_elem>> sg = gg.get_seq_to_gaps();
         map<string, vector<edge_elem>> se = gg.get_seq_to_edges();
-        cerr << se.size() << endl;
 
         if (this->two_compat){
             for (auto s : ss){

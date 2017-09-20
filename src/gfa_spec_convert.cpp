@@ -13,9 +13,9 @@ void spec_help(char** argv){
         << "Options: " << endl
         << "  -w / --walks   Output paths as walks, but maintain version (NOT SPEC COMPLIANT)." << endl
         << "  -p / --paths   Output walks as paths, but maintain version." << endl
-        << "  -s / --spec [0.1, 1.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  -s / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
-        << "  -b / --block-order   Output GFA in block order [HLSP / HLSW]."
+        << "  -b / --block-order   Output GFA in block order [HLSP / HLSW | HSEFGUO]."
         << endl;
 }
 
@@ -95,17 +95,17 @@ int main(int argc, char** argv){
     }
     else if (spec_version == 1.0){
         gg.set_version(1.0);
-        gg.gfa_1_ize();
     }
     else if (spec_version == 2.0){
         gg.set_version(2.0);
-        gg.gfa_2_ize();
     }
     else if (spec_version != 0.0){
         cerr << "Invalid specification number: " << spec_version << endl
         << "Please provide either one of [0.1, 1.0]." << endl;
         exit(22);
     }
+
+    
 
     if (block_order){
         cout << gg.block_order_string();

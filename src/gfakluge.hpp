@@ -100,7 +100,7 @@ namespace gfak{
     struct sequence_elem{
         std::string sequence;
         std::string name;
-        uint64_t length;
+        uint64_t length = UINT64_MAX;
         vector<opt_elem> opt_fields;
         long id;
         std::string to_string_2(){
@@ -113,7 +113,7 @@ namespace gfak{
             }
             return st.str();
         }
-        std::string to_string(){
+        std::string to_string_1(){
             stringstream st;
             st << "S" << "\t" << name << "\t" << sequence;
             if (opt_fields.size() > 0){
@@ -162,66 +162,57 @@ namespace gfak{
     struct edge_elem{
         string id = "*";
         // 0: unset, 1: link, 2: containment, 3: generic edge or both C/L set (impossible)
-        std::bitset<4> type;
+        int type;
         string source_name;
         string sink_name;
         bool source_orientation_forward;
         bool sink_orientation_forward;
         std::bitset<4> ends;
-        uint32_t source_begin;
-        uint32_t source_end;
-        uint32_t sink_begin;
-        uint32_t sink_end;
+        uint64_t source_begin = 0;
+        uint64_t source_end = 0;
+        uint64_t sink_begin = 0;
+        uint64_t sink_end = 0;
         string alignment;
         map<string, opt_elem> tags;
         int determine_type(){
-            if (!type.test(3)){
-                if (type.test(0) & type.test(1) & !(type.test(2) | type.test(3))){
-                    // Convert a link to an Edge by filling in the remaining fields.
-                    // ?? nothing to be done ??
-                }
-                else if (true){
-                    // Convert a containment to an edge by filling in the remaining fields
-                    // ?? nothing to be done ??
-                }
-                else{
+                    if (type == 1 || type == 2){
+                        return type;
+                    }
                     // Determine if an edge is a link or a containment and fill in the right fields.
-                    if (ends.test(0) && ends.test(1) && !ends.test(2) && !ends.test(3) ){
-                        type.set(0, 1);
+                    else if (ends.test(0) && ends.test(1) && !ends.test(2) && !ends.test(3) ){
+                        type = 1;
                         return 1;
                     }
                     else if (!ends.test(0) && !ends.test(2)){
-                        type.set(1, 1);
+                        type = 2;
                         return 2;
                     }
                     else{
+                        type = 3;
                         return 3;
                     }
-                }
-                type.set(3, 1);
-            }
-            
+                
         }
         std::string to_string_2(){
             stringstream st;
             st << "E" << "\t" << id << "\t" <<
                 source_name << (source_orientation_forward ? "+" : "-") <<
                  "\t" << sink_name << (sink_orientation_forward ? "+" : "-") << "\t" <<
-                source_begin;
+                std::to_string(source_begin);
                 if (ends.test(0)){
-                     st << '$';
+                     st << "$";
                 }
-                st << "\t" << source_end;
+                st << "\t" << std::to_string(source_end);
                 if (ends.test(1)){
-                     st << '$';
+                     st << "$";
                 }
-                st << "\t" << sink_begin;
+                st << "\t" << std::to_string(sink_begin);
                 if (ends.test(2)){
                     st << "$";
                 }
-                st << "\t" << sink_end;
+                st << "\t" << std::to_string(sink_end);
                 if (ends.test(3)){
-                    st << '$';
+                    st << "$";
                 }
                 st << "\t" << alignment;
                 for (auto i : tags){
@@ -240,10 +231,12 @@ namespace gfak{
             st << (t == 1 ? "L" : "C") << "\t" << source_name << "\t" << 
                 (source_orientation_forward ? "+" : "-") << "\t" <<
                 sink_name << "\t" << (sink_orientation_forward ? "+" : "-") <<
+                (t == 2 ? ("\t" + to_string(source_begin)) : "") << "\t" << 
                 alignment;
             for (auto i : tags){
                 st << "\t" << i.second.to_string();
             }
+            return st.str();
         }
     };
 
@@ -348,7 +341,6 @@ namespace gfak{
             void add_group(group_elem g);
 
             void groups_as_paths();
-            void edges_as_links();
 
             // Minimize memory consumption by converting everything
             // to GFA2 compatible containers. We can then convert
