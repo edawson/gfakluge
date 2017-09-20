@@ -346,6 +346,9 @@ namespace gfak{
                 group_elem g;
                 g.ordered = true;
                 g.id = tokens[1];
+                if (g.id == "*"){
+                    g.id = std::to_string(++base_group_id);
+                }
                 vector<string> g_ids = split(tokens[2], ' ');
                 for (int i = 0 ; i < g_ids.size(); i++){
                         g.items.push_back(g_ids[i].substr(0, g_ids[i].length() - 1));
@@ -369,6 +372,9 @@ namespace gfak{
                 group_elem g;
                 g.ordered = false;
                 g.id = tokens[0];
+                if (g.id == "*"){
+                    g.id = std::to_string(++base_group_id);
+                }
                 g.items = split(tokens[2], ' ');
                 if (tokens.size() > 8){
                     for (int i = 9; i < tokens.size(); i++){
