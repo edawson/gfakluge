@@ -411,6 +411,18 @@ namespace gfak{
 
             void merge(GFAKluge& gg);
 
+            /** Assembly stats **/
+            double get_N50();
+            // double l_50();
+            double get_N90();
+
+            int get_L50();
+            int get_L90();
+            // uint64_t num_contigs();
+            // double simple_connectivity() // reports avg edges / sequence
+            // double weighted_connectivity() // weight areas of high connectivity higher
+            //      behaves kind of like [(N_edges)^2 / (N_seqs)^2 if N_edges > 2]
+            
             
         private:
             bool use_walks = false;
@@ -451,6 +463,15 @@ namespace gfak{
             map<std::string, vector<edge_elem> > seq_to_edges;
             map<std::string, vector<gap_elem> > seq_to_gaps;
             map<string, group_elem> groups;
+
+            double n50 = -1;
+            double l50 = -1;
+            double n90 = -1;
+            double l90 = -1;
+            double simple_connectivity = -1;
+            double weighted_connectivity = -1;
+
+
 
             
 

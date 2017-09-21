@@ -1149,7 +1149,95 @@ namespace gfak{
         }
         
     }
+
+    // we calculate the N50 based on the 'S' lines,
+    // Though in theory an O line might also be a contig
+    double GFAKluge::get_N50(){
+        vector<double> s_lens;
+        uint64_t total_len = 0;
+        double n = 0.0;
+        for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
+            s_lens.push_back(s->second.length);
+            total_len += s->second.length;
+        }
+        double avg = total_len * 0.50 ;
+        std::sort(s_lens.rbegin(), s_lens.rend());
+        //int middle = floor((double) s_lens.size() / 2.0);
+        double cumul_size = 0.0;
+        for (int i = 0; i < s_lens.size(); i++){
+            cumul_size += s_lens[i];
+            if (cumul_size >= avg){
+                n = s_lens[i];
+                break;
+            }
+        }
+        return n;
+    }
+
+    double GFAKluge::get_N90(){
+        vector<double> s_lens;
+        uint64_t total_len = 0;
+        double n = 0.0;
+        for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
+            s_lens.push_back(s->second.length);
+            total_len += s->second.length;
+        }
+        double avg = total_len * 0.90;
+        std::sort(s_lens.rbegin(), s_lens.rend());
+        //int middle = floor((double) s_lens.size() / 2.0);
+        double cumul_size = 0.0;
+        for (int i = 0; i < s_lens.size(); i++){
+            cumul_size += s_lens[i];
+            if (cumul_size >= avg){
+                n = s_lens[i];
+                break;
+            }
+        }
+        return n;
+    }
     
+
+    int GFAKluge::get_L50(){
+        vector<double> s_lens;
+        uint64_t total_len = 0;
+        double n = 0.0;
+        for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
+            s_lens.push_back(s->second.length);
+            total_len += s->second.length;
+        }
+        double avg = total_len * 0.50;
+        std::sort(s_lens.rbegin(), s_lens.rend());
+        //int middle = floor((double) s_lens.size() / 2.0);
+        double cumul_size = 0.0;
+        for (int i = 0; i < s_lens.size(); i++){
+            cumul_size += s_lens[i];
+            if (cumul_size >= avg){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    int GFAKluge::get_L90(){
+        vector<double> s_lens;
+        uint64_t total_len = 0;
+        double n = 0.0;
+        for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
+            s_lens.push_back(s->second.length);
+            total_len += s->second.length;
+        }
+        double avg = total_len * 0.90;
+        std::sort(s_lens.rbegin(), s_lens.rend());
+        //int middle = floor((double) s_lens.size() / 2.0);
+        double cumul_size = 0.0;
+        for (int i = 0; i < s_lens.size(); i++){
+            cumul_size += s_lens[i];
+            if (cumul_size >= avg){
+                return i;
+            }
+        }
+        return -1;
+    }
 
     std::ostream& operator<<(std::ostream& os, GFAKluge& g){
         os << g.to_string();
