@@ -837,7 +837,7 @@ namespace gfak{
 					}
                 }
 			}
-            if (name_to_path.size() > 0 && this->version >= 1.0){
+            if (name_to_path.size() > 0 && this->version == 1.0){
                 map<string, path_elem>::iterator pt;
                 for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                     stringstream pat;

@@ -6,6 +6,19 @@
 
 using namespace std;
 using namespace gfak;
+
+void stats_help(){
+    cerr << "gfa_stats [ -a -n -e -s -l ] <GFA_File> " << endl;
+    cerr << "  -a / --assembly    print assembly statistics (N50, L50, N90, L90)," << endl
+         << "  -s / --all         print all graph statistics." << endl
+         << "  -l / --length      print total sequence length." << endl
+         << "  -n / --num-nodes   print number of nodes." << endl
+         << "  -e / --num-edges   print number of edges." << endl
+         << "  -p / --paths       print some path statistics." << endl
+         << endl;
+    exit(0);
+}
+
 int main(int argc, char** argv){
     string gfa_file = "";
     bool show_nodes = false;
@@ -13,10 +26,11 @@ int main(int argc, char** argv){
     bool show_containments = false;
     bool show_alignments = false;
     bool show_length = false;
+    bool assembly_stats = false;
+    bool show_paths = false;
 
     if (argc == 1){
-        cerr << "gfa_stats [ -n -e -s -l ] -i <GFA_File> " << endl;
-        exit(0);
+        stats_help();
     }
 
     int c;
@@ -28,25 +42,28 @@ int main(int argc, char** argv){
             {"num-edges", no_argument, 0, 'e'},
             {"length", no_argument, 0, 'l'},
             {"all", no_argument, 0, 's'},
-            {"gfa-file", required_argument, 0, 'i'},
+            {"paths", no_argument, 0, 'p'},
+            {"assembly", no_argument, 0, 'a'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "hnesli:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hpanesl", long_options, &option_index);
         if (c == -1){
             break;
         }
 
         switch (c){
-            case 'i':
-                gfa_file = optarg;
-                break;
 
             case '?':
             case 'h':
-                cerr << "gfa_stats [ -n -e -s -l ] -i <GFA_File> " << endl;
-                exit(0);
+                // nodes, edges, all stats, edges, paths
+                stats_help();
+                exit(3);
+
+            case 'a':
+                assembly_stats = true;
+                break;
 
             case 'e':
                 show_edges = true;
@@ -68,7 +85,7 @@ int main(int argc, char** argv){
                 abort();
         }
     }
-
+    gfa_file = argv[optind];
     GFAKluge gg;
     gg.parse_gfa_file(gfa_file);
     if (show_nodes){
@@ -77,14 +94,28 @@ int main(int argc, char** argv){
     }
     if (show_edges){
         
-        int num_edges = 0;
-        map<string, vector<link_elem> >::iterator it;
-        map<string, vector<link_elem> > s_to_l = gg.get_seq_to_link();
-        for (it = s_to_l.begin(); it != s_to_l.end(); it++){
-            num_edges += (it->second).size();
+        uint64_t num_edges = 0;
+        uint64_t num_links = 0;
+        uint64_t num_contains = 0;
+        // map<string, vector<link_elem> >::iterator it;
+        // map<string, vector<link_elem> > s_to_l = gg.get_seq_to_link();
+        // for (it = s_to_l.begin(); it != s_to_l.end(); it++){
+        //     num_edges += (it->second).size();
+        // }
+        map<string, vector<edge_elem>> c_edge_map = gg.get_seq_to_edges();
+        for (auto s : gg.get_name_to_seq()){
+            vector<edge_elem> cvec = c_edge_map[s.first];
+            for (auto e = cvec.begin(); e != cvec.end(); e++){
+                num_edges++;
+                int t = e->determine_type();
+                num_links = t == 1 ? num_links++ : num_links;
+                num_contains = t == 2 ? num_contains++ : num_contains;
+            }
         }
         
         cout << "Number of edges: " << num_edges << endl;
+        cout << "Number of links: " << num_links << endl;
+        cout << "Number of containments: " << num_contains << endl;
         
     }
     if (show_length){
@@ -100,6 +131,17 @@ int main(int argc, char** argv){
         cout << "Total graph length in basepairs: " << total_len << endl;
     }
     
+    if (show_paths){
+        
+    }
+
+    if (assembly_stats){
+        cout << "N50: " << gg.get_N50() << endl;
+        cout << "N90: " << gg.get_N90() << endl;
+        cout << "L50: " << gg.get_L50() << endl;
+        cout << "L90: " << gg.get_L90() << endl;
+    }
+   
 
     
     return 0;

@@ -146,7 +146,7 @@ namespace gfak{
         }
     };
 
-    struct contained_elem{
+    struct contained_elem {
         std::string source_name;
         std::string sink_name;
         bool source_orientation_forward;
@@ -179,7 +179,8 @@ namespace gfak{
                         return type;
                     }
                     // Determine if an edge is a link or a containment and fill in the right fields.
-                    else if (ends.test(0) && ends.test(1) && !ends.test(2) && !ends.test(3) ){
+                    //else if (ends.test(0) && ends.test(1) && !ends.test(2) && !ends.test(3) ){
+                    else if (ends.test(0) && ends.test(1) && sink_begin == 0 && sink_end == 0 ){
                         type = 1;
                         return 1;
                     }
@@ -254,7 +255,9 @@ namespace gfak{
             for (auto t : tags){
                 st << "\t" << t.second.to_string();
             }
+            return st.str();
         }
+
     };
 
     struct fragment_elem{
