@@ -88,6 +88,11 @@ int main(int argc, char** argv){
             
         }
         // TODO Just copy over all paths, but preferably trim the orientations and items vectors
+        for (auto p : gg.get_name_to_path())
+        {
+            outg.add_path(p.first, p.second);
+        }
+
         cout << outg.to_string_2() << endl;
     }
 
