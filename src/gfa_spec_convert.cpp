@@ -101,7 +101,7 @@ int main(int argc, char** argv){
     }
     else if (spec_version != 0.0){
         cerr << "Invalid specification number: " << spec_version << endl
-        << "Please provide either one of [0.1, 1.0]." << endl;
+        << "Please provide one of [0.1, 1.0, 2.0]." << endl;
         exit(22);
     }
 
