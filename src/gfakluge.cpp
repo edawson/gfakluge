@@ -236,8 +236,14 @@ namespace gfak{
                    tag_index = 4;
                 }
                 else{
+
                     s.sequence = tokens[2];
-                    s.length = s.sequence.length();
+                    if (tokens[2] == "*"){
+                        s.length = UINT64_MAX;
+                    }
+                    else{
+                        s.length = s.sequence.length();
+                    }
                     tag_index = 3;
                 }
                 //s.id = atol(s.name.c_str());
@@ -251,6 +257,9 @@ namespace gfak{
                         o.type = opt_field[1];
                         o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
                         s.opt_fields.push_back(o);
+                        if (o.key == "LN" && s.length == UINT64_MAX){
+                            s.length = stoul(o.val);
+                        }
                     }
                 }
                 name_to_seq[s.name] = s;
@@ -392,28 +401,23 @@ namespace gfak{
                 // TODO: we need to deal with  where the link is given before
                 // its corresponding sequence in the file. TODO this is probably
                 // now fixed by using the string: sequence map.
-                //link_elem l;
                 edge_elem e;
                 e.type = 1;
-                ///l.source_name = tokens[1];
                 e.source_name = tokens[1];
-                //l.sink_name = tokens[3];
                 e.sink_name = tokens[3];
                 //TODO: search the input strings for "-" and "+" and set using ternary operator
-                //l.source_orientation_forward = tokens[2] == "+" ? true : false;
                 e.source_orientation_forward = tokens[2] == "+" ? true : false;
-                //l.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                e.ends.set(0, 1);
+                e.ends.set(1,1);
+                e.ends.set(2,0);
+                e.ends.set(3, 0);
                 e.sink_orientation_forward = tokens[4] == "+" ? true : false;
-                //l.pos = tokens[0];
                 if (tokens.size() >= 6){
-                    //l.cigar = tokens[5];
                     e.alignment = tokens[5];
                 }
                 else{
-                    //l.cigar = "*";
                     e.alignment = "*";
                 }
-                //add_link(l.source_name, l);
                 add_edge(e.source_name, e);
             }
             else if (tokens[0] == "C"){
