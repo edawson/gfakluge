@@ -140,10 +140,10 @@ int main(int argc, char** argv){
     }
 
     if (assembly_stats){
-        cout << "N50: " << gg.get_N50() << endl;
-        cout << "N90: " << gg.get_N90() << endl;
-        cout << "L50: " << gg.get_L50() << endl;
-        cout << "L90: " << gg.get_L90() << endl;
+        cout << "N50: " <<  (uint64_t) gg.get_N50() << endl;
+        cout << "N90: " << (uint64_t) gg.get_N90() << endl;
+        cout << "L50: " << (uint64_t) gg.get_L50() << endl;
+        cout << "L90: " << (uint64_t) gg.get_L90() << endl;
     }
    
 
