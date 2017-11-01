@@ -418,6 +418,20 @@ namespace gfak{
                 else{
                     e.alignment = "*";
                 }
+
+                if (tokens.size() >= 7){
+                    for (int i = 7; i < tokens.size(); i++){
+                         //opt fields are in key:type:val format
+                        vector<string> opt_field = split(tokens[i], ':');
+                        opt_elem o;
+                        o.key = opt_field[0];
+                        o.type = opt_field[1];
+                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                        e.tags[o.key] = o;
+           
+                    }
+                }
+
                 add_edge(e.source_name, e);
             }
             else if (tokens[0] == "C"){
@@ -438,6 +452,20 @@ namespace gfak{
                 else{
                     e.alignment = "*";
                 }
+
+                if (tokens.size() >= 8){
+                    for (int i = 8; i < tokens.size(); i++){
+                         //opt fields are in key:type:val format
+                        vector<string> opt_field = split(tokens[i], ':');
+                        opt_elem o;
+                        o.key = opt_field[0];
+                        o.type = opt_field[1];
+                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                        e.tags[o.key] = o;
+           
+                    }
+                }
+
 
                 add_edge(e.source_name, e);
             }
@@ -1165,7 +1193,7 @@ namespace gfak{
             total_len += s->second.length;
         }
         double avg = total_len * 0.50 ;
-        std::sort(s_lens.rbegin(), s_lens.rend());
+        std::sort(s_lens.begin(), s_lens.end());
         //int middle = floor((double) s_lens.size() / 2.0);
         double cumul_size = 0.0;
         for (int i = 0; i < s_lens.size(); i++){
@@ -1216,7 +1244,7 @@ namespace gfak{
         for (int i = 0; i < s_lens.size(); i++){
             cumul_size += s_lens[i];
             if (cumul_size >= avg){
-                return i;
+                return i + 1;
             }
         }
         return -1;
@@ -1237,7 +1265,7 @@ namespace gfak{
         for (int i = 0; i < s_lens.size(); i++){
             cumul_size += s_lens[i];
             if (cumul_size >= avg){
-                return i;
+                return i + 1;
             }
         }
         return -1;
