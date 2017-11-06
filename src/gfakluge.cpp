@@ -1005,7 +1005,7 @@ namespace gfak{
                     vector<string> ovec;
                     for (int seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
                         stringstream o_str;
-                        o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "-" : "+");
+                        o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "+" : "-");
                         ovec.push_back(o_str.str());
                     }
                     pat << join(ovec, ",");
