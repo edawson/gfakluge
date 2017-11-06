@@ -15,7 +15,7 @@ void spec_help(char** argv){
         << "  -p / --paths   Output walks as paths, but maintain version." << endl
         << "  -s / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
-        << "  -b / --block-order   Output GFA in block order [HLSP / HLSW | HSEFGUO]."
+        << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]."
         << endl;
 }
 
