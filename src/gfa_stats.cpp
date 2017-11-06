@@ -108,8 +108,12 @@ int main(int argc, char** argv){
             for (auto e = cvec.begin(); e != cvec.end(); e++){
                 num_edges++;
                 int t = e->determine_type();
-                num_links = t == 1 ? num_links++ : num_links;
-                num_contains = t == 2 ? num_contains++ : num_contains;
+                if (t == 1){
+                    num_links++;
+                }
+                else if (t == 2){
+                    num_contains++;
+                }
             }
         }
         
@@ -126,7 +130,7 @@ int main(int argc, char** argv){
         int64_t total_len = 0;
 
         for (it = my_seqs.begin(); it != my_seqs.end(); it++){
-            total_len += (it->second).sequence.size();
+            total_len += (it->second).length;
         }
         cout << "Total graph length in basepairs: " << total_len << endl;
     }
@@ -136,10 +140,10 @@ int main(int argc, char** argv){
     }
 
     if (assembly_stats){
-        cout << "N50: " << gg.get_N50() << endl;
-        cout << "N90: " << gg.get_N90() << endl;
-        cout << "L50: " << gg.get_L50() << endl;
-        cout << "L90: " << gg.get_L90() << endl;
+        cout << "N50: " <<  (uint64_t) gg.get_N50() << endl;
+        cout << "N90: " << (uint64_t) gg.get_N90() << endl;
+        cout << "L50: " << (uint64_t) gg.get_L50() << endl;
+        cout << "L90: " << (uint64_t) gg.get_L90() << endl;
     }
    
 
