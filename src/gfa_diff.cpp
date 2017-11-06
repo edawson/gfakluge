@@ -11,7 +11,7 @@ int main(int argc, char** argv){
     bool block_order = false;
 
     if (argc == 1){
-        cerr << "gfa_sort [-b ] -i <GFA_File> >> my_sorted_gfa.gfa" << endl;
+        cerr << "gfa_diff <a> <b> " << endl;
         exit(0);
     }
 
@@ -32,7 +32,7 @@ int main(int argc, char** argv){
         switch (c){
             case '?':
             case 'h':
-                cerr << "gfa_sort [-b --block-order ] -i <GFA_File> >> my_sorted_gfa.gfa" << endl;
+                cerr << "gfa_diff <gfa1> <gfa2> >> diff.gfa" << endl;
                 exit(0);
 
             case 'b':
@@ -44,15 +44,21 @@ int main(int argc, char** argv){
         }
     }
 
+    GFAKluge ff;
     GFAKluge gg;
-    gg.parse_gfa_file(argv[2]);
-    gg.parse_gfa_file(argv[3]);
-
-    if (block_order){
-        cout << gg.block_order_string();
+    ff.parse_gfa_file(argv[optind]);
+    optind++;
+    gg.parse_gfa_file(argv[optind]);
+    optind++;
+    map<std::string, sequence_elem, custom_key> seq_1 = ff.get_name_to_seq();
+    map<std::string, sequence_elem, custom_key> seq_2 = gg.get_name_to_seq();
+    map<std::string, vector<edge_elem>> e_1 = ff.get_seq_to_edges();
+    map<std::string, vector<edge_elem>> e_2 = ff.get_seq_to_edges();
+    if (seq_1.size() != seq_2.size()){
+        cerr << "Graphs have different numbers of sequences." << endl;
     }
     else{
-        cout << gg;
+
     }
     
     return 0;

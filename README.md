@@ -8,9 +8,11 @@ You can use these components and their fields/members to build up your own
 graph representation.
 
 ## Why gfaKluge?
-Currently, most GFA parsers go directly from file to proprietary internal graph representations. This library
-instead parses to standard C++ containers. This means it is not beholden to any internal representation while
-still providing easy I/O of GFA. Since it only relies on the STL, it's easy to build and requires only what's included in the repo.
+Currently, most GFA parsers go directly from file to proprietary internal graph representations.
+This library instead parses to standard C++ STL containers.
+This means it is not beholden to any internal representation while
+still providing easy I/O of GFA.
+Since it only relies on the STL, it's easy to build and requires only what's included in the repo.
 
 ## How do I build it?  
 You can build libgfakluge by simply typing ``make``. 
@@ -53,6 +55,18 @@ are then wrapped in a set of standard containers for easy access:
 
 All of these structures can be accessed using the ``get_<Thing>`` method, where \<Thing\> is the name of the map you would like to retrieve.  
 
+## GFA2
+GFAKluge now supports GFA2! This brings with it four new structs: `edge_elem`, `gap_elem`, `fragment_elem`, and `group_elem`. They're contained in maps much like those for the GFA1 structs.  
+
+A few caveats apply:  
+    1. As GFA2 is a **superset** of GFA1, we don't support GFA2 -> GFA1 conversion (officially). It is possible for some structs but difficult for others (e.g. unordered groups).  
+    2. The GFA2 format is still in flux, and it is possible there may be incompatibilities among tools until it solidifies.  
+    3. We have done only limited testing on GFA2 files.
+
+Tags we specifically do not support in GFA2 -> GFA1 conversion: G - gap, U - unordered group, F - fragment.
+Links and contains are currently not guaranteed to be correct.
+
+GFAKluge is fully compliant with reading GFA2 and GFA0.1 <-> GFA1.0 -> GFA2.0 conversion as of September 2017.
 
 ## Reading GFA
                 GFAKluge gg;

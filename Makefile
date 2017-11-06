@@ -1,31 +1,40 @@
 CXX?=g++
-CXXFLAGS:=-O3 -g -std=c++11
+CXXFLAGS:=-O3 -std=c++11 -g
 EXE:=example.exe
 LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./
 
-all: gfa_sort gfa_stats gfa_diff gfa_merge gfa_ids gfa_spec_convert lib
+BIN_DIR:=bin
 
-gfa_sort: src/gfa_sort.cpp lib
+all: $(BIN_DIR)/gfa_sort $(BIN_DIR)/gfa_subset $(BIN_DIR)/gfa_stats $(BIN_DIR)/gfa_diff $(BIN_DIR)/gfa_merge $(BIN_DIR)/gfa_ids $(BIN_DIR)/gfa_spec_convert $(BIN_DIR)/gfa_extract lib
+
+$(BIN_DIR)/gfa_sort: src/gfa_sort.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_stats: src/gfa_stats.cpp lib
+$(BIN_DIR)/gfa_stats: src/gfa_stats.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_verify: src/gfa_verify.cpp lib
+$(BIN_DIR)/gfa_verify: src/gfa_verify.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_diff: src/gfa_diff.cpp lib
+$(BIN_DIR)/gfa_diff: src/gfa_diff.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_merge: src/gfa_merge.cpp lib
+$(BIN_DIR)/gfa_merge: src/gfa_merge.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_ids: src/gfa_ids.cpp lib
+$(BIN_DIR)/gfa_ids: src/gfa_ids.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-gfa_spec_convert: src/gfa_spec_convert.cpp lib
+$(BIN_DIR)/gfa_spec_convert: src/gfa_spec_convert.cpp lib .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+$(BIN_DIR)/gfa_extract: src/gfa_extract.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
+$(BIN_DIR)/gfa_subset: src/gfa_subset.cpp lib .GFAK_pre-build
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+
 lib: src/gfakluge.o
 	ar -rs libgfakluge.a $<
 
@@ -43,6 +52,10 @@ src/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp
 
 .PHONY: clean all
 
+
+.GFAK_pre-build: 
+	mkdir -p bin
+	touch .GFAK_pre-build
 clean:
 	$(RM) $(EXE)
 	$(RM) *.o
@@ -50,6 +63,7 @@ clean:
 	$(RM) test
 	$(RM) x.sort
 	$(RM) y.sort
+	rm -rf $(BIN_DIR)
+	$(RM) .GFAK_pre-build
 	$(RM) test_test.gfa
 	$(RM) q_test.gfa
-	$(RM) gfa_sort
