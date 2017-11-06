@@ -453,6 +453,7 @@ namespace gfak{
             // unique.
             map<string, sequence_elem, custom_key> name_to_seq;
             std::vector<std::string> split(string s, char delim);
+            bool string_is_number(string s);
             std::string join(std::vector<std::string> splits, std::string glue);
             map<string, vector<alignment_elem> > seq_to_alignment;
             string header_string(map<string, header_elem>& opts);

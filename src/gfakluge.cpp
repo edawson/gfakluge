@@ -190,7 +190,18 @@ namespace gfak{
             ret.push_back(temp);
         }
         return ret;
+    }
 
+    bool GFAKluge::string_is_number(string s){
+        bool ret = true;
+        std::string::iterator it;
+        for (it = s.begin(); it != s.end(); it++){
+            if (!isdigit(*it)){
+                ret = false;
+                return ret;
+            }
+        }
+        return !(s.empty());
     }
 
     bool GFAKluge::parse_gfa_file(string filename){
@@ -230,7 +241,8 @@ namespace gfak{
                 int tag_index = 3;
                 sequence_elem s;
                 s.name = tokens[1];
-                if (this->version >= 2.0){
+
+                if (this->version >= 2.0 || string_is_number(tokens[2])){
                    s.length = stoi(tokens[2]); 
                    s.sequence = tokens[3];
                    tag_index = 4;
