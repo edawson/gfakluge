@@ -8,7 +8,7 @@ using namespace std;
 using namespace gfak;
 
 void spec_help(char** argv){
-    cout << "gfa_spec_convert: convert GFA 0.1 -> 1.0 -> 2.0, walks <-> paths, etc." << endl
+    cout << "gfa_spec_convert: convert GFA 0.1 <-> 1.0 <-> 2.0, walks <-> paths, etc." << endl
         << "Usage: " << argv[0] << " [OPTIONS] <GFA_FILE> > gfa_out.gfa" << endl
         << "Options: " << endl
         << "  -w / --walks   Output paths as walks, but maintain version (NOT SPEC COMPLIANT)." << endl

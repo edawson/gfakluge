@@ -60,6 +60,7 @@ namespace gfak{
 
         
         /**
+         * Set base_edge_id to max_seq_id + 1
         * Swap edges to links
         * Ordered groups -> paths,
         * warn about missing sets
@@ -67,6 +68,13 @@ namespace gfak{
         * warn about missing gaps (we could remove them)
         * 
         */
+            string k = name_to_seq.rbegin()->first;
+            if (string_is_number(k)){
+                base_edge_id = std::stoul(k) + 1;
+            }
+            else{
+                base_edge_id = name_to_seq.size();
+            }
             groups_as_paths();
             for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
                 if (s->second.sequence != "*"){
