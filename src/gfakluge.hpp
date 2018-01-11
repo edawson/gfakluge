@@ -17,7 +17,16 @@
 
 using namespace std;
 namespace gfak{
-
+    
+    // ( <header> | <segment> | <fragment> | <edge> | <gap> | <group> )
+    enum line_types_t {
+        HEADER,
+        SEGMENT,
+        FRAGMENT,
+        EDGE,
+        GAP,
+        GROUP
+    };
     struct custom_key{
         bool isdigit(const string s) const{
             //const char* s_str = s.c_str();
@@ -309,6 +318,8 @@ namespace gfak{
             return st.str();
         }
     };
+
+    int determine_line_type(char* line);
 
 
     class GFAKluge{
