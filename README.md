@@ -59,12 +59,11 @@ All of these structures can be accessed using the ``get_<Thing>`` method, where 
 GFAKluge now supports GFA2! This brings with it four new structs: `edge_elem`, `gap_elem`, `fragment_elem`, and `group_elem`. They're contained in maps much like those for the GFA1 structs.  
 
 A few caveats apply:  
-    1. As GFA2 is a **superset** of GFA1, we don't support GFA2 -> GFA1 conversion (officially). It is possible for some structs but difficult for others (e.g. unordered groups).  
-    2. The GFA2 format is still in flux, and it is possible there may be incompatibilities among tools until it solidifies.  
-    3. We have done only limited testing on GFA2 files.
+    1. As GFA2 is a **superset** of GFA1, we support only support legal GFA2 -> GFA1 conversions. Information can be lost along the way (e.g. unordered groups won't be output).
+    2. Our GFA2 testing is a bit limited but we've verified several times to be on-spec.
 
-Tags we specifically do not support in GFA2 -> GFA1 conversion: G - gap, U - unordered group, F - fragment.
-Links and contains are currently not guaranteed to be correct.
+Tags we specifically do not (i.e. cannot) support in GFA2 -> GFA1 conversion: G - gap, U - unordered group, F - fragment.
+Links and containments should get converted to edges correctly. Sequence elements should get converted, but watch out for the length field if you hit issues.
 
 GFAKluge is fully compliant with reading GFA2 and GFA0.1 <-> GFA1.0 -> GFA2.0 conversion as of September 2017.
 
@@ -73,6 +72,8 @@ GFAKluge is fully compliant with reading GFA2 and GFA0.1 <-> GFA1.0 -> GFA2.0 co
                 gg.parse_gfa_file("my_gfa.gfa");
 
 You can then iterate over the aforementioned maps/structs and build out your own graph representation.
+
+I'm working on a low-memory API for reading lines / emitting structs but it won't be this pretty.
 
 ## Writing GFA
                 GFAKluge og;
@@ -102,11 +103,10 @@ You can then iterate over the aforementioned maps/structs and build out your own
                 f << og;
 
 ## Status
-- <del>Parsing from fstream is still not implemented</del>.  
-- **Now totally supports parsing to/from an istream**.  
 - GFAKluge is essentially a set of dumb containers - it does no error checking of your structure to detect if it is
 valid GFA. This may change as the GFA spec becomes more formal.  
-- Now parses JSON structs in optional fields of sequence lines (just as strings though).  
+- Parses JSON structs in optional fields of sequence lines (just as strings though).  
+- Full GFA1/GFA2 compatibility and interconversion is now implemented.  
 
 
 ## Getting Help 
