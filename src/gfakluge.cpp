@@ -3,6 +3,30 @@
 using namespace std;
 namespace gfak{
 
+    int determine_line_type(char* line){
+       if (line[0] == 'H'){
+            return HEADER;
+       }
+       else if (line[0] == 'S'){
+            return SEGMENT;
+       }
+       else if (line[0] == 'E' || line[0] == 'L' || line[0] == 'C'){
+            return EDGE;
+       }
+       else if (line[0] == 'U' || line[0] == 'O' || line[0] == 'P' || line[0] == 'W'){
+            return GROUP;
+       }
+       else if (line[0] == 'G'){
+            return GAP;
+       }
+       else if (line[0] == 'F'){
+            return FRAGMENT;
+       }
+       else{
+            return -1;
+       }
+    }
+
     map<string, vector<edge_elem>> GFAKluge::get_seq_to_edges(){
         return seq_to_edges;
     }

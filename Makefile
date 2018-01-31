@@ -58,7 +58,7 @@ src/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp
 	touch .GFAK_pre-build
 clean:
 	$(RM) $(EXE)
-	$(RM) *.o
+	$(RM) src/*.o
 	$(RM) *.a
 	$(RM) test
 	$(RM) x.sort
