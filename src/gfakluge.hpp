@@ -143,9 +143,11 @@ namespace gfak{
         map<string, opt_elem> opt_fields;
         std::string to_string(){
             stringstream st;
-            st << "L" << "\t" << source_name << 
-                "\t" << source_orientation_forward << "\t" <<
-                sink_name << "\t" << sink_orientation_forward;
+            st << "L" 
+               << "\t" << source_name << "\t" 
+               << (source_orientation_forward ? "+" : "-") << "\t" << sink_name << "\t" 
+               << (sink_orientation_forward ? "+" : "-") << "\t" << cigar; 
+
              if (opt_fields.size() > 0){
                 for (auto i : opt_fields){
                     st << "\t" << i.second.to_string();
