@@ -899,10 +899,6 @@ namespace gfak{
 
                 }
             }
-			
-
-					//TODO iterate over links
-					//L    segName1,segOri1,segName2,segOri2,CIGAR      Link
             
 			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                 if (this->version < 1.0 && seq_to_walks[st->first].size() > 0){
@@ -939,14 +935,6 @@ namespace gfak{
                     ret << pat.str();
                 }
             }
-
-
-
-			//TODO iterate over annotation lines.
-
-
-			//Print sequences and links in order, then annotation lines.
-
 			return ret.str();
 
     }
@@ -1059,21 +1047,18 @@ namespace gfak{
                 }
         }
         for (auto s : name_to_seq){
-            ret << (this->version < 2.0 ? s.second.to_string_1() : s.second.to_string_2()) << endl;
+            ret << s.second.to_string_1() << endl;
             for (auto e : seq_to_edges[s.first]){
-                ret << (this->version < 2.0 ? e.to_string_1() : e.to_string_2()) << endl;;
+                ret << e.to_string_1() << endl;;
             }
-            // for (auto f : seq_to_fragments[s.first]){
-            //     ret << f.second.to_string() << endl;
-            // }
-	    // if (this->version < 2.0) { 
-        //     	for (auto e : seq_to_link[s.first]) { 
-        //     	ret << e.to_string() << endl; 
-        //      } 
-        //   } 	
+           /**
+            *  NB: There are no Fragments in GFA1, so we don't output them.
+            *  We also don't output annotation lines as they're out of spec.
+            *  Also, we check at the function start if we're outputting GFA2,
+            *  so we shouldn't have to do any checks past that point.
+            */
+	    
         }
-
-        //TODO iterate over annotation lines.
 
 
         return ret.str();
@@ -1330,7 +1315,11 @@ namespace gfak{
         return -1;
     }
 
+    // Avoid calling to_string as it murders mem usage
     std::ostream& operator<<(std::ostream& os, GFAKluge& g){
+        g.gfa_1_ize();
+        g.gfa_2_ize();
+
         os << g.to_string();
         return os;
     }
