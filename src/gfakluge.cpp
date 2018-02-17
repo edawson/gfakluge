@@ -1056,6 +1056,11 @@ namespace gfak{
             // for (auto f : seq_to_fragments[s.first]){
             //     ret << f.second.to_string() << endl;
             // }
+	    if (this->version < 2.0) { 
+            	for (auto e : seq_to_link[s.first]) { 
+            	ret << e.to_string() << endl; 
+             } 
+          } 	
         }
 
         //TODO iterate over annotation lines.

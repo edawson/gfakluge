@@ -2,3 +2,8 @@
 *.exe
 test
 *.a
+
+ 
+bin/ 
+ 
+\.GFAK_pre-build 
