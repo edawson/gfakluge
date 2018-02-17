@@ -482,16 +482,23 @@ namespace gfak{
                 //contained_elem c;
                 edge_elem e;
                 e.type = 2;
-                //TODO fix token indices here
-                //c.source_name = tokens[1];
                 e.source_name = tokens[1];
-                //c.sink_name = tokens[3];
                 e.sink_name = tokens[3];
                 e.source_orientation_forward = tokens[2] == "+" ? true : false;
                 e.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                e.sink_begin = 0;
                 e.source_begin = stoul(tokens[5]);
+                e.ends.set(3, 1);
                 if (tokens.size() > 6){
                     e.alignment = tokens[6];
+                    string overlap = "";
+                    int i = 0;
+                    while (std::isdigit(e.alignment[i])){
+                        overlap += e.alignment[0];
+                        ++i;
+                    }
+                    e.source_end = stoi(overlap) + e.source_begin;
+                    e.sink_end = stoi(overlap);
                 }
                 else{
                     e.alignment = "*";
@@ -1011,6 +1018,9 @@ namespace gfak{
 
 
     std::string GFAKluge::to_string(){
+
+        gfa_1_ize();
+        gfa_2_ize();
         if (this->version >= 2.0){
             return to_string_2();
         }
@@ -1056,11 +1066,11 @@ namespace gfak{
             // for (auto f : seq_to_fragments[s.first]){
             //     ret << f.second.to_string() << endl;
             // }
-	    if (this->version < 2.0) { 
-            	for (auto e : seq_to_link[s.first]) { 
-            	ret << e.to_string() << endl; 
-             } 
-          } 	
+	    // if (this->version < 2.0) { 
+        //     	for (auto e : seq_to_link[s.first]) { 
+        //     	ret << e.to_string() << endl; 
+        //      } 
+        //   } 	
         }
 
         //TODO iterate over annotation lines.
