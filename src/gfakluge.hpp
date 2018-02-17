@@ -417,11 +417,6 @@ namespace gfak{
             std::string to_string_2();
             std::string block_order_string();
             std::string block_order_string_2();
-            ostream& operator<<(ostream& os, const Date& dt)  
-            {  
-                os << dt.mo << '/' << dt.da << '/' << dt.yr;  
-                return os;  
-            } 
 
             // ID manipulators
             tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
