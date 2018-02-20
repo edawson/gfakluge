@@ -80,7 +80,7 @@ namespace gfak{
     }
 
     void GFAKluge::gfa_1_ize(){
-        if (true){
+        if (!one_compat){
 
         
         /**
@@ -139,13 +139,58 @@ namespace gfak{
     }
 
     void GFAKluge::gfa_2_ize(){
-        if (true){
+        if (!two_compat){
             // Fix S line length field if needed.
             for (auto s : name_to_seq){
                 s.second.length = (s.second.sequence != "*" ? (uint64_t) s.second.sequence.length() : s.second.length);
-            }
-            // L and C lines are now always handled as edge lines.
+                // Make an edge for each link
+                for (auto l : seq_to_link[s.first]){
+                    edge_elem e;
+                    e.type = 1;
+                    e.source_name = l.source_name;
+                    e.sink_name = l.sink_name;
+                    e.source_orientation_forward = l.source_orientation_forward;
+                    e.sink_orientation_forward = l.sink_orientation_forward;
+                    e.ends.set(0,1);
+                    e.ends.set(1,1);
+                    e.ends.set(2,0);
+                    e.ends.set(3,0);
+                    e.alignment = l.cigar;
+                    e.tags = l.opt_fields;
+                    seq_to_edges[e.source_name].push_back(e);
+                }
+                // Make an edge for each containment
+                for (auto c : seq_to_contained[s.first]){
+                    edge_elem e;
+                    e.type = 2;
+                    e.source_name = c.source_name;
+                    e.sink_name = c.sink_name;
+                    e.source_orientation_forward = c.source_orientation_forward;
+                    e.sink_orientation_forward = c.sink_orientation_forward;
+                    e.alignment = c.cigar;
 
+                    string overlap = "";
+                    int i = 0;
+                    while (std::isdigit(e.alignment[i])){
+                        overlap += e.alignment[0];
+                        ++i;
+                    }
+                    e.source_end = stoi(overlap) + e.source_begin;
+                    e.sink_end = stoi(overlap);
+
+                    if (e.source_end == s.second.length){
+                        e.ends.set(0,1);
+                        e.ends.set(1,1);
+                    }
+                    if(e.sink_end == name_to_seq[e.sink_name].length){
+                        e.ends.set(2,1);
+                        e.ends.set(3,1);
+                    }
+
+                    e.tags = c.opt_fields;
+                    seq_to_edges[e.source_name].push_back(e);
+                }
+            }
             // Paths -> ordered groups
             walks_as_paths();
             for (auto p : name_to_path){
