@@ -2,8 +2,7 @@
 *.exe
 test
 *.a
-
- 
 bin/ 
- 
-\.GFAK_pre-build 
+\.GFAK_pre-build
+*.DSYM
+
