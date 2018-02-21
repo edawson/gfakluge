@@ -5,22 +5,22 @@ namespace gfak{
 
     int determine_line_type(char* line){
        if (line[0] == 'H'){
-            return HEADER;
+            return HEADER_LINE;
        }
        else if (line[0] == 'S'){
-            return SEGMENT;
+            return SEGMENT_LINE;
        }
        else if (line[0] == 'E' || line[0] == 'L' || line[0] == 'C'){
-            return EDGE;
+            return EDGE_LINE;
        }
        else if (line[0] == 'U' || line[0] == 'O' || line[0] == 'P' || line[0] == 'W'){
-            return GROUP;
+            return GROUP_LINE;
        }
        else if (line[0] == 'G'){
-            return GAP;
+            return GAP_LINE;
        }
        else if (line[0] == 'F'){
-            return FRAGMENT;
+            return FRAGMENT_LINE;
        }
        else{
             return -1;

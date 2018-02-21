@@ -19,14 +19,9 @@ using namespace std;
 namespace gfak{
     
     // ( <header> | <segment> | <fragment> | <edge> | <gap> | <group> )
-    enum line_types_t {
-        HEADER,
-        SEGMENT,
-        FRAGMENT,
-        EDGE,
-        GAP,
-        GROUP
-    };
+
+    enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE};
+    
     struct custom_key{
         bool isdigit(const string s) const{
             //const char* s_str = s.c_str();
