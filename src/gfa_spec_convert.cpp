@@ -57,7 +57,7 @@ int main(int argc, char** argv){
 
             case '?':
             case 'h':
-                cerr << "gfa_sort [-b --block-order ] -i <GFA_File> >> my_sorted_gfa.gfa" << endl;
+                spec_help(argv);
                 exit(0);
 
             case 'b':
