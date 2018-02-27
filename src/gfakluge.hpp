@@ -19,14 +19,9 @@ using namespace std;
 namespace gfak{
     
     // ( <header> | <segment> | <fragment> | <edge> | <gap> | <group> )
-    enum line_types_t {
-        HEADER,
-        SEGMENT,
-        FRAGMENT,
-        EDGE,
-        GAP,
-        GROUP
-    };
+
+    enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE};
+    
     struct custom_key{
         bool isdigit(const string s) const{
             //const char* s_str = s.c_str();
@@ -143,9 +138,11 @@ namespace gfak{
         map<string, opt_elem> opt_fields;
         std::string to_string(){
             stringstream st;
-            st << "L" << "\t" << source_name << 
-                "\t" << source_orientation_forward << "\t" <<
-                sink_name << "\t" << sink_orientation_forward;
+            st << "L" 
+               << "\t" << source_name << "\t" 
+               << (source_orientation_forward ? "+" : "-") << "\t" << sink_name << "\t" 
+               << (sink_orientation_forward ? "+" : "-") << "\t" << cigar; 
+
              if (opt_fields.size() > 0){
                 for (auto i : opt_fields){
                     st << "\t" << i.second.to_string();
@@ -295,7 +292,6 @@ namespace gfak{
                     }
                 }
                 return st.str();
-        
         }
     };
 
@@ -427,7 +423,6 @@ namespace gfak{
 
             /** Assembly stats **/
             double get_N50();
-            // double l_50();
             double get_N90();
 
             int get_L50();

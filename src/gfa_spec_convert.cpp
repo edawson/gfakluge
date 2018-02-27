@@ -57,7 +57,7 @@ int main(int argc, char** argv){
 
             case '?':
             case 'h':
-                cerr << "gfa_sort [-b --block-order ] -i <GFA_File> >> my_sorted_gfa.gfa" << endl;
+                spec_help(argv);
                 exit(0);
 
             case 'b':
@@ -82,13 +82,8 @@ int main(int argc, char** argv){
     GFAKluge gg;
     gg.parse_gfa_file(gfa_file);
 
-    if (use_paths){
-        gg.set_version(1.0);
-    }
-    else{
-        gg.set_version(0.1);
-        gg.set_walks(true);
-    }
+
+    gg.set_walks(!use_paths);
 
     if (spec_version == 0.1){
         gg.set_version(0.1);

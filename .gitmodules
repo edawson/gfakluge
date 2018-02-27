@@ -1,0 +1,3 @@
+[submodule "GFA-spec"]
+	path = GFA-spec
+	url = https://github.com/GFA-spec/GFA-spec

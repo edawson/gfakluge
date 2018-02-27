@@ -5,22 +5,22 @@ namespace gfak{
 
     int determine_line_type(char* line){
        if (line[0] == 'H'){
-            return HEADER;
+            return HEADER_LINE;
        }
        else if (line[0] == 'S'){
-            return SEGMENT;
+            return SEGMENT_LINE;
        }
        else if (line[0] == 'E' || line[0] == 'L' || line[0] == 'C'){
-            return EDGE;
+            return EDGE_LINE;
        }
        else if (line[0] == 'U' || line[0] == 'O' || line[0] == 'P' || line[0] == 'W'){
-            return GROUP;
+            return GROUP_LINE;
        }
        else if (line[0] == 'G'){
-            return GAP;
+            return GAP_LINE;
        }
        else if (line[0] == 'F'){
-            return FRAGMENT;
+            return FRAGMENT_LINE;
        }
        else{
             return -1;
@@ -80,7 +80,7 @@ namespace gfak{
     }
 
     void GFAKluge::gfa_1_ize(){
-        if (true){
+        if (!one_compat){
 
         
         /**
@@ -139,13 +139,58 @@ namespace gfak{
     }
 
     void GFAKluge::gfa_2_ize(){
-        if (true){
+        if (!two_compat){
             // Fix S line length field if needed.
             for (auto s : name_to_seq){
                 s.second.length = (s.second.sequence != "*" ? (uint64_t) s.second.sequence.length() : s.second.length);
-            }
-            // L and C lines are now always handled as edge lines.
+                // Make an edge for each link
+                for (auto l : seq_to_link[s.first]){
+                    edge_elem e;
+                    e.type = 1;
+                    e.source_name = l.source_name;
+                    e.sink_name = l.sink_name;
+                    e.source_orientation_forward = l.source_orientation_forward;
+                    e.sink_orientation_forward = l.sink_orientation_forward;
+                    e.ends.set(0,1);
+                    e.ends.set(1,1);
+                    e.ends.set(2,0);
+                    e.ends.set(3,0);
+                    e.alignment = l.cigar;
+                    e.tags = l.opt_fields;
+                    seq_to_edges[e.source_name].push_back(e);
+                }
+                // Make an edge for each containment
+                for (auto c : seq_to_contained[s.first]){
+                    edge_elem e;
+                    e.type = 2;
+                    e.source_name = c.source_name;
+                    e.sink_name = c.sink_name;
+                    e.source_orientation_forward = c.source_orientation_forward;
+                    e.sink_orientation_forward = c.sink_orientation_forward;
+                    e.alignment = c.cigar;
 
+                    string overlap = "";
+                    int i = 0;
+                    while (std::isdigit(e.alignment[i])){
+                        overlap += e.alignment[0];
+                        ++i;
+                    }
+                    e.source_end = stoi(overlap) + e.source_begin;
+                    e.sink_end = stoi(overlap);
+
+                    if (e.source_end == s.second.length){
+                        e.ends.set(0,1);
+                        e.ends.set(1,1);
+                    }
+                    if(e.sink_end == name_to_seq[e.sink_name].length){
+                        e.ends.set(2,1);
+                        e.ends.set(3,1);
+                    }
+
+                    e.tags = c.opt_fields;
+                    seq_to_edges[e.source_name].push_back(e);
+                }
+            }
             // Paths -> ordered groups
             walks_as_paths();
             for (auto p : name_to_path){
@@ -482,16 +527,23 @@ namespace gfak{
                 //contained_elem c;
                 edge_elem e;
                 e.type = 2;
-                //TODO fix token indices here
-                //c.source_name = tokens[1];
                 e.source_name = tokens[1];
-                //c.sink_name = tokens[3];
                 e.sink_name = tokens[3];
                 e.source_orientation_forward = tokens[2] == "+" ? true : false;
                 e.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                e.sink_begin = 0;
                 e.source_begin = stoul(tokens[5]);
+                e.ends.set(3, 1);
                 if (tokens.size() > 6){
                     e.alignment = tokens[6];
+                    string overlap = "";
+                    int i = 0;
+                    while (std::isdigit(e.alignment[i])){
+                        overlap += e.alignment[0];
+                        ++i;
+                    }
+                    e.source_end = stoi(overlap) + e.source_begin;
+                    e.sink_end = stoi(overlap);
                 }
                 else{
                     e.alignment = "*";
@@ -892,10 +944,6 @@ namespace gfak{
 
                 }
             }
-			
-
-					//TODO iterate over links
-					//L    segName1,segOri1,segName2,segOri2,CIGAR      Link
             
 			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                 if (this->version < 1.0 && seq_to_walks[st->first].size() > 0){
@@ -932,14 +980,6 @@ namespace gfak{
                     ret << pat.str();
                 }
             }
-
-
-
-			//TODO iterate over annotation lines.
-
-
-			//Print sequences and links in order, then annotation lines.
-
 			return ret.str();
 
     }
@@ -1011,6 +1051,9 @@ namespace gfak{
 
 
     std::string GFAKluge::to_string(){
+
+        gfa_1_ize();
+        gfa_2_ize();
         if (this->version >= 2.0){
             return to_string_2();
         }
@@ -1049,16 +1092,18 @@ namespace gfak{
                 }
         }
         for (auto s : name_to_seq){
-            ret << (this->version < 2.0 ? s.second.to_string_1() : s.second.to_string_2()) << endl;
+            ret << s.second.to_string_1() << endl;
             for (auto e : seq_to_edges[s.first]){
-                ret << (this->version < 2.0 ? e.to_string_1() : e.to_string_2()) << endl;;
+                ret << e.to_string_1() << endl;;
             }
-            // for (auto f : seq_to_fragments[s.first]){
-            //     ret << f.second.to_string() << endl;
-            // }
+           /**
+            *  NB: There are no Fragments in GFA1, so we don't output them.
+            *  We also don't output annotation lines as they're out of spec.
+            *  Also, we check at the function start if we're outputting GFA2,
+            *  so we shouldn't have to do any checks past that point.
+            */
+	    
         }
-
-        //TODO iterate over annotation lines.
 
 
         return ret.str();
@@ -1315,7 +1360,11 @@ namespace gfak{
         return -1;
     }
 
+    // Avoid calling to_string as it murders mem usage
     std::ostream& operator<<(std::ostream& os, GFAKluge& g){
+        g.gfa_1_ize();
+        g.gfa_2_ize();
+
         os << g.to_string();
         return os;
     }
