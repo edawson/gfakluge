@@ -5,7 +5,23 @@ gfakluge
 GFAKluge is a C++ parser/writer for [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format/). It parses
 GFA to a set of data structures that represent the encoded graph.
 You can use these components and their fields/members to build up your own
-graph representation.
+graph representation.  
+
+A set of command line utilities for basic manipulations is also included.
+
+## Command line utilities
+When `make` is run, a bin directory is added with the following utilities:
+[X] gfa\_extract : transform the GFA segment lines to a FASTA file.  
+[X] gfa\_diff : check if two GFA files are different (not very sophisticated at the moment)  
+[X] gfa\_sort : change the line order of a GFA file so that lines proceed in
+Header -> Segment -> Link/Edge/Containment -> Path order.  
+[X] gfa\_spec\_convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
+[X] gfa\_stats : get the assembly stats of a GFA file (e.g. N50, L50)  
+[X] gfa\_subset : extract a subgraph between two Segment IDs in a GFA file.  
+[ ] gfa\_ids : manually coordinate / increment the ID spaces of two graphs, so that they can be concatenated.  
+[ ] gfa\_merge : merge (i.e. concatenate) multiple GFA files.  
+
+For CLI usage, run any of the above with no arguments or `-h`.
 
 ## Why gfaKluge?
 Currently, most GFA parsers go directly from file to proprietary internal graph representations.
@@ -15,7 +31,7 @@ still providing easy I/O of GFA.
 Since it only relies on the STL, it's easy to build and requires only what's included in the repo.
 
 ## How do I build it?  
-You can build libgfakluge by simply typing ``make``. 
+You can build libgfakluge by typing ``make`` in the repo. 
 To use GFAKluge in your program, you'll need to
 add a few lines to your code. First, add the necessary include line to your C++ code:  
                 #include "gfa_kluge.hpp"
