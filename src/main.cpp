@@ -1,29 +1,41 @@
+#include <getopt.h>
 #include "gfakluge.hpp"
 
 using namespace std;
 using namespace gfak;
-int main(){
-    GFAKluge gg = GFAKluge();
-    gg.parse_gfa_file("../data/q_redundant.gfa");
-    cerr << "GFA file parsed successfully" << endl;
-    cerr << "Testing to_string" << endl;
-    cerr << gg.to_string();
 
-    ofstream ff;
-    ff.open("../data/q_test.gfa");
-    ff << gg;
-    ff.close();
+
+void gfakluge_package_help(argv){
+
+}
+
+
+/** A wrapper around convert
+ * to output a fasta file from GFA input
+ */
+int extract_main(int argc, char** argv){
+
+}
+
+
+/**
+ * Return whether two GFA files are identical
+ * in "structure" (number of links, segments, etC)
+ */
+int diff_main(int argc, char** argv){
+
+}
+
+/**
+ *  Convert a GFA file to another GFA version,
+ *  FASTA, or Cytoscape
+ */
+int convert_main(int argc, char** argv){
+
+}
+
+
+int main(int argc, char** argv){
     
-    ff.open("../data/test_test.gfa");
-
-    GFAKluge gt;
-    gt.parse_gfa_file("../data/test.gfa");
-    ff << gt;
-    ff.close();
-
-    //GFAKluge gc;
-    //gc.parse_gfa_file("comment.gfa");
-
-
     return 0;
 }
