@@ -32,13 +32,24 @@ void extract_help(char** argv){
 
 void diff_help(char** argv){
     cerr << argv[0] << " diff: determine whether two GFA files are the same." << endl
-      << "Usage: " << argv[0] << " diff [] <GFA_File_1> <GFA_File_2>" << endl;
+      << "Usage: " << argv[0] << " diff [options] <GFA_File_1> <GFA_File_2>" << endl;
+}
+
+void convert_help(char** argv){
+    cerr << argv[0] << " convert: convert a file between the various GFA formats." << endl
+        << "Usage: " << argv[0] << " convert [options] <GFA_File>" << endl
+        << "Options: " << endl
+        << "  -s / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
+        << "  -w / --walks   Output paths as walks, but maintain version (NOT SPEC COMPLIANT)." << endl
+        << "  -p / --paths   Output walks as paths, but maintain version." << endl
+        << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]."
+        << endl; 
 }
 
 /**
  * Output a fasta file from input GFA
  */
-
 int extract_main(int argc, char** argv){
     string gfa_file = "";
     bool include_paths = false;
@@ -176,6 +187,8 @@ int diff_main(int argc, char** argv){
         // Check fragments and other GFA2 specific items.
 
     }
+    // Everything matches up, return 0
+    cerr << "The graphs appear to be identical." << endl;
     
     return 0;
 }
@@ -185,7 +198,92 @@ int diff_main(int argc, char** argv){
  *  FASTA, or Cytoscape
  */
 int convert_main(int argc, char** argv){
+    string gfa_file = "";
+    bool block_order = false;
+    double spec_version = 0.1;
+    bool use_paths = true;
 
+    if (argc < 3){
+        cerr << "No GFA file provided. Please provide a GFA file to convert" << endl;
+        convert_help(argv);
+        exit(0);
+    }
+
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"block-order", no_argument, 0, 'b'},
+            {"paths", no_argument, 0, 'p'},
+            {"walks", no_argument, 0, 'w'},
+            {"spec", required_argument, 0, 's'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hbpws:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case '?':
+            case 'h':
+                convert_help(argv);
+                exit(0);
+
+            case 'b':
+                block_order = true;
+                break;
+            case 's':
+                spec_version = stod(optarg);
+                break;
+            case 'w':
+                use_paths = false;
+                break;
+            case 'p':
+                use_paths = true;
+                break;
+
+            default:
+                abort();
+        }
+    }
+    gfa_file = argv[optind];
+
+    GFAKluge gg;
+    gg.parse_gfa_file(gfa_file);
+
+
+    gg.set_walks(!use_paths);
+
+    if (spec_version == 0.1){
+        gg.set_version(0.1);
+    }
+    else if (spec_version == 1.0){
+        gg.set_version(1.0);
+    }
+    else if (spec_version == 2.0){
+        gg.set_version(2.0);
+    }
+    else if (spec_version != 0.0){
+        cerr << "Invalid specification number: " << spec_version << endl
+        << "Please provide one of [0.1, 1.0, 2.0]." << endl;
+        exit(22);
+    }
+
+    
+
+    if (block_order){
+        cout << gg.block_order_string();
+    }
+    else{
+        cout << gg.to_string();
+    }
+
+	return 0;
 }
 
 int ids_main(int argc, char** argv){
@@ -217,8 +315,8 @@ int main(int argc, char** argv){
        return gfakluge_package_help(argv);
     }
 
-    if (argv[1] == "convert"){
-        //return convert_main(argc, argv);
+    if (strcmp(argv[1], "convert") == 0){
+        return convert_main(argc, argv);
     }
     else if (strcmp(argv[1], "diff") == 0){
         return diff_main(argc, argv);
