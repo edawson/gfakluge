@@ -1,3 +1,6 @@
 [submodule "GFA-spec"]
 	path = GFA-spec
 	url = https://github.com/GFA-spec/GFA-spec
+[submodule "pliib"]
+	path = pliib
+	url = https://github.com/edawson/pliib
