@@ -11,15 +11,15 @@ A set of command line utilities for basic manipulations is also included.
 
 ## Command line utilities
 When `make` is run, a bin directory is added with the following utilities:
-[X] gfa\_extract : transform the GFA segment lines to a FASTA file.  
-[X] gfa\_diff : check if two GFA files are different (not very sophisticated at the moment)  
-[X] gfa\_sort : change the line order of a GFA file so that lines proceed in
+[X] gfa extract : transform the GFA segment lines to a FASTA file.  
+[X] gfa diff : check if two GFA files are different (not very sophisticated at the moment)  
+[X] gfa sort : change the line order of a GFA file so that lines proceed in
 Header -> Segment -> Link/Edge/Containment -> Path order.  
-[X] gfa\_spec\_convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
-[X] gfa\_stats : get the assembly stats of a GFA file (e.g. N50, L50)  
-[X] gfa\_subset : extract a subgraph between two Segment IDs in a GFA file.  
-[ ] gfa\_ids : manually coordinate / increment the ID spaces of two graphs, so that they can be concatenated.  
-[ ] gfa\_merge : merge (i.e. concatenate) multiple GFA files.  
+[X] gfa spec\_convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
+[X] gfa stats : get the assembly stats of a GFA file (e.g. N50, L50)  
+[X] gfa subset : extract a subgraph between two Segment IDs in a GFA file.  
+[ ] gfa ids : manually coordinate / increment the ID spaces of two graphs, so that they can be concatenated.  
+[ ] gfa merge : merge (i.e. concatenate) multiple GFA files.  
 
 For CLI usage, run any of the above with no arguments or `-h`.
 
