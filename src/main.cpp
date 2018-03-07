@@ -324,19 +324,19 @@ int main(int argc, char** argv){
     else if (strcmp(argv[1], "extract") == 0){
         return extract_main(argc, argv);
     }
-    else if (argv[1] == "ids"){
+    else if (strcmp(argv[1], "ids") == 0){
     
     }
-    else if (argv[1] == "merge"){
+    else if (strcmp(argv[1], "merge") == 0){
 
     }
-    else if (argv[1] == "sort"){
+    else if (strcmp(argv[1], "sort") == 0){
 
     }
-    else if (argv[1] == "stats"){
+    else if (strcmp(argv[1], "stats") == 0){
 
     }
-    else if (argv[1] == "subset"){
+    else if (strcmp(argv[1], "subset") == 0){
 
     }
     else {
