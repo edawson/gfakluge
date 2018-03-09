@@ -17,7 +17,7 @@ $(BUILD_DIR)/main.o: src/main.cpp .GFAK_pre-build
 libgfakluge.a: $(BUILD_DIR)/gfakluge.o
 	ar -rs $@ $<
 
-$(BUILD_DIR)/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp
+$(BUILD_DIR)/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp .GFAK_pre-build
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
 .PHONY: clean all
