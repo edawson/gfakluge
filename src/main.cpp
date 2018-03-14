@@ -49,7 +49,7 @@ void convert_help(char** argv){
 
 void stats_help(char** argv){
     cerr << argv[0] << " stats: print assembly / graph stats for a GFA file." << endl
-        << "Usage: " << argv[0] " stats [options] <GFA_File>" << endl
+        << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
         << "   -a / --assembly  print assembly statistics (N50, N90, L50, L90)." << endl
         << "   -s / --all       print all graph statistics." << endl
         << "   -l / --length    print the total sequence length (in S lines)." << endl
@@ -337,7 +337,7 @@ int main(int argc, char** argv){
         return extract_main(argc, argv);
     }
     else if (strcmp(argv[1], "ids") == 0){
-        return ids_main(argv, argv); 
+        return ids_main(argc, argv); 
     }
     else if (strcmp(argv[1], "merge") == 0){
         return merge_main(argc, argv);
