@@ -47,6 +47,18 @@ void convert_help(char** argv){
         << endl; 
 }
 
+void stats_help(char** argv){
+    cerr << argv[0] << " stats: print assembly / graph stats for a GFA file." << endl
+        << "Usage: " << argv[0] " stats [options] <GFA_File>" << endl
+        << "   -a / --assembly  print assembly statistics (N50, N90, L50, L90)." << endl
+        << "   -s / --all       print all graph statistics." << endl
+        << "   -l / --length    print the total sequence length (in S lines)." << endl
+        << "   -n / --num-nodes print the number of nodes." << endl
+        << "   -e / --num-edges print the number of edges." << endl
+        << "   -p / --paths     print some path statistics." << endl
+        << endl;
+}
+
 /**
  * Output a fasta file from input GFA
  */
@@ -299,7 +311,7 @@ int sort_main(int argc, char** argv){
 }
 
 int stats_main(int argc, char** argv){
-
+    
 }
 
 
@@ -325,19 +337,19 @@ int main(int argc, char** argv){
         return extract_main(argc, argv);
     }
     else if (strcmp(argv[1], "ids") == 0){
-    
+        return ids_main(argv, argv); 
     }
     else if (strcmp(argv[1], "merge") == 0){
-
+        return merge_main(argc, argv);
     }
     else if (strcmp(argv[1], "sort") == 0){
-
+        return sort_main(argc, argv);
     }
     else if (strcmp(argv[1], "stats") == 0){
-
+        return stats_main(argc, argv);
     }
     else if (strcmp(argv[1], "subset") == 0){
-
+        return subset_main(argc, argv);
     }
     else {
         cerr << "No command " << '"' << argv[1] << '"' << endl;
