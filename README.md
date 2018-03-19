@@ -10,31 +10,31 @@ graph representation.
 A set of command line utilities for basic manipulations is also included.
 
 ## Command line utilities
-When `make` is run, a bin directory is added with the following utilities:
-[X] gfa extract : transform the GFA segment lines to a FASTA file.  
-[X] gfa diff : check if two GFA files are different (not very sophisticated at the moment)  
-[X] gfa sort : change the line order of a GFA file so that lines proceed in
+When `make` is run, the `gfak` binary is build in the top level directory. It offers the following subcommands:
+[X] gfak extract : transform the GFA segment lines to a FASTA file.  
+[X] gfak diff : check if two GFA files are different (not very sophisticated at the moment)  
+[X] gfak sort : change the line order of a GFA file so that lines proceed in
 Header -> Segment -> Link/Edge/Containment -> Path order.  
-[X] gfa spec\_convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
-[X] gfa stats : get the assembly stats of a GFA file (e.g. N50, L50)  
-[X] gfa subset : extract a subgraph between two Segment IDs in a GFA file.  
-[ ] gfa ids : manually coordinate / increment the ID spaces of two graphs, so that they can be concatenated.  
-[ ] gfa merge : merge (i.e. concatenate) multiple GFA files.  
+[X] gfak spec\_convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
+[X] gfak stats : get the assembly stats of a GFA file (e.g. N50, L50)  
+[X] gfak subset : extract a subgraph between two Segment IDs in a GFA file.  
+[X] gfak ids : manually coordinate / increment the ID spaces of two graphs, so that they can be concatenated.  
+[X] gfak merge : merge (i.e. concatenate) multiple GFA files. NB: Obliterates nodes with the same ID.  
 
-For CLI usage, run any of the above with no arguments or `-h`.
+For CLI usage, run any of the above (including `gfak` with no subcommand) with no arguments or `-h`. To change specification version, most commands take the `-S` flag and a single `double` argument.  
 
-## Why gfaKluge?
-Currently, most GFA parsers go directly from file to proprietary internal graph representations.
-This library instead parses to standard C++ STL containers.
-This means it is not beholden to any internal representation while
-still providing easy I/O of GFA.
-Since it only relies on the STL, it's easy to build and requires only what's included in the repo.
+## Why gfak / gfakluge?
++ Simple command line utilities (no awk foo needed!)  
++ High level C++ API for many graph manipulations.  
++ Easy to build - no external dependencies; build with just a modern C++ compiler supporting C++11.
++ Easy to develop with - Backing library is mostly STL containers and a handful of structs.  
++ Performance - gfakluge is fast and relies on standard STL containers and basic structs.  
 
 ## How do I build it?  
 You can build libgfakluge by typing ``make`` in the repo. 
 To use GFAKluge in your program, you'll need to
 add a few lines to your code. First, add the necessary include line to your C++ code:  
-                #include "gfa_kluge.hpp"
+                #include "gfakluge.hpp"
 
 Next, make sure that the library is on the proper system paths and compile line:
 
@@ -116,16 +116,24 @@ I'm working on a low-memory API for reading lines / emitting structs but it won'
 
                 cout << og << endl;
                 ofstream f = ofstream("my_file.gfa);
+                // Write GFA1
                 f << og;
+
+                // To convert to GFA2:
+                og.set_version(2.0);
+                f << od;
 
 ## Status
 - GFAKluge is essentially a set of dumb containers - it does no error checking of your structure to detect if it is
 valid GFA. This may change as the GFA spec becomes more formal.  
 - Parses JSON structs in optional fields of sequence lines (just as strings though).  
 - Full GFA1/GFA2 compatibility and interconversion is now implemented.  
+- CLI has been refactored to a single executable
+- Memory usage for to\_string is a bit high - be careful with large graphs.
+- API for input / spec conversion / output is stable. API for merging graphs and coordinating ID namespaces may change slightly, but will strive for backwards compatibility.
 
 
 ## Getting Help 
-Eric T Dawson  
-github: [edawson](https://github.com/edawson/https://github.com/edawson/GFAKluge)  
+Eric T Dawson   
+github: [edawson](https://github.com/edawson/https://github.com/edawson/GFAKluge)   
 Please post an issue for help.
