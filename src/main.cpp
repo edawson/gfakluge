@@ -56,6 +56,14 @@ void convert_help(char** argv){
         << endl; 
 }
 
+void sort_help(char** argv){
+    cerr << argv[0] << " sort: sort a GFA file." << endl
+        << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
+        << "Options:" << endl
+        << "  -S / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << endl;
+}
+
 void stats_help(char** argv){
     cerr << argv[0] << " stats: print assembly / graph stats for a GFA file." << endl
         << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
@@ -411,7 +419,60 @@ int merge_main(int argc, char** argv){
 }
 
 int sort_main(int argc, char** argv){
+    string gfa_file = "";
+    bool block_order = true;
+    double spec = 0.0;
 
+    if (argc == 1){
+        sort_help(argv);
+        exit(0);
+    }
+
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"spec", no_argument, 0, 'S'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hS:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+
+            case '?':
+            case 'h':
+                sort_help(argv);
+                exit(1);
+                break;
+
+            case 'S':
+                spec = stod(optarg);
+                break;
+
+            default:
+                abort();
+        }
+    }
+    gfa_file = argv[optind];
+
+    GFAKluge gg;
+    gg.parse_gfa_file(gfa_file);
+
+    if (spec != 0){
+        gg.set_version(spec);
+    }
+   
+    cout << gg.block_order_string();
+    
+    
+    return 0;
 }
 
 int stats_main(int argc, char** argv){
