@@ -10,16 +10,16 @@ graph representation.
 A set of command line utilities for basic manipulations is also included.
 
 ## Command line utilities
-When `make` is run, the `gfak` binary is build in the top level directory. It offers the following subcommands:
-[X] gfak extract : transform the GFA segment lines to a FASTA file.  
-[X] gfak diff : check if two GFA files are different (not very sophisticated at the moment)  
-[X] gfak sort : change the line order of a GFA file so that lines proceed in
+When `make` is run, the `gfak` binary is build in the top level directory. It offers the following subcommands:  
++ gfak extract : transform the GFA segment lines to a FASTA file.  
++ gfak diff : check if two GFA files are different (not very sophisticated at the moment)  
++ gfak sort : change the line order of a GFA file so that lines proceed in
 Header -> Segment -> Link/Edge/Containment -> Path order.  
-[X] gfak spec\_convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
-[X] gfak stats : get the assembly stats of a GFA file (e.g. N50, L50)  
-[X] gfak subset : extract a subgraph between two Segment IDs in a GFA file.  
-[X] gfak ids : manually coordinate / increment the ID spaces of two graphs, so that they can be concatenated.  
-[X] gfak merge : merge (i.e. concatenate) multiple GFA files. NB: Obliterates nodes with the same ID.  
++ gfak spec\_convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
++ gfak stats : get the assembly stats of a GFA file (e.g. N50, L50)  
++ gfak subset : extract a subgraph between two Segment IDs in a GFA file.  
++ gfak ids : manually coordinate / increment the ID spaces of two graphs, so that they can be concatenated.  
++ gfak merge : merge (i.e. concatenate) multiple GFA files. NB: Obliterates nodes with the same ID.  
 
 For CLI usage, run any of the above (including `gfak` with no subcommand) with no arguments or `-h`. To change specification version, most commands take the `-S` flag and a single `double` argument.  
 
@@ -126,6 +126,7 @@ I'm working on a low-memory API for reading lines / emitting structs but it won'
 ## Status
 - GFAKluge is essentially a set of dumb containers - it does no error checking of your structure to detect if it is
 valid GFA. This may change as the GFA spec becomes more formal.  
+- Diff is not a useful tool yet.
 - Parses JSON structs in optional fields of sequence lines (just as strings though).  
 - Full GFA1/GFA2 compatibility and interconversion is now implemented.  
 - CLI has been refactored to a single executable
