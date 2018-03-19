@@ -48,7 +48,7 @@ void convert_help(char** argv){
     cerr << argv[0] << " convert: convert a file between the various GFA formats." << endl
         << "Usage: " << argv[0] << " convert [options] <GFA_File>" << endl
         << "Options: " << endl
-        << "  -s / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  -S / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
         << "  -w / --walks   Output paths as walks, but maintain version (NOT SPEC COMPLIANT)." << endl
         << "  -p / --paths   Output walks as paths, but maintain version." << endl
@@ -59,6 +59,7 @@ void convert_help(char** argv){
 void stats_help(char** argv){
     cerr << argv[0] << " stats: print assembly / graph stats for a GFA file." << endl
         << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
+        << "Options:" << endl
         << "   -a / --assembly  print assembly statistics (N50, N90, L50, L90)." << endl
         << "   -s / --all       print all graph statistics." << endl
         << "   -l / --length    print the total sequence length (in S lines)." << endl
@@ -66,6 +67,17 @@ void stats_help(char** argv){
         << "   -e / --num-edges print the number of edges." << endl
         << "   -p / --paths     print some path statistics." << endl
         << endl;
+}
+
+void subset_help(char** argv){
+    cerr << argv[0] << " subset: extract a subset of a GFA graph between two node ids." << endl
+    << "Usage: " << argv[0] << " subset [options] <gfa_file>" << endl
+    << "Options:" << endl
+    << "  -S / --spec <X>   GFA specification version for output." << endl
+    << "  -s / --start-id  <n_id> Start ID of subgraph." << endl
+    << "  -e / --end-id    <n_id> End ID of subgraph." << endl
+    << "  -b / --block-order Output GFA in block order." << endl
+    << endl;
 }
 
 /**
@@ -239,12 +251,12 @@ int convert_main(int argc, char** argv){
             {"block-order", no_argument, 0, 'b'},
             {"paths", no_argument, 0, 'p'},
             {"walks", no_argument, 0, 'w'},
-            {"spec", required_argument, 0, 's'},
+            {"spec", required_argument, 0, 'S'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "hbpws:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hbpwS:", long_options, &option_index);
         if (c == -1){
             break;
         }
@@ -258,7 +270,7 @@ int convert_main(int argc, char** argv){
             case 'b':
                 block_order = true;
                 break;
-            case 's':
+            case 'S':
                 spec_version = stod(optarg);
                 break;
             case 'w':
@@ -408,7 +420,105 @@ int stats_main(int argc, char** argv){
 
 
 int subset_main(int argc, char** argv){
+    vector<string> g_files;
+    bool block_order = false;
+    double spec = 0;
+    uint64_t start_id = 0;
+    uint64_t end_id = UINT64_MAX;
 
+    if (argc == 1){
+        subset_help(argv);
+        exit(0);
+    }
+
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"block-order", no_argument, 0, 'b'},
+            {"spec-version", required_argument, 0, 'S'},
+            {"end-id", required_argument, 0, 'e'},
+            {"start-id", required_argument, 0, 's'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "s:e:hS:b", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+
+            case '?':
+            case 'h':
+                subset_help(argv);
+                exit(0);
+            case 'S':
+                spec = stod(optarg);
+                break;
+            case 's':
+                start_id = stoul(optarg);
+                break;
+            case 'e':
+                end_id = stoul(optarg);
+                break;
+            case 'b':
+                block_order = true;
+                break;
+
+            default:
+                abort();
+        }
+    }
+
+    vector<string> gfiles;
+    while (optind < argc){
+        gfiles.push_back(argv[optind]);
+        optind++;
+    }
+
+    for (auto i : gfiles){
+        GFAKluge gg;
+        GFAKluge outg;
+        gg.parse_gfa_file(i);
+        gg.gfa_2_ize();
+
+        map<string, sequence_elem, custom_key> seqs = gg.get_name_to_seq();
+        map<string, vector<edge_elem>> edges = gg.get_seq_to_edges();
+        map<string, vector<gap_elem>> gaps = gg.get_seq_to_gaps();
+        map<string, vector<fragment_elem>> fragments = gg.get_seq_to_fragments();
+        
+        for (auto s : seqs){
+            if (stoul(s.first) <= end_id && stoul(s.first) >= start_id){
+                outg.add_sequence(s.second);
+                for (auto e : edges[s.first]){
+                    if (stoul(e.sink_name) <= end_id && stoul(e.sink_name) >= start_id){
+                        outg.add_edge(e.source_name, e);
+                    }
+                }
+                for (auto gap : gaps[s.first]){
+                    outg.add_gap(gap);
+                }
+                for (auto frag : fragments[s.first]){
+                    outg.add_fragment(s.first, frag);
+                }
+            }
+            
+        }
+        // TODO Just copy over all paths, but preferably trim the orientations and items vectors
+        for (auto p : gg.get_name_to_path())
+        {
+            outg.add_path(p.first, p.second);
+        }
+
+        if (spec != 0.0){
+            outg.set_version(spec);
+        }
+        cout << outg.to_string() << endl;
+    }
 }
 
 
