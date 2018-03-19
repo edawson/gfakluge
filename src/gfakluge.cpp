@@ -509,7 +509,7 @@ namespace gfak{
                 }
 
                 if (tokens.size() >= 7){
-                    for (int i = 7; i < tokens.size(); i++){
+                    for (int i = 6; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
                         vector<string> opt_field = split(tokens[i], ':');
                         opt_elem o;
