@@ -5,4 +5,4 @@ test
 bin/ 
 \.GFAK_pre-build
 *.DSYM
-
+gfak
