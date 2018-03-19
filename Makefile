@@ -28,7 +28,7 @@ $(BUILD_DIR)/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp .GFAK_pre-build
 	mkdir -p $(BUILD_DIR)
 	touch .GFAK_pre-build
 clean:
-	$(RM) $(EXE)
+	$(RM) gfak
 	$(RM) src/*.o
 	$(RM) *.a
 	$(RM) test
