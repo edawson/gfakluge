@@ -35,6 +35,15 @@ void diff_help(char** argv){
       << "Usage: " << argv[0] << " diff [options] <GFA_File_1> <GFA_File_2>" << endl;
 }
 
+void ids_help(char** argv){
+    cerr << argv[0] << " ids: coordinate the ID spaces of multiple GFA files." << endl
+    << "Usage: " << argv[0] << " ids <GFA_FILE_1> .... <GFA_FILE_N>" << endl
+    << "options: " << endl
+    << "   -s / --start-ids   Start the relabeling process from <n_id:e_id:p_id>" << endl
+    << "   -S / --spec <X>    Output GFA specification version <X>." << endl
+    << "   -b / --block-order Output block-order (HSLCP) GFA." << endl;
+}
+
 void convert_help(char** argv){
     cerr << argv[0] << " convert: convert a file between the various GFA formats." << endl
         << "Usage: " << argv[0] << " convert [options] <GFA_File>" << endl
@@ -299,6 +308,89 @@ int convert_main(int argc, char** argv){
 }
 
 int ids_main(int argc, char** argv){
+    vector<string> g_files;
+    bool block_order = false;
+    string start_string;
+    double spec = 0.0;
+
+    if (argc == 1){
+        cerr << "gfa_ids [-b -s S_ID:E_ID:F_ID:GA_ID:GR_ID ] <gfa1> <gfa2> ... [gfaN]" << endl;
+        exit(0);
+    }
+
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"start-ids", required_argument, 0, 's'},
+            {"spec", required_argument, 0, 'S'},
+            {"blocker-order", no_argument, 0, 'b'},
+            {0,0,0,0}
+        };
+
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hbS:s:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case 'i':
+                g_files.push_back( optarg );
+                break;
+
+            case '?':
+            case 'h':
+                ids_help(argv);
+                exit(0);
+
+            case 's':
+                start_string = optarg;
+                break;
+
+            case 'b':
+                block_order = true;
+                break;
+            case 'S':
+                spec = stod(optarg);
+                break;
+
+            default:
+                abort();
+        }
+    }
+
+    while (optind < argc){
+        g_files.push_back(argv[optind]);
+        optind++;
+    }
+
+    int processed = 0;
+    
+    for (auto gfi : g_files){
+        // get previous ID
+        // if it is greater than the minimum ID in this gg,
+        // increment all IDs in gg by the prev_id.
+        // output this updated gg
+        GFAKluge gg;
+        gg.parse_gfa_file(gfi);
+        gg.re_id(start_string);
+        tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids = gg.max_ids();
+        stringstream xl;
+        xl << std::get<0>(max_ids) << ":" << std::get<1>(max_ids) << ":" <<
+            std::get<2>(max_ids) << ":" << std::get<3>(max_ids) << ":" <<
+            std::get<4>(max_ids);
+        start_string = xl.str();
+        if (spec != 0){
+            gg.set_version(spec);
+        }
+        cout << (block_order ? gg.block_order_string() : gg.to_string());
+        ++processed;
+        cerr << "Processed " << processed << " graphs..." << endl;
+    }
+    cerr << "Done." << endl;
 
 }
 
