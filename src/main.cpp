@@ -56,6 +56,16 @@ void convert_help(char** argv){
         << endl; 
 }
 
+void merge_help(char** argv){
+    cerr << argv[0] << " merge: merge multiple GFA files into one structure." << endl
+        << "Usage: " << argv[0] << " merge [options] <GFA_FILE_1> ... <GFA_FILE_N>" << endl
+        << "Options: " << endl
+        << "  -S / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
+        << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]."
+        << endl; 
+}
+
 void sort_help(char** argv){
     cerr << argv[0] << " sort: sort a GFA file." << endl
         << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
@@ -415,7 +425,78 @@ int ids_main(int argc, char** argv){
 }
 
 int merge_main(int argc, char** argv){
+    bool block_order = false;
+    double spec = 0.0;
+    vector<string> g_files;
 
+    if (argc == 1){
+        merge_help(argv);
+        exit(1);
+    }
+
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"spec", required_argument, 0, 'S'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hS:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+
+            case '?':
+            case 'h':
+                merge_help(argv);
+                exit(0);
+                break;
+            case 'S':
+                spec = stod(optarg);
+                break;
+
+            case 'b':
+                block_order = true;
+                break;
+
+            default:
+                abort();
+        }
+    }
+
+    while(optind < argc){
+        g_files.push_back(argv[optind]);
+        optind++;
+    }
+
+    cerr << "Merging " << g_files.size() << " graphs..." << endl;
+
+    // This does the same thing as IDs,
+    // Just uses more memory...
+    GFAKluge base;
+    base.gfa_2_ize();
+    for (auto gfi : g_files){
+        gfak::GFAKluge gg;
+        gg.parse_gfa_file(gfi);
+        base.merge(gg);
+    }
+    if (spec != 0){
+        base.set_version(spec);
+    }
+    if (block_order){
+        cout << base.block_order_string();
+    }
+    else{
+        cout << base.to_string();
+
+    }
+    return 0;
 }
 
 int sort_main(int argc, char** argv){
