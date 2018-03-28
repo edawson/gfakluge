@@ -15,7 +15,7 @@ When `make` is run, the `gfak` binary is build in the top level directory. It of
 + gfak diff : check if two GFA files are different (not very sophisticated at the moment)  
 + gfak sort : change the line order of a GFA file so that lines proceed in
 Header -> Segment -> Link/Edge/Containment -> Path order.  
-+ gfak spec\_convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
++ gfak convert : convert between the different GFA specifications (e.g. GFA1 -> GFA2).  
 + gfak stats : get the assembly stats of a GFA file (e.g. N50, L50)  
 + gfak subset : extract a subgraph between two Segment IDs in a GFA file.  
 + gfak ids : manually coordinate / increment the ID spaces of two graphs, so that they can be concatenated.  
@@ -31,7 +31,8 @@ For CLI usage, run any of the above (including `gfak` with no subcommand) with n
 + Performance - gfakluge is fast and relies on standard STL containers and basic structs.  
 
 ## How do I build it?  
-You can build libgfakluge by typing ``make`` in the repo. 
+You can build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  
+It's also available in homebrew at: `brew install brewsci/bio/gfakluge`
 To use GFAKluge in your program, you'll need to
 add a few lines to your code. First, add the necessary include line to your C++ code:  
                 #include "gfakluge.hpp"
