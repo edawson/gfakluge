@@ -1,19 +1,16 @@
 #ifndef GFAK_HPP
 #define GFAK_HPP
+
 #include <string>
 #include <sstream>
-#include <fstream>
 #include <istream>
 #include <algorithm>
 #include <map>
 #include <vector>
 #include <sstream>
-#include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <iomanip>
 #include <bitset>
-#include <unordered_set>
 
 namespace gfak{
     

@@ -1,5 +1,8 @@
 #include "gfakluge.hpp"
 
+#include <unordered_set>
+#include <fstream>
+
 using namespace std;
 namespace gfak{
 
