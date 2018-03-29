@@ -281,7 +281,7 @@ namespace gfak{
         return !(s.empty());
     }
 
-    bool GFAKluge::parse_gfa_file(string filename){
+bool GFAKluge::parse_gfa_file(const std::string &filename) {
         ifstream gfi;
         gfi.open(filename.c_str(), std::ifstream::in);
         if (!gfi.good()){

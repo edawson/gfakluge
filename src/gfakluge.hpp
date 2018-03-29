@@ -22,7 +22,7 @@ namespace gfak{
     enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE};
     
     struct custom_key{
-        bool isdigit(const std::string s) const{
+        bool isdigit(const std::string &s) const {
             //const char* s_str = s.c_str();
             std::string::const_iterator it;
             for (it = s.begin(); it != s.end(); it++){
@@ -32,8 +32,8 @@ namespace gfak{
             }
             return true;
         }
-        bool operator() (const std::string lhs, const std::string rhs) const{
-            if (isdigit(lhs) && isdigit(rhs)){
+        bool operator() (const std::string &lhs, const std::string &rhs) const{
+            if (isdigit(lhs) && isdigit(rhs)) {
                 return atol(lhs.c_str()) < atol(rhs.c_str());
             }
             else{
@@ -42,11 +42,11 @@ namespace gfak{
         }
     };
 
-    struct comment_elem{
+    struct comment_elem {
         std::vector<std::string> comments;
     };
 
-    struct header_elem{
+    struct header_elem {
         std::string key;
         std::string type;
         std::string val;
@@ -55,11 +55,11 @@ namespace gfak{
         // e.g. multiple program lines.
     };
 
-		struct opt_elem{
+		struct opt_elem {
         std::string key;
         std::string type;
         std::string val;
-        std::string to_string(){
+        std::string to_string() {
             std::stringstream st;
             st << key << ":" << type << ":" << val;
             return st.str();
@@ -323,7 +323,7 @@ namespace gfak{
         public:
             GFAKluge();
             ~GFAKluge();
-            bool parse_gfa_file(std::string filename);
+            bool parse_gfa_file(const std::string &filename);
             bool parse_gfa_file(std::istream& gfa_stream);
 
             //TODO: we should enforce graph structure,
