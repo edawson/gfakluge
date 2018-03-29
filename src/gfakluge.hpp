@@ -78,8 +78,8 @@ namespace gfak{
         vector<bool> orientations;
         vector<string> overlaps;
         map<string, opt_elem> opt_fields;
-        std::string to_string(){
-            
+        std::string to_string() {
+            return "";
         }
     };
 
