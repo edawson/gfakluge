@@ -40,7 +40,7 @@ void ids_help(char** argv){
     << "Usage: " << argv[0] << " ids <GFA_FILE_1> .... <GFA_FILE_N>" << endl
     << "options: " << endl
     << "   -s / --start-ids   Start the relabeling process from <n_id:e_id:p_id>" << endl
-    << "   -S / --spec <X>    Output GFA specification version <X>." << endl
+    << "   --version <X>    Output GFA specification version <X>." << endl
     << "   -b / --block-order Output block-order (HSLCP) GFA." << endl;
 }
 
@@ -48,7 +48,7 @@ void convert_help(char** argv){
     cerr << argv[0] << " convert: convert a file between the various GFA formats." << endl
         << "Usage: " << argv[0] << " convert [options] <GFA_File>" << endl
         << "Options: " << endl
-        << "  -S / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  --version <X> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
         << "  -w / --walks   Output paths as walks, but maintain version (NOT SPEC COMPLIANT)." << endl
         << "  -p / --paths   Output walks as paths, but maintain version." << endl
@@ -60,7 +60,7 @@ void merge_help(char** argv){
     cerr << argv[0] << " merge: merge multiple GFA files into one structure." << endl
         << "Usage: " << argv[0] << " merge [options] <GFA_FILE_1> ... <GFA_FILE_N>" << endl
         << "Options: " << endl
-        << "  -S / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  --version <X> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
         << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]."
         << endl; 
@@ -70,7 +70,7 @@ void sort_help(char** argv){
     cerr << argv[0] << " sort: sort a GFA file." << endl
         << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
         << "Options:" << endl
-        << "  -S / --spec [0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  --version <X> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << endl;
 }
 
@@ -91,10 +91,11 @@ void subset_help(char** argv){
     cerr << argv[0] << " subset: extract a subset of a GFA graph between two node ids." << endl
     << "Usage: " << argv[0] << " subset [options] <gfa_file>" << endl
     << "Options:" << endl
-    << "  -S / --spec <X>   GFA specification version for output." << endl
+    << "  --version <X>   GFA specification version for output." << endl
     << "  -s / --start-id  <n_id> Start ID of subgraph." << endl
     << "  -e / --end-id    <n_id> End ID of subgraph." << endl
     << "  -b / --block-order Output GFA in block order." << endl
+    << "  --version <X> [one of 0.1, 1.0, 2.0]  Output the subset GFA in GFA version <X>." << endl
     << endl;
 }
 
@@ -228,6 +229,10 @@ int diff_main(int argc, char** argv){
         cerr << "Graphs have different numbers of sequences." << endl;
         return -1;
     }
+    else if (e_1.size() != e_2.size()){
+        cerr << "Graphs have different numbers of edges" << endl;
+        return -1;
+    }
     else{
         // Check if all node IDs are the same.
 
@@ -269,7 +274,7 @@ int convert_main(int argc, char** argv){
             {"block-order", no_argument, 0, 'b'},
             {"paths", no_argument, 0, 'p'},
             {"walks", no_argument, 0, 'w'},
-            {"spec", required_argument, 0, 'S'},
+            {"version", required_argument, 0, 'S'},
             {0,0,0,0}
         };
     
@@ -355,7 +360,7 @@ int ids_main(int argc, char** argv){
         {
             {"help", no_argument, 0, 'h'},
             {"start-ids", required_argument, 0, 's'},
-            {"spec", required_argument, 0, 'S'},
+            {"version", required_argument, 0, 'S'},
             {"blocker-order", no_argument, 0, 'b'},
             {0,0,0,0}
         };
@@ -440,7 +445,7 @@ int merge_main(int argc, char** argv){
         static struct option long_options[] =
         {
             {"help", no_argument, 0, 'h'},
-            {"spec", required_argument, 0, 'S'},
+            {"version", required_argument, 0, 'S'},
             {0,0,0,0}
         };
     
@@ -504,7 +509,7 @@ int sort_main(int argc, char** argv){
     bool block_order = true;
     double spec = 0.0;
 
-    if (argc == 1){
+    if (argc <= 2){
         sort_help(argv);
         exit(0);
     }
@@ -515,7 +520,7 @@ int sort_main(int argc, char** argv){
         static struct option long_options[] =
         {
             {"help", no_argument, 0, 'h'},
-            {"spec", no_argument, 0, 'S'},
+            {"version", required_argument, 0, 'S'},
             {0,0,0,0}
         };
     
@@ -719,7 +724,7 @@ int subset_main(int argc, char** argv){
         {
             {"help", no_argument, 0, 'h'},
             {"block-order", no_argument, 0, 'b'},
-            {"spec-version", required_argument, 0, 'S'},
+            {"version", required_argument, 0, 'S'},
             {"end-id", required_argument, 0, 'e'},
             {"start-id", required_argument, 0, 's'},
             {0,0,0,0}

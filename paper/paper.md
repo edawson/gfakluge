@@ -36,13 +36,17 @@ text format.
 GFA also aims to provide a single format for interchange between software for assembly,
 visualization, read mapping and variant calling. Such programs are often written in high-performance
 programming languages such as C or C++. GFAKluge facilitates interprogram exchange by providing
-a high-level API in C++ under the MIT software license. We hope the availability of an open-source,
+a high-level C++ API for developers and a set of command line tools for users. We hope the availability of an open-source,
 easily extensible API will encourage software developers to consider adding support for GFA to their
 bioinformatics programs.
 
-GFAKluge also provides a command line interface for working with GFA. This includes replacements for
+# Command Line Utilities
+GFAKluge provides a command line interface for working with GFA. This includes replacements for
 common tasks on FASTA assemblies such as calculating assembly N90. There are also methods for merging
-assemblies, reformating files for readability, and converting between legacy GFA formats.
+assemblies, reformating files for readability, and converting between legacy GFA formats. To our knowledge,
+GFAKluge is the only software package that can consume and produce both GFA1 and GFA2. By allowing interconversion
+between the compatble subsets of the formats, the gfak convert tool allows programs that usually can't communicate to share data
+without changes to their code.
 
 # Integrating GFAKluge into an existing program
 As an example of how to use the GFAKluge API, we examine its use in the variation graph toolkit [vg](https://github.com/vgteam/vg).
@@ -51,3 +55,4 @@ GFAKluge for input and output of GFA in vg, replacing an existing parser. Readin
 the GFA version used. Converting from GFA to vg's internal structures and vice versa requires forty source lines of code. Changing output from
 GFA v1.0 to GFA v2.0 requires a single API call. This allows vg to take assemblies in GFA format from TwoPaCo and other assembly algorithms.
 The gfak command line tools can be used to calculate assembly statistics on assemblies produced by vg.
+
