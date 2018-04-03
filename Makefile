@@ -6,18 +6,18 @@ BIN_DIR:=bin
 BUILD_DIR:=build
 
 LD_LIB_FLAGS=-L./src/ -L./
-LD_INC_FLAGS=-I./src/ -I./ -I./$(BUILD_DIR) -I./src/subcommand/
+LD_INC_FLAGS=-I./src/ -I./ -I./$(BUILD_DIR) -I./src/subcommand/ -I./pliib/
 
-gfak: $(BUILD_DIR)/main.o libgfakluge.a .GFAK_pre-build
+gfak: $(BUILD_DIR)/main.o libgfakluge.a .GFAK_pre-build pliib/pliib.hpp
 	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-$(BUILD_DIR)/main.o: src/main.cpp .GFAK_pre-build src/gfakluge.hpp
+$(BUILD_DIR)/main.o: src/main.cpp .GFAK_pre-build src/gfakluge.hpp pliib/pliib.hpp
 	+$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-libgfakluge.a: $(BUILD_DIR)/gfakluge.o
+libgfakluge.a: $(BUILD_DIR)/gfakluge.o pliib/pliib.hpp
 	ar -rs $@ $<
 
-$(BUILD_DIR)/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp .GFAK_pre-build
+$(BUILD_DIR)/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp .GFAK_pre-build pliib/pliib.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
 .PHONY: clean all

@@ -2,6 +2,7 @@
 
 #include <unordered_set>
 #include <fstream>
+#include "pliib.hpp"
 
 using namespace std;
 namespace gfak{
@@ -300,10 +301,10 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
         string line;
         vector<string> line_tokens;
         while (getline(instream, line)){
-            vector<string> tokens = split(line, '\t');
+            vector<string> tokens = pliib::split(line, '\t');
             if (tokens[0] == "H"){
                 header_elem h;
-                line_tokens = split(tokens[1], ':');
+                line_tokens = pliib::split(tokens[1], ':');
                 //TODO this is not well implemented
                 // GFA places no guarantees on header format
                 h.key = line_tokens[0];
@@ -343,7 +344,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                 if (tokens.size() > 3){
                     for (i = tag_index; i < tokens.size(); i++){
                         //opt fields are in key:type:val format
-                        vector<string> opt_field = split(tokens[i], ':');
+                        vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
                         o.key = opt_field[0];
                         o.type = opt_field[1];
@@ -391,7 +392,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                 if (tokens.size() > 9){
                     for (int i = 9; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
-                        vector<string> opt_field = split(tokens[i], ':');
+                        vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
                         o.key = opt_field[0];
                         o.type = opt_field[1];
@@ -430,7 +431,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                 if (tokens.size() > 8){
                     for (int i = 9; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
-                        vector<string> opt_field = split(tokens[i], ':');
+                        vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
                         o.key = opt_field[0];
                         o.type = opt_field[1];
@@ -448,7 +449,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                 if (g.id == "*"){
                     g.id = std::to_string(++base_group_id);
                 }
-                vector<string> g_ids = split(tokens[2], ' ');
+                vector<string> g_ids = pliib::split(tokens[2], ' ');
                 for (int i = 0 ; i < g_ids.size(); i++){
                         g.items.push_back(g_ids[i].substr(0, g_ids[i].length() - 1));
                         g.orientations.push_back(g_ids[i].back() == '+');
@@ -456,7 +457,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                 if (tokens.size() > 8){
                     for (int i = 9; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
-                        vector<string> opt_field = split(tokens[i], ':');
+                        vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
                         o.key = opt_field[0];
                         o.type = opt_field[1];
@@ -474,11 +475,11 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                 if (g.id == "*"){
                     g.id = std::to_string(++base_group_id);
                 }
-                g.items = split(tokens[2], ' ');
+                g.items = pliib::split(tokens[2], ' ');
                 if (tokens.size() > 8){
                     for (int i = 9; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
-                        vector<string> opt_field = split(tokens[i], ':');
+                        vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
                         o.key = opt_field[0];
                         o.type = opt_field[1];
@@ -514,7 +515,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                 if (tokens.size() >= 7){
                     for (int i = 6; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
-                        vector<string> opt_field = split(tokens[i], ':');
+                        vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
                         o.key = opt_field[0];
                         o.type = opt_field[1];
@@ -555,7 +556,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                 if (tokens.size() >= 8){
                     for (int i = 8; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
-                        vector<string> opt_field = split(tokens[i], ':');
+                        vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
                         o.key = opt_field[0];
                         o.type = opt_field[1];
@@ -591,7 +592,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                     // Parse a GFA 1.0 path element
                     path_elem p;
                     p.name = tokens[1];
-                    vector<string> ids_and_orientations = split(tokens[2], ',');
+                    vector<string> ids_and_orientations = pliib::split(tokens[2], ',');
                     for (auto x : ids_and_orientations){
                         bool orientation = ((x.back()) == '+' || x.front() == '+');
                         string id = x.substr(0, x.length() - 1);
@@ -600,7 +601,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
                     }
 
                     if (tokens.size() > 3){
-                        vector<string> spltz = split(tokens[3], ',');
+                        vector<string> spltz = pliib::split(tokens[3], ',');
                         for (auto z : spltz){
                             p.overlaps.push_back(z);
                         }
@@ -1130,7 +1131,7 @@ bool GFAKluge::parse_gfa_file(const std::string &filename) {
 
     void GFAKluge::re_id(std::string new_mx_str){
         vector<uint64_t> starts(5);
-        vector<string> starts_strs = split(new_mx_str, ':');
+        vector<string> starts_strs = pliib::split(new_mx_str, ':');
         for (int i = 0; i < starts_strs.size(); ++i){
             starts[i] = stoul(starts_strs[i]);
         }
