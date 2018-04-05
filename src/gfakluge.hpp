@@ -454,7 +454,6 @@ namespace gfak{
             // we cheat and use their names (which are only sort of guaranteed to be
             // unique.
         std::map<std::string, sequence_elem, custom_key> name_to_seq;
-        std::vector<std::string> split(std::string s, char delim);
         bool string_is_number(std::string s);
         std::string join(std::vector<std::string> splits, std::string glue);
         std::map<std::string, std::vector<alignment_elem> > seq_to_alignment;

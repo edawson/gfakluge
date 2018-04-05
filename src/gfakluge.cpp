@@ -260,19 +260,6 @@ namespace gfak{
         this->header[verz.key] = verz;
     }
 
-    // Borrow from
-    //http://stackoverflow.com/questions/236129/split-a-string-in-c
-    // Thanks StackOverflow!
-    vector<string> GFAKluge::split(string s, char delim){
-        vector<string> ret;
-        stringstream sstream(s);
-        string temp;
-        while(getline(sstream, temp, delim)){
-            ret.push_back(temp);
-        }
-        return ret;
-    }
-
     bool GFAKluge::string_is_number(string s){
         bool ret = true;
         std::string::iterator it;
@@ -285,7 +272,7 @@ namespace gfak{
         return !(s.empty());
     }
 
-bool GFAKluge::parse_gfa_file(const std::string &filename) {
+    bool GFAKluge::parse_gfa_file(const std::string &filename) {
         ifstream gfi;
         gfi.open(filename.c_str(), std::ifstream::in);
         if (!gfi.good()){
