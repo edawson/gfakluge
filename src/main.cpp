@@ -5,6 +5,15 @@
 using namespace std;
 using namespace gfak;
 
+void print_version_help(){
+    cerr << "gfak (GFAKluge library) 0.2.0" << endl
+        << "Copyright (C) 2015 Eric T. Dawson" << endl
+        << "Licensed under the MIT License (https://opensource.org/licenses/MIT)" << endl
+        << "This is free, open-source software: you are free to modify and redistribute it." << endl
+        << "All code is provided as-is without warranty, as described in the MIT license." << endl
+        << endl
+        << "Written by Eric T. Dawson" << endl;
+}
 
 int gfakluge_package_help(char** argv){
     cerr << "GFAK: manipulate GFA files from the command line." << endl <<
@@ -26,13 +35,16 @@ int gfakluge_package_help(char** argv){
 void extract_help(char** argv){
     cerr << argv[0] <<  " extract: extract a FASTA file from GFA" << endl
         << "Usage: " << argv[0] << "extract [ -p ] <GFA_FILE> > file.fa " << endl
-            << "-p / --include-paths  include paths in output (might be contigs?? We nevr know)" << endl
+            << " -p / --include-paths  include paths in output" << endl
+            << " -v / --version        print GFAK version and exit." << endl
         << endl;
 }
 
 void diff_help(char** argv){
     cerr << argv[0] << " diff: determine whether two GFA files are the same." << endl
-      << "Usage: " << argv[0] << " diff [options] <GFA_File_1> <GFA_File_2>" << endl;
+      << "Usage: " << argv[0] << " diff [options] <GFA_File_1> <GFA_File_2>" << endl
+            << " -v / --version        print GFAK version and exit." << endl
+            << endl;
 }
 
 void ids_help(char** argv){
@@ -40,19 +52,22 @@ void ids_help(char** argv){
     << "Usage: " << argv[0] << " ids <GFA_FILE_1> .... <GFA_FILE_N>" << endl
     << "options: " << endl
     << "   -s / --start-ids   Start the relabeling process from <n_id:e_id:p_id>" << endl
-    << "   --version <X>    Output GFA specification version <X>." << endl
-    << "   -b / --block-order Output block-order (HSLCP) GFA." << endl;
+    << "   -S / --spec <SPEC>    Output GFA specification version <X>." << endl
+    << "   -b / --block-order Output block-order (HSLCP) GFA." << endl
+    << "   -v / --version        print GFAK version and exit." << endl
+    << endl;
 }
 
 void convert_help(char** argv){
     cerr << argv[0] << " convert: convert a file between the various GFA formats." << endl
         << "Usage: " << argv[0] << " convert [options] <GFA_File>" << endl
         << "Options: " << endl
-        << "  --version <X> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  -S / --spec <SPEC> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
         << "  -w / --walks   Output paths as walks, but maintain version (NOT SPEC COMPLIANT)." << endl
         << "  -p / --paths   Output walks as paths, but maintain version." << endl
-        << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]."
+        << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]." << endl
+        << "  -v / --version        print GFAK version and exit." << endl
         << endl; 
 }
 
@@ -60,9 +75,10 @@ void merge_help(char** argv){
     cerr << argv[0] << " merge: merge multiple GFA files into one structure." << endl
         << "Usage: " << argv[0] << " merge [options] <GFA_FILE_1> ... <GFA_FILE_N>" << endl
         << "Options: " << endl
-        << "  --version <X> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  -S / --spec <SPEC> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "                                NB: not all GFA specs are backward/forward compatible, so a subset of the GFA may be used." << endl
-        << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]."
+        << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]." << endl
+        << "  -v / --version        print GFAK version and exit." << endl
         << endl; 
 }
 
@@ -70,7 +86,8 @@ void sort_help(char** argv){
     cerr << argv[0] << " sort: sort a GFA file." << endl
         << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
         << "Options:" << endl
-        << "  --version <X> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  -S / --spec <SPEC> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
+        << "  -v / --version        print GFAK version and exit." << endl
         << endl;
 }
 
@@ -84,6 +101,7 @@ void stats_help(char** argv){
         << "   -n / --num-nodes print the number of nodes." << endl
         << "   -e / --num-edges print the number of edges." << endl
         << "   -p / --paths     print some path statistics." << endl
+        << "   -v / --version        print GFAK version and exit." << endl
         << endl;
 }
 
@@ -91,11 +109,11 @@ void subset_help(char** argv){
     cerr << argv[0] << " subset: extract a subset of a GFA graph between two node ids." << endl
     << "Usage: " << argv[0] << " subset [options] <gfa_file>" << endl
     << "Options:" << endl
-    << "  --version <X>   GFA specification version for output." << endl
     << "  -s / --start-id  <n_id> Start ID of subgraph." << endl
     << "  -e / --end-id    <n_id> End ID of subgraph." << endl
     << "  -b / --block-order Output GFA in block order." << endl
-    << "  --version <X> [one of 0.1, 1.0, 2.0]  Output the subset GFA in GFA version <X>." << endl
+    << "  -S / --spec <SPEC>   GFA specification version for output." << endl
+    << "  -v / --version        print GFAK version and exit." << endl
     << endl;
 }
 
@@ -118,25 +136,25 @@ int extract_main(int argc, char** argv){
         static struct option long_options[] =
         {
             {"help", no_argument, 0, 'h'},
-            {"inlude-paths", no_argument, 0, 'p'},
+            {"include-paths", no_argument, 0, 'p'},
+            {"version", no_argument, 0, 'v'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "hp", long_options, &option_index);
+        c = getopt_long(argc, argv, "hpv", long_options, &option_index);
         if (c == -1){
             break;
         }
 
         switch (c){
-            case 'i':
-                gfa_file = optarg;
-                break;
-
             case '?':
             case 'h':
                 extract_help(argv);
                 exit(0);
+            case 'v':
+                print_version_help();
+                exit(1);
             case 'p':
                 include_paths= true;
                 break;
@@ -196,11 +214,12 @@ int diff_main(int argc, char** argv){
         static struct option long_options[] =
         {
             {"help", no_argument, 0, 'h'},
+            {"version", no_argument, 0, 'v'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "h", long_options, &option_index);
+        c = getopt_long(argc, argv, "hv", long_options, &option_index);
         if (c == -1){
             break;
         }
@@ -210,6 +229,9 @@ int diff_main(int argc, char** argv){
             case 'h':
                 diff_help(argv);
                 exit(0);
+            case 'v':
+                print_version_help();
+                exit(1);
             default:
                 abort();
         }
@@ -274,18 +296,22 @@ int convert_main(int argc, char** argv){
             {"block-order", no_argument, 0, 'b'},
             {"paths", no_argument, 0, 'p'},
             {"walks", no_argument, 0, 'w'},
-            {"version", required_argument, 0, 'S'},
+            {"spec", required_argument, 0, 'S'},
+            {"version", no_argument, 0, 'v'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "hbpwS:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvbpwS:", long_options, &option_index);
         if (c == -1){
             break;
         }
 
         switch (c){
             case '?':
+            case 'v':
+                print_version_help();
+                exit(1);
             case 'h':
                 convert_help(argv);
                 exit(0);
@@ -349,7 +375,7 @@ int ids_main(int argc, char** argv){
     double spec = 0.0;
 
     if (argc == 1){
-        cerr << "gfa_ids [-b -s S_ID:E_ID:F_ID:GA_ID:GR_ID ] <gfa1> <gfa2> ... [gfaN]" << endl;
+        cerr << "gfa_ids -s S_ID:E_ID:F_ID:GA_ID:GR_ID [options] <gfa1> <gfa2> ... [gfaN]" << endl;
         exit(0);
     }
 
@@ -360,21 +386,22 @@ int ids_main(int argc, char** argv){
         {
             {"help", no_argument, 0, 'h'},
             {"start-ids", required_argument, 0, 's'},
-            {"version", required_argument, 0, 'S'},
+            {"spec", required_argument, 0, 'S'},
             {"blocker-order", no_argument, 0, 'b'},
+            {"version", no_argument, 0, 'v'},
             {0,0,0,0}
         };
 
         int option_index = 0;
-        c = getopt_long(argc, argv, "hbS:s:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvbS:s:", long_options, &option_index);
         if (c == -1){
             break;
         }
 
         switch (c){
-            case 'i':
-                g_files.push_back( optarg );
-                break;
+            case 'v':
+                print_version_help();
+                exit(1);
 
             case '?':
             case 'h':
@@ -445,12 +472,13 @@ int merge_main(int argc, char** argv){
         static struct option long_options[] =
         {
             {"help", no_argument, 0, 'h'},
-            {"version", required_argument, 0, 'S'},
+            {"spec", required_argument, 0, 'S'},
+            {"version", no_argument, 0, 'v'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "hS:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvS:", long_options, &option_index);
         if (c == -1){
             break;
         }
@@ -462,6 +490,9 @@ int merge_main(int argc, char** argv){
                 merge_help(argv);
                 exit(0);
                 break;
+            case 'v':
+                print_version_help();
+                exit(1);
             case 'S':
                 spec = stod(optarg);
                 break;
@@ -520,12 +551,13 @@ int sort_main(int argc, char** argv){
         static struct option long_options[] =
         {
             {"help", no_argument, 0, 'h'},
-            {"version", required_argument, 0, 'S'},
+            {"spec", required_argument, 0, 'S'},
+            {"version", no_argument, 0, 'v'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "hS:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvS:", long_options, &option_index);
         if (c == -1){
             break;
         }
@@ -537,6 +569,9 @@ int sort_main(int argc, char** argv){
                 sort_help(argv);
                 exit(1);
                 break;
+            case 'v':
+                print_version_help();
+                exit(1);
 
             case 'S':
                 spec = stod(optarg);
@@ -589,6 +624,8 @@ int stats_main(int argc, char** argv){
             {"all", no_argument, 0, 'A'},
             {"paths", no_argument, 0, 'p'},
             {"assembly", no_argument, 0, 'a'},
+            {"version", no_argument, 0, 'v'},
+
             {0,0,0,0}
         };
     
@@ -605,7 +642,9 @@ int stats_main(int argc, char** argv){
                 // nodes, edges, all stats, edges, paths
                 stats_help(argv);
                 exit(3);
-
+            case 'v':
+                print_version_help();
+                exit(1);
             case 'a':
                 assembly_stats = true;
                 all = false;
@@ -724,14 +763,15 @@ int subset_main(int argc, char** argv){
         {
             {"help", no_argument, 0, 'h'},
             {"block-order", no_argument, 0, 'b'},
-            {"version", required_argument, 0, 'S'},
+            {"spec", required_argument, 0, 'S'},
             {"end-id", required_argument, 0, 'e'},
             {"start-id", required_argument, 0, 's'},
+            {"version", no_argument, 0, 'v'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "s:e:hS:b", long_options, &option_index);
+        c = getopt_long(argc, argv, "vs:e:hS:b", long_options, &option_index);
         if (c == -1){
             break;
         }
@@ -754,6 +794,9 @@ int subset_main(int argc, char** argv){
             case 'b':
                 block_order = true;
                 break;
+            case 'v':
+                print_version_help();
+                exit(1);
 
             default:
                 abort();
@@ -838,6 +881,12 @@ int main(int argc, char** argv){
     }
     else if (strcmp(argv[1], "subset") == 0){
         return subset_main(argc, argv);
+    }
+    else if (strcmp(argv[1], "--version") == 0){
+        print_version_help();
+    }
+    else if (strcmp(argv[1], "--help") == 0){
+        gfakluge_package_help(argv);
     }
     else {
         cerr << "No command " << '"' << argv[1] << '"' << endl;

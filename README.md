@@ -2,12 +2,13 @@ gfakluge
 --------------------
 
 ## What is it?  
-GFAKluge is a C++ parser/writer for [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format/). It parses
-GFA to a set of data structures that represent the encoded graph.
+GFAKluge is a C++ parser/writer and
+a set of command line utilities for manipulating [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format/).
+It parses GFA to a set of data structures that represent the encoded graph.
 You can use these components and their fields/members to build up your own
-graph representation.  
+graph representation. You can also convert between GFA 0.1 <-> 1.0 <-> 2.0
+to glue programs that use different GFA versions together.
 
-A set of command line utilities for basic manipulations is also included.
 
 ## Command line utilities
 When `make` is run, the `gfak` binary is build in the top level directory. It offers the following subcommands:  
@@ -23,16 +24,12 @@ Header -> Segment -> Link/Edge/Containment -> Path order.
 
 For CLI usage, run any of the above (including `gfak` with no subcommand) with no arguments or `-h`. To change specification version, most commands take the `-S` flag and a single `double` argument.  
 
-## Why gfak / gfakluge?
-+ Simple command line utilities (no awk foo needed!)  
-+ High level C++ API for many graph manipulations.  
-+ Easy to build - no external dependencies; build with just a modern C++ compiler supporting C++11.
-+ Easy to develop with - Backing library is mostly STL containers and a handful of structs.  
-+ Performance - gfakluge is fast and relies on standard STL containers and basic structs.  
-
 ## How do I build it?  
+
+
+The `gfak` utilities are available via homebrew: `brew install brewsci/bio/gfakluge`  
+
 You can build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  
-It's also available in homebrew at: `brew install brewsci/bio/gfakluge`
 To use GFAKluge in your program, you'll need to
 add a few lines to your code. First, add the necessary include line to your C++ code:  
                 #include "gfakluge.hpp"
@@ -48,6 +45,14 @@ You should then be able to parse and manipulate gfa from your program:
                     gg.parse_gfa_file(my_gfa_file); 
 
                     cout << gg << endl;
+
+
+## Why gfak / gfakluge?
++ Simple command line utilities (no awk foo needed!)  
++ High level C++ API for many graph manipulations.  
++ Easy to build - no external dependencies; build with just a modern C++ compiler supporting C++11.
++ Easy to develop with - Backing library is mostly STL containers and a handful of structs.  
++ Performance - gfakluge is fast and relies on standard STL containers and basic structs.  
 
 
 ## Internal Structures
@@ -70,7 +75,8 @@ are then wrapped in a set of standard containers for easy access:
                 map<std::string, vector<link_elem> > seq_to_link;
                 map<string, vector<alignment_elem> > seq_to_alignment;
 
-All of these structures can be accessed using the ``get_<Thing>`` method, where \<Thing\> is the name of the map you would like to retrieve.  
+All of these structures can be accessed using the ``get_<Thing>`` method, where \<Thing\> is the name of the map you would like to retrieve.
+They reside in gfakluge.hpp.  
 
 ## GFA2
 GFAKluge now supports GFA2! This brings with it four new structs: `edge_elem`, `gap_elem`, `fragment_elem`, and `group_elem`. They're contained in maps much like those for the GFA1 structs.  
