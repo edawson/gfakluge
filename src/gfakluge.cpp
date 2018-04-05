@@ -1427,6 +1427,12 @@ namespace gfak{
 			}
 
 
+            if (!this->normalized_walks){
+                walks_as_paths();
+            }
+            if (!this->normalized_paths){
+                paths_as_walks();
+            }
 
 			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                 for (auto e : seq_to_edges[st->first]){
@@ -1483,7 +1489,7 @@ namespace gfak{
 
 
         }
-        else if (this->version < 2.0 && this->version >= 1.0){
+        else if (this->version < 2.0){
             //First print header lines.
             if (header.size() > 0){
                 os << header_string(header) + "\n";
@@ -1515,6 +1521,24 @@ namespace gfak{
                         os << pat.str();
                     }
             }
+
+			map<std::string, sequence_elem>::iterator st;
+            for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+                if (this->version < 1.0 && seq_to_walks[st->first].size() > 0){
+                    for (int i = 0; i < seq_to_walks[st->first].size(); i++){
+								stringstream pat;
+								pat << (use_walks ? "W" : "P") << "\t" + seq_to_walks[st->first][i].source_name << "\t";
+								pat << seq_to_walks[st->first][i].name << "\t";
+								if (!(seq_to_walks[st->first][i].rank ==  0L)){
+										pat << seq_to_walks[st->first][i].rank << "\t";
+								}
+								pat << (seq_to_walks[st->first][i].is_reverse ? "-" : "+");
+								pat << "\t";
+								pat << seq_to_walks[st->first][i].cigar + "\n";
+								os << pat.str();
+					}
+                }
+			}
             for (auto s : name_to_seq){
                 os << s.second.to_string_1() << endl;
                 for (auto e : seq_to_edges[s.first]){

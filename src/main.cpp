@@ -538,7 +538,7 @@ int merge_main(int argc, char** argv){
 int sort_main(int argc, char** argv){
     string gfa_file = "";
     bool block_order = true;
-    double spec_version = 2.0;
+    double spec_version = 0.0;
 
     if (argc <= 2){
         sort_help(argv);
