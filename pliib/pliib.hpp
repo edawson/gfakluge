@@ -180,6 +180,17 @@ namespace pliib{
         return ret;
 
     }
+    inline string join(vector<string> splits, char glue){
+        stringstream ret;
+        for (int i = 0; i < splits.size(); i++){
+            if (i != 0){
+                ret << glue;
+            }
+            ret << splits[i];
+        }
+
+        return ret.str();
+    }
 
     inline string join(vector<string> splits, string glue){
         stringstream ret;
