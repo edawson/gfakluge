@@ -330,21 +330,21 @@ namespace gfak{
             //3. Perhaps links and containeds should be added using methods like
             //  add_contained(contained_elem c)
             // to guarantee that they are actually added by their source.
- 			void add_link(std::string seq_name, link_elem l);
-            void add_link(sequence_elem s, link_elem l);
+ 			void add_link(const std::string& seq_name, const link_elem& l);
+            void add_link(const sequence_elem& s, const link_elem& l);
 
             /**
              * GFA2.0 handlers
              */
-	        void add_edge(std::string seqname, edge_elem e);
-            void add_edge(sequence_elem s, edge_elem e);
+	        void add_edge(const std::string& seqname, const edge_elem& e);
+            void add_edge(const sequence_elem& s, const edge_elem& e);
 
-	        void add_fragment(std::string seqname, fragment_elem f);
-            void add_fragment(sequence_elem s, fragment_elem f);
+	        void add_fragment(const std::string& seqname, const fragment_elem& f);
+            void add_fragment(const sequence_elem& s, const fragment_elem& f);
 
-            void add_gap(gap_elem g);
+            void add_gap(const gap_elem& g);
 
-            void add_group(group_elem g);
+            void add_group(const group_elem& g);
 
             void groups_as_paths();
 
@@ -373,8 +373,8 @@ namespace gfak{
             void set_version();
             void set_walks(bool ws);
 
-	        std::vector<link_elem> get_links(sequence_elem seq);
-        std::vector<link_elem> get_links(std::string seq_name);
+	        std::vector<link_elem> get_links(const sequence_elem& seq);
+        std::vector<link_elem> get_links(const std::string& seq_name);
 
         std::vector<contained_elem> get_contained(std::string seq_name);
         std::vector<contained_elem> get_contained(sequence_elem seq);
@@ -455,7 +455,7 @@ namespace gfak{
             // unique.
         std::map<std::string, sequence_elem, custom_key> name_to_seq;
         bool string_is_number(std::string s);
-        std::string join(std::vector<std::string> splits, std::string glue);
+        std::string join(const std::vector<std::string>& splits, const std::string& glue);
         std::map<std::string, std::vector<alignment_elem> > seq_to_alignment;
         std::string header_string(std::map<std::string, header_elem>& opts);
         std::string opt_string(std::vector<opt_elem> opts);

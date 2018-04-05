@@ -44,26 +44,26 @@ namespace gfak{
         return groups;
     }
 
-    void GFAKluge::add_edge(string seqname, edge_elem e){
+    void GFAKluge::add_edge(const string& seqname, const edge_elem& e){
         seq_to_edges[seqname].push_back(e);
     }
-    void GFAKluge::add_edge(sequence_elem s, edge_elem e){
+    void GFAKluge::add_edge(const sequence_elem& s, const edge_elem& e){
         add_edge(s.name, e);
     }
 
-    void GFAKluge::add_fragment(string seqname, fragment_elem f){
+    void GFAKluge::add_fragment(const string& seqname, const fragment_elem& f){
         seq_to_fragments[seqname].push_back(f);
     }
 
-    void GFAKluge::add_fragment(sequence_elem s, fragment_elem f){
+    void GFAKluge::add_fragment(const sequence_elem& s, const fragment_elem& f){
         add_fragment(s.name, f);
     }
 
-    void GFAKluge::add_gap(gap_elem g){
+    void GFAKluge::add_gap(const gap_elem& g){
         seq_to_gaps[g.source_name].push_back(g);
     }
 
-    void GFAKluge::add_group(group_elem g){
+    void GFAKluge::add_group(const group_elem& g){
         this->groups[g.id] = g;
     }
 
@@ -679,7 +679,7 @@ namespace gfak{
         seq_to_walks[seq_name].push_back(w);
     }
 
-    void GFAKluge::add_link(sequence_elem seq, link_elem link){
+    void GFAKluge::add_link(const sequence_elem& seq, const link_elem& link){
         seq_to_link[seq.name].push_back(link);
     }
 
@@ -687,7 +687,7 @@ namespace gfak{
         seq_to_contained[seq.name].push_back(con);
     }
 
-    void GFAKluge::add_link(string seq_name, link_elem link){
+    void GFAKluge::add_link(const string& seq_name, const link_elem& link){
         seq_to_link[seq_name].push_back(link);
     }
 
@@ -703,11 +703,11 @@ namespace gfak{
         seq_to_contained[seq_name].push_back(con);
     }
 
-    vector<link_elem> GFAKluge::get_links(string seq_name){
+    vector<link_elem> GFAKluge::get_links(const string& seq_name){
         return seq_to_link[seq_name];
     }
 
-    vector<link_elem> GFAKluge::get_links(sequence_elem seq){
+    vector<link_elem> GFAKluge::get_links(const sequence_elem& seq){
         string seq_name = seq.name;
         return seq_to_link[seq_name];
     }
@@ -781,7 +781,7 @@ namespace gfak{
         return header;
     }
 
-    string GFAKluge::join(vector<string> splits, string glue){
+    string GFAKluge::join(const vector<string>& splits, const string& glue){
         string ret = "";
         for (int i = 0; i < splits.size(); i++){
             if (i != 0){
