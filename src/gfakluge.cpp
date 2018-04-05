@@ -250,6 +250,8 @@ namespace gfak{
         this->version = v;
         verz.val = std::to_string((double) this->version).substr(0,3);
         this->header[verz.key] = verz;
+        //gfa_1_ize();
+        //gfa_2_ize();
     }
     void GFAKluge::set_version(){
         header_elem verz;
@@ -896,6 +898,10 @@ namespace gfak{
     }
 
     std::string GFAKluge::block_order_string(){
+        
+        this->gfa_1_ize();
+        this->gfa_2_ize();
+
         if (version >= 2.0){
             return block_order_string_2();
         }
@@ -960,7 +966,7 @@ namespace gfak{
                     vector<string> ovec;
                     for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
                         stringstream o_str;
-                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[i] ? "-" : "+");
+                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "-" : "+");
                         ovec.push_back(o_str.str());
                     }
                     pat << join(ovec, ",");

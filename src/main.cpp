@@ -278,7 +278,7 @@ int diff_main(int argc, char** argv){
 int convert_main(int argc, char** argv){
     string gfa_file = "";
     bool block_order = false;
-    double spec_version = 0.1;
+    double spec_version = 2.0;
     bool use_paths = true;
 
     if (argc < 3){
@@ -538,7 +538,7 @@ int merge_main(int argc, char** argv){
 int sort_main(int argc, char** argv){
     string gfa_file = "";
     bool block_order = true;
-    double spec = 0.0;
+    double spec_version = 2.0;
 
     if (argc <= 2){
         sort_help(argv);
@@ -574,7 +574,7 @@ int sort_main(int argc, char** argv){
                 exit(1);
 
             case 'S':
-                spec = stod(optarg);
+                spec_version = stod(optarg);
                 break;
 
             default:
@@ -586,10 +586,21 @@ int sort_main(int argc, char** argv){
     GFAKluge gg;
     gg.parse_gfa_file(gfa_file);
 
-    if (spec != 0){
-        gg.set_version(spec);
+    if (spec_version == 0.1){
+        gg.set_version(0.1);
     }
-   
+    else if (spec_version == 1.0){
+        gg.set_version(1.0);
+    }
+    else if (spec_version == 2.0){
+        gg.set_version(2.0);
+    }
+    else if (spec_version != 0.0){
+        cerr << "Invalid specification number: " << spec_version << endl
+        << "Please provide one of [0.1, 1.0, 2.0]." << endl;
+        exit(22);
+    }
+
     cout << gg.block_order_string();
     
     
