@@ -48,6 +48,12 @@ namespace gfak{
         std::string key;
         std::string type;
         std::string val;
+
+        std::string to_string(){
+            std::ostringstream st;
+            st << 'H' << '\t' << key << ':' << type << ':' << val << '\n';
+            return st.str();
+        }
         // TODO make the val a vector<std::string>; this should handle every case
         // essentially, a single header_elem will encode all lines beginning with that key.
         // e.g. multiple program lines.
