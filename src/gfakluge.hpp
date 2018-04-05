@@ -94,7 +94,6 @@ namespace gfak{
                 opt_strs[count++] = op.second.to_string(); 
             }
             st << '\t' << pliib::join(opt_strs, "\t");
-            st << '\n';
             return st.str();
         }
         std::string to_string_2(){
@@ -127,7 +126,8 @@ namespace gfak{
         std::vector<opt_elem> opt_fields;
         long id;
         std::string to_string_2(){
-            std::stringstream st;
+            std::ostringstream st;
+
             st << "S" << "\t" << name << "\t" << length << "\t" << sequence;
             if (opt_fields.size() > 0){
                 for (auto i : opt_fields){
@@ -137,7 +137,7 @@ namespace gfak{
             return st.str();
         }
         std::string to_string_1(){
-            std::stringstream st;
+            std::ostringstream st;
             st << "S" << "\t" << name << "\t" << sequence;
             if (opt_fields.size() > 0){
                 for (auto i : opt_fields){
@@ -156,7 +156,7 @@ namespace gfak{
         std::string cigar;
         std::map<std::string, opt_elem> opt_fields;
         std::string to_string(){
-            std::stringstream st;
+            std::ostringstream st;
             st << "L" 
                 << "\t" << source_name << "\t" 
                 << (source_orientation_forward ? "+" : "-") << "\t" << sink_name << "\t" 
