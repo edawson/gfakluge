@@ -77,6 +77,9 @@ namespace gfak{
         std::string to_string() {
             return "";
         }
+        std::string to_string_2(){
+            return "";
+        }
     };
 
     struct walk_elem{
@@ -297,6 +300,23 @@ namespace gfak{
         std::vector<std::string> items;
         std::vector<bool> orientations;
         std::map<std::string, opt_elem> tags;
+        std::string to_string(){
+            std::stringstream st;
+            if (!ordered){
+                return "";
+            }
+            
+            st << "P" << "\t" << id << "\t";
+            st << items[0] << (ordered ? (orientations[0] ? "+" : "-") : "" );
+            for (int i = 1; i < items.size(); ++i){
+                st << " " << items[i] << (ordered ? (orientations[i] ? "+" : "-") : "");
+            }
+            for (auto i : tags){
+                st << "\t" << i.second.to_string();
+            }
+            
+            return st.str();
+        }
         std::string to_string_2(){
             std::stringstream st;
             st << (ordered ? "O" : "U") << "\t" << id << "\t";
@@ -408,7 +428,7 @@ namespace gfak{
             std::string to_string_2();
             std::string block_order_string();
             std::string block_order_string_2();
-
+            void output_to_stream(std::ostream& os, bool output_block_order = false);
             // ID manipulators
         std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
             std::string max_ids_string();

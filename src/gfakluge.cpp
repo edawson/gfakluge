@@ -1357,12 +1357,193 @@ namespace gfak{
         return -1;
     }
 
+    void GFAKluge::output_to_stream(std::ostream& os, bool output_block_order){
+        this->gfa_1_ize();
+        this->gfa_2_ize();
+        if (this->version == 2.0 && output_block_order){
+            // Header
+            if (header.size() > 0){
+                os << header_string(header) + "\n";
+            }
+            // Sequences
+            for (auto s : name_to_seq){
+                os << s.second.to_string_2() << "\n";
+            }
+            // Fragments
+            for (auto s : seq_to_fragments){
+                for (auto f : seq_to_fragments[s.first]){
+                    os << f.to_string_2() << "\n";
+                }
+
+            }
+            // Gaps
+            for (auto s : name_to_seq){
+                for (auto g : seq_to_gaps[s.first]){
+                    os << g.to_string_2() << "\n";
+                }
+            }
+            // Edges
+            for (auto s : name_to_seq){
+                for (auto e : seq_to_edges[s.first]){
+                    os << e.to_string_2() << "\n";
+                }
+            }
+
+            // Paths
+            for (auto g : groups){
+                os << g.second.to_string_2() << "\n";
+            }
+
+        }
+        else if (this->version == 2.0){
+            if (header.size() > 0){
+                os << header_string(header) << endl;
+            }
+            for (auto p : groups){
+                os << p.second.to_string_2() << endl;
+            }
+            for (auto s : name_to_seq){
+                os << s.second.to_string_2() << endl;
+                for (auto f : seq_to_fragments[s.first]){
+                    os << f.to_string_2() << endl;
+                }
+                for (auto e : seq_to_edges[s.first]){
+                    os << e.to_string_2() << endl;
+                }
+                for (auto g : seq_to_gaps[s.first]){
+                    os << g.to_string_2() << endl;
+                }
+            }
+        }
+        else if (this->version < 2.0 && output_block_order){
+			//First print header lines.
+			if (header.size() > 0){
+					os << header_string(header) + "\n";
+			}
+			map<std::string, sequence_elem>::iterator st;
+
+			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+				os << st->second.to_string_1() << endl;
+			}
+
+
+
+			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+                for (auto e : seq_to_edges[st->first]){
+                    if (e.type == 1){
+                        os << e.to_string_1() << endl;
+                    }
+
+                }
+            }
+            for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+                for (auto e : seq_to_edges[st->first]){
+                    if (e.type == 2){
+                        os << e.to_string_1() << endl;
+                    }
+
+                }
+            }
+            
+			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
+                if (this->version < 1.0 && seq_to_walks[st->first].size() > 0){
+                    for (int i = 0; i < seq_to_walks[st->first].size(); i++){
+								stringstream pat;
+								pat << (use_walks ? "W" : "P") << "\t" + seq_to_walks[st->first][i].source_name << "\t";
+								pat << seq_to_walks[st->first][i].name << "\t";
+								if (!(seq_to_walks[st->first][i].rank ==  0L)){
+										pat << seq_to_walks[st->first][i].rank << "\t";
+								}
+								pat << (seq_to_walks[st->first][i].is_reverse ? "-" : "+");
+								pat << "\t";
+								pat << seq_to_walks[st->first][i].cigar + "\n";
+								os << pat.str();
+					}
+                }
+			}
+            if (name_to_path.size() > 0 && this->version == 1.0){
+                map<string, path_elem>::iterator pt;
+                for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
+                    stringstream pat;
+                    pat << "P\t" << pt->second.name << "\t";
+                    vector<string> ovec;
+                    for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
+                        stringstream o_str;
+                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "-" : "+");
+                        ovec.push_back(o_str.str());
+                    }
+                    pat << join(ovec, ",");
+                    if (pt->second.overlaps.size() > 0){
+                        pat << "\t" << join(pt->second.overlaps, ",");
+                    }
+                    pat << "\n";
+                    os << pat.str();
+                }
+            }
+
+
+        }
+        else if (this->version < 2.0 && this->version >= 1.0){
+            //First print header lines.
+            if (header.size() > 0){
+                os << header_string(header) + "\n";
+            }
+        
+            if (!this->normalized_walks){
+                walks_as_paths();
+            }
+            if (!this->normalized_paths){
+                paths_as_walks();
+            }
+            if (name_to_path.size() > 0 && this->version >= 1.0){
+                    map<string, path_elem>::iterator pt;
+                    for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
+                        stringstream pat;
+                        pat << "P" << "\t";
+                        pat << pt->second.name << "\t";
+                        vector<string> ovec;
+                        for (int seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
+                            stringstream o_str;
+                            o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "+" : "-");
+                            ovec.push_back(o_str.str());
+                        }
+                        pat << join(ovec, ",");
+                        if (pt->second.overlaps.size() > 0){
+                            pat << "\t" << join(pt->second.overlaps, ",");
+                        }
+                        pat << "\n";
+                        os << pat.str();
+                    }
+            }
+            for (auto s : name_to_seq){
+                os << s.second.to_string_1() << endl;
+                for (auto e : seq_to_edges[s.first]){
+                    os << e.to_string_1() << endl;;
+                }
+           /**
+            *  NB: There are no Fragments in GFA1, so we don't output them.
+            *  We also don't output annotation lines as they're out of spec.
+            *  Also, we check at the function start if we're outputting GFA2,
+            *  so we shouldn't have to do any checks past that point.
+            */
+	    
+            }
+
+
+        }
+
+        else{
+
+        }
+    }
+
     // Avoid calling to_string as it murders mem usage
     std::ostream& operator<<(std::ostream& os, GFAKluge& g){
         g.gfa_1_ize();
         g.gfa_2_ize();
 
-        os << g.to_string();
+        //os << g.to_string();
+        g.output_to_stream(os);
         return os;
     }
 }

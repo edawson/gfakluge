@@ -601,8 +601,8 @@ int sort_main(int argc, char** argv){
         exit(22);
     }
 
-    cout << gg.block_order_string();
-    
+    //cout << gg.block_order_string();
+    gg.output_to_stream(cout, true);
     
     return 0;
 }
