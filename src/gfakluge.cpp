@@ -1556,8 +1556,36 @@ namespace gfak{
         }
 
         else{
+            cerr << "Invalid version " << this->version << endl
+                exit(9);
 
         }
+    }
+
+    void GFAKluge::write_element(std::ostream& os, const sequence_elem& s){
+        if (this->version >= 2.0){
+            os << s.to_string_2();
+        }
+        else{
+            os << s.to_string_1();
+        }
+    }
+    void GFAKluge::write_element(std::ostream& os, edge_elem e){
+        if (this->version >= 2.0){
+            os << e.to_string_2();
+        }
+        else{
+            os << e.to_string_1();
+        }
+    }
+    void GFAKluge::write_element(std::ostream& os, const fragment_elem& f){
+
+    }
+    void GFAKluge::write_element(std::ostream& os, const group_elem& g){
+
+    }
+    void GFAKluge::write_element(std::ostream& os, const gap_elem& g){
+
     }
 
     // Avoid calling to_string as it murders mem usage
