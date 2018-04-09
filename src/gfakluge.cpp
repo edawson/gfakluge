@@ -679,7 +679,8 @@ namespace gfak{
     }
 
     void GFAKluge::add_link(const sequence_elem& seq, const link_elem& link){
-        seq_to_link[seq.name].push_back(link);
+        edge_elem e(link);
+        seq_to_edges[seq.name].push_back(e);
     }
 
     void GFAKluge::add_contained(sequence_elem seq, contained_elem con){
@@ -1556,7 +1557,7 @@ namespace gfak{
         }
 
         else{
-            cerr << "Invalid version " << this->version << endl
+            cerr << "Invalid version " << this->version << endl;
                 exit(9);
 
         }
@@ -1579,13 +1580,18 @@ namespace gfak{
         }
     }
     void GFAKluge::write_element(std::ostream& os, const fragment_elem& f){
-
+        os << f.to_string();
     }
     void GFAKluge::write_element(std::ostream& os, const group_elem& g){
-
+        if (this->version >= 2.0){
+            os << g.to_string_2();
+        }
+        else{
+            os << g.to_string_2();
+        }
     }
     void GFAKluge::write_element(std::ostream& os, const gap_elem& g){
-
+        os << g.to_string();
     }
 
     // Avoid calling to_string as it murders mem usage

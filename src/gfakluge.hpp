@@ -185,6 +185,13 @@ namespace gfak{
     // These elements, along with the <length> field in sequence_elem,
     // are all that's needed to parse to GFA2
     struct edge_elem{
+
+        edge_elem(){
+            
+        }
+        edge_elem(const link_elem& l){
+           source_name 
+        }
         std::string id = "*";
         // 0: unset, 1: link, 2: containment, 3: generic edge or both C/L set (impossible)
         int type;
