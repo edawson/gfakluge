@@ -580,7 +580,8 @@ namespace gfak{
                     // Parse a GFA 1.0 path element
                     path_elem p;
                     p.name = tokens[1];
-                    vector<string> ids_and_orientations = pliib::split(tokens[2], ',');
+                    vector<string> ids_and_orientations;
+                    pliib::split(tokens[2], ',', ids_and_orientations);
                     for (auto x : ids_and_orientations){
                         bool orientation = ((x.back()) == '+' || x.front() == '+');
                         string id = x.substr(0, x.length() - 1);
@@ -688,7 +689,8 @@ namespace gfak{
     }
 
     void GFAKluge::add_link(const string& seq_name, const link_elem& link){
-        seq_to_link[seq_name].push_back(link);
+        edge_elem e(link);
+        seq_to_edges[seq_name].push_back(e); 
     }
 
     void GFAKluge::add_alignment(string seq_name, alignment_elem a){

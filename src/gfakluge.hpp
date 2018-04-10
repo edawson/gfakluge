@@ -99,6 +99,7 @@ namespace gfak{
         std::string to_string_2() const{
             return "";
         }
+
     };
 
     struct walk_elem{
@@ -190,7 +191,32 @@ namespace gfak{
             
         }
         edge_elem(const link_elem& l){
-           source_name 
+           source_name = l.source_name;
+           sink_name = l.sink_name;
+           type = 1;
+           source_orientation_forward = l.source_orientation_forward;
+           sink_orientation_forward = l.source_orientation_forward;
+           alignment = l.cigar;
+           tags = l.opt_fields;
+           ends.set(0,0);
+           ends.set(1,0);
+           ends.set(2,1);
+           ends.set(3,1);
+           id = "*";
+        }
+        edge_elem(const contained_elem& c){
+           source_name = c.source_name;
+           sink_name = c.sink_name;
+           type = 2;
+           source_orientation_forward = c.source_orientation_forward;
+           sink_orientation_forward = c.source_orientation_forward;
+           alignment = c.cigar;
+           tags = c.opt_fields;
+           ends.set(0,0);
+           ends.set(1,0);
+           ends.set(2,0);
+           ends.set(3,0);
+           id = "*";
         }
         std::string id = "*";
         // 0: unset, 1: link, 2: containment, 3: generic edge or both C/L set (impossible)
@@ -362,6 +388,17 @@ namespace gfak{
                 }
                 return st.str();
             }
+        std::string to_walk_string(){
+            if (ordered){
+                return "";
+            }
+            int rank = 0;
+            stringstream st;
+            for (int i = 0; i < items.size(); ++i){
+                st << "W" << items[i] << '\t' << ++rank << '\t' << orientations[i] << "*" << endl;
+            }
+            return st.str();
+        }
         };
 
         int determine_line_type(char* line);
