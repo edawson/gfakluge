@@ -49,7 +49,7 @@ namespace gfak{
         std::string type;
         std::string val;
 
-        std::string to_string(){
+        std::string to_string() const{
             std::ostringstream st;
             st << 'H' << '\t' << key << ':' << type << ':' << val << '\n';
             return st.str();
@@ -63,7 +63,7 @@ namespace gfak{
         std::string key;
         std::string type;
         std::string val;
-        std::string to_string() {
+        std::string to_string() const {
             std::stringstream st;
             st << key << ":" << type << ":" << val;
             return st.str();
@@ -81,7 +81,7 @@ namespace gfak{
         std::vector<bool> orientations;
         std::vector<std::string> overlaps;
         std::map<std::string, opt_elem> opt_fields;
-        std::string to_string() {
+        std::string to_string() const {
             std::ostringstream st;
             std::vector<std::string> p_segs;
             for (int i = 0; i < segment_names.size(); ++i){
@@ -94,10 +94,9 @@ namespace gfak{
                 opt_strs[count++] = op.second.to_string(); 
             }
             st << '\t' << pliib::join(opt_strs, "\t");
-            st << '\n';
             return st.str();
         }
-        std::string to_string_2(){
+        std::string to_string_2() const{
             return "";
         }
     };
@@ -126,8 +125,9 @@ namespace gfak{
         uint64_t length = UINT64_MAX;
         std::vector<opt_elem> opt_fields;
         long id;
-        std::string to_string_2(){
-            std::stringstream st;
+        std::string to_string_2() const{
+            std::ostringstream st;
+
             st << "S" << "\t" << name << "\t" << length << "\t" << sequence;
             if (opt_fields.size() > 0){
                 for (auto i : opt_fields){
@@ -136,8 +136,8 @@ namespace gfak{
             }
             return st.str();
         }
-        std::string to_string_1(){
-            std::stringstream st;
+        std::string to_string_1() const{
+            std::ostringstream st;
             st << "S" << "\t" << name << "\t" << sequence;
             if (opt_fields.size() > 0){
                 for (auto i : opt_fields){
@@ -155,8 +155,8 @@ namespace gfak{
         bool sink_orientation_forward;
         std::string cigar;
         std::map<std::string, opt_elem> opt_fields;
-        std::string to_string(){
-            std::stringstream st;
+        std::string to_string() const{
+            std::ostringstream st;
             st << "L" 
                 << "\t" << source_name << "\t" 
                 << (source_orientation_forward ? "+" : "-") << "\t" << sink_name << "\t" 
@@ -219,7 +219,7 @@ namespace gfak{
             }
 
         }
-        std::string to_string_2(){
+        std::string to_string_2() const{
             std::stringstream st;
             st << "E" << "\t" << id << "\t" <<
                 source_name << (source_orientation_forward ? "+" : "-") <<
@@ -272,7 +272,7 @@ namespace gfak{
             std::string sink_name;
             int32_t distance;
             std::map<std::string, opt_elem> tags;
-            std::string to_string_2(){
+            std::string to_string_2() const {
                 std::stringstream st;
                 st << "G" << "\t" << id << "\t" <<
                     source_name << "\t" << sink_name << "\t" <<
@@ -281,6 +281,9 @@ namespace gfak{
                     st << "\t" << t.second.to_string();
                 }
                 return st.str();
+            }
+            std::string to_string() const{
+                return to_string_2();
             }
 
         };
@@ -296,7 +299,7 @@ namespace gfak{
             std::bitset<4> ends;
             std::string alignment;
             std::map<std::string, opt_elem> tags;
-            std::string to_string_2(){
+            std::string to_string_2() const{
                 std::stringstream st;
                 st << "F" << "\t" << id << "\t" <<
                     ref << (ref_orientation ? "+" : "-") << "\t" <<
@@ -312,6 +315,9 @@ namespace gfak{
                 }
                 return st.str();
             }
+            std::string to_string() const{
+                return to_string_2();
+            }
         };
 
         struct group_elem{
@@ -320,7 +326,7 @@ namespace gfak{
             std::vector<std::string> items;
             std::vector<bool> orientations;
             std::map<std::string, opt_elem> tags;
-            std::string to_string(){
+            std::string to_string_1() const{
                 std::stringstream st;
                 if (!ordered){
                     return "";
@@ -337,7 +343,7 @@ namespace gfak{
 
                 return st.str();
             }
-            std::string to_string_2(){
+            std::string to_string_2() const{
                 std::stringstream st;
                 st << (ordered ? "O" : "U") << "\t" << id << "\t";
                 st << items[0] << (ordered ? (orientations[0] ? "+" : "-") : "" );
@@ -449,6 +455,12 @@ namespace gfak{
             std::string block_order_string();
             std::string block_order_string_2();
             void output_to_stream(std::ostream& os, bool output_block_order = false);
+
+            void write_element(std::ostream& os, const sequence_elem& s);
+            void write_element(std::ostream& os, edge_elem e);
+            void write_element(std::ostream& os, const fragment_elem& f);
+            void write_element(std::ostream& os, const group_elem& g);
+            void write_element(std::ostream& os, const gap_elem& g);
             // ID manipulators
             std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
             std::string max_ids_string();
