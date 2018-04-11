@@ -1556,7 +1556,7 @@ namespace gfak{
         }
 
         else{
-            cerr << "Invalid version " << this->version << endl
+            cerr << "Invalid version " << this->version << endl;
                 exit(9);
 
         }
