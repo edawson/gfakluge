@@ -32,7 +32,7 @@ is typically thrown away when assemblies are converted to FASTA; previous attemp
 graph information did not gain widespread acceptance largely because
 they were difficult for humans to parse. The Graphical Fragment Assembly
 (GFA) format was proposed as a way to encode the graph structure of an assembly in a human-readable
-text format. 
+text format (CITE). 
 GFA also aims to provide a single format for interchange between software for assembly,
 visualization, read mapping and variant calling. Such programs are often written in high-performance
 programming languages such as C or C++. GFAKluge facilitates interprogram exchange by providing
@@ -44,12 +44,15 @@ bioinformatics programs.
 GFAKluge provides a command line interface for working with GFA. This includes replacements for
 common tasks on FASTA assemblies such as calculating assembly N90. There are also methods for merging
 assemblies, reformating files for readability, and converting between legacy GFA formats. To our knowledge,
-GFAKluge is the only software package that can consume and produce both GFA1 and GFA2. By allowing interconversion
+GFAKluge is the only publically-available software package that can consume and produce both GFA1 and GFA2, though many other tools
+exist for manipulating one of the GFA formats (CITE). By allowing interconversion
 between the compatble subsets of the formats, the gfak convert tool allows programs that usually can't communicate to share data
-without changes to their code.
+without changes to their code. We have used GFAKluge to convert GFA from TwoPaCo (CITE) for visualization in Bandage (CITE), to calculate assembly
+statistics from the Falcon assembler (CITE), and to extract FASTA from a vg msga assembly (CITE). We see the command line utilities as being very useful
+to the development community in the short term.
 
 # Integrating GFAKluge into an existing program
-As an example of how to use the GFAKluge API, we examine its use in the variation graph toolkit [vg](https://github.com/vgteam/vg).
+As an example of how to use the GFAKluge API, we examine its use in the variation graph toolkit [vg](https://github.com/vgteam/vg) (CITE).
 vg creates string graphs from assemblies and population variation that are then used for read mapping and variant calling. We incorporated
 GFAKluge for input and output of GFA in vg, replacing an existing parser. Reading in a GFA file requires one line of code and is agnostic to
 the GFA version used. Converting from GFA to vg's internal structures and vice versa requires forty source lines of code. Changing output from
