@@ -1579,13 +1579,18 @@ namespace gfak{
         }
     }
     void GFAKluge::write_element(std::ostream& os, const fragment_elem& f){
-
+        os << to_string();
     }
     void GFAKluge::write_element(std::ostream& os, const group_elem& g){
-
+        if (this->version >= 2.0){
+            os << g.to_string_2();
+        }
+        else{
+            os << g.to_string_1();
+        }
     }
     void GFAKluge::write_element(std::ostream& os, const gap_elem& g){
-
+        os << g.to_string();
     }
 
     // Avoid calling to_string as it murders mem usage
