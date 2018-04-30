@@ -11,7 +11,7 @@ to glue programs that use different GFA versions together.
 
 
 ## Command line utilities
-When `make` is run, the `gfak` binary is build in the top level directory. It offers the following subcommands:  
+When `make` is run, the `gfak` binary is built in the top level directory. It offers the following subcommands:  
 + gfak extract : transform the GFA segment lines to a FASTA file.  
 + gfak diff : check if two GFA files are different (not very sophisticated at the moment)  
 + gfak sort : change the line order of a GFA file so that lines proceed in

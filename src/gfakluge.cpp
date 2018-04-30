@@ -1589,7 +1589,7 @@ namespace gfak{
             os << g.to_string_2();
         }
         else{
-            os << g.to_string_2();
+            os << g.to_string_1();
         }
     }
     void GFAKluge::write_element(std::ostream& os, const gap_elem& g){
