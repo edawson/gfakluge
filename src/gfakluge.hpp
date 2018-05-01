@@ -146,6 +146,12 @@ namespace gfak{
             }
             return st.str();
         }
+        std::string as_fasta_record() const{
+            std::ostringstream st;
+            st << '>' << ' ' << name << endl
+                << sequence << endl;
+            return st.str();
+        };
     };
 
     struct link_elem{
