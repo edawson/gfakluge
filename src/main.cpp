@@ -85,7 +85,7 @@ void merge_help(char** argv){
 
 void sort_help(char** argv){
     cerr << argv[0] << " sort: sort a GFA file." << endl
-        << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
+        << "Usage: " << argv[0] << " sort [options] <GFA_File>" << endl
         << "Options:" << endl
         << "  -S / --spec <SPEC> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "  -v / --version        print GFAK version and exit." << endl
