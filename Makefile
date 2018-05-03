@@ -8,7 +8,7 @@ BUILD_DIR:=build
 LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./ -I./$(BUILD_DIR) -I./src/subcommand/
 
-gfak: $(BUILD_DIR)/main.o libgfakluge.a .GFAK_pre-build src/pliib.hpp 
+gfak: $(BUILD_DIR)/main.o libgfakluge.a .GFAK_pre-build src/pliib.hpp .GFAK_pre-build
 	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
 $(BUILD_DIR)/main.o: src/main.cpp .GFAK_pre-build src/gfakluge.hpp src/pliib.hpp
