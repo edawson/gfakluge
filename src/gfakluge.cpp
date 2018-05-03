@@ -685,7 +685,8 @@ namespace gfak{
     }
 
     void GFAKluge::add_contained(sequence_elem seq, contained_elem con){
-        seq_to_contained[seq.name].push_back(con);
+        edge_elem e(con);
+        seq_to_edges[seq.name].push_back(e);
     }
 
     void GFAKluge::add_link(const string& seq_name, const link_elem& link){
