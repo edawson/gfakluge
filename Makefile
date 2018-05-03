@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS:=-O3 -std=c++11 -g 
+CXXFLAGS:=-O3 -std=c++11 -g -fPIC
 
 
 BIN_DIR:=bin
