@@ -67,7 +67,8 @@ void convert_help(char** argv){
         << "  -w / --walks   Output paths as walks, but maintain version (NOT SPEC COMPLIANT)." << endl
         << "  -p / --paths   Output walks as paths, but maintain version." << endl
         << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]." << endl
-        << "  -v / --version        print GFAK version and exit." << endl
+        << "  -v / --version       print GFAK version and exit." << endl
+        << "  -f / --fasta         print the S (sequence) elements in FASTA format." << endl
         << endl; 
 }
 
@@ -84,7 +85,7 @@ void merge_help(char** argv){
 
 void sort_help(char** argv){
     cerr << argv[0] << " sort: sort a GFA file." << endl
-        << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
+        << "Usage: " << argv[0] << " sort [options] <GFA_File>" << endl
         << "Options:" << endl
         << "  -S / --spec <SPEC> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "  -v / --version        print GFAK version and exit." << endl
@@ -280,6 +281,7 @@ int convert_main(int argc, char** argv){
     bool block_order = false;
     double spec_version = 2.0;
     bool use_paths = true;
+    bool make_fasta = false;
 
     if (argc < 3){
         cerr << "No GFA file provided. Please provide a GFA file to convert" << endl;
@@ -298,11 +300,12 @@ int convert_main(int argc, char** argv){
             {"walks", no_argument, 0, 'w'},
             {"spec", required_argument, 0, 'S'},
             {"version", no_argument, 0, 'v'},
+            {"fasta", no_argument, 0, 'f'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "hvbpwS:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvfbpwS:", long_options, &option_index);
         if (c == -1){
             break;
         }
@@ -328,6 +331,9 @@ int convert_main(int argc, char** argv){
             case 'p':
                 use_paths = true;
                 break;
+            case 'f':
+                make_fasta = true;
+                break;
 
             default:
                 abort();
@@ -338,8 +344,14 @@ int convert_main(int argc, char** argv){
     GFAKluge gg;
     gg.parse_gfa_file(gfa_file);
 
-
     gg.set_walks(!use_paths);
+
+    if (make_fasta){
+        for (auto s : gg.get_name_to_seq()){
+            cout << s.second.as_fasta_record();
+        }
+        exit(0);
+    }
 
     if (spec_version == 0.1){
         gg.set_version(0.1);
