@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS:=-O0 -std=c++11 -g -ggdb
+CXXFLAGS:=-O3 -std=c++11 
 
 
 BIN_DIR:=bin
