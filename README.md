@@ -3,7 +3,7 @@ gfakluge
 
 ## What is it?  
 GFAKluge is a C++ parser/writer and
-a set of command line utilities for manipulating [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format/).
+a set of command line utilities for manipulating [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format).
 It parses GFA to a set of data structures that represent the encoded graph.
 You can use these components and their fields/members to build up your own
 graph representation. You can also convert between GFA 0.1 <-> 1.0 <-> 2.0
