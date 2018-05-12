@@ -84,7 +84,7 @@ namespace gfak{
                 char* s;
                 TFA::getSequence(tf, it->second.name.c_str(), s);
                 it->second.sequence.assign(s);
-                it->second.length = strlen(s);
+                //it->second.length = strlen(s);
                 delete [] s;
             }
         }
