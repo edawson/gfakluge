@@ -6,7 +6,7 @@ using namespace std;
 using namespace gfak;
 
 void print_version_help(){
-    cerr << "gfak (GFAKluge library) 0.2.3" << endl
+    cerr << "gfak (GFAKluge library) 0.2.4" << endl
         << "Copyright (C) 2015 Eric T. Dawson" << endl
         << "Licensed under the MIT License (https://opensource.org/licenses/MIT)" << endl
         << "This is free, open-source software: you are free to modify and redistribute it." << endl
@@ -22,6 +22,7 @@ int gfakluge_package_help(char** argv){
         "   convert: Convert between GFA 0.1 <-> 1.0 <-> 2.0" << endl <<
         "   diff:    Determine whether two GFA files have identical graphs" << endl <<
         "   extract: Convert the S lines of a GFA file to FASTA format." << endl <<
+        "   fillseq: Add sequences from a FASTA file to S lines." << endl <<
         "   ids:     Coordinate the ID spaces of multiple GFA graphs."  << endl <<
         "   concat:  Merge GFA graphs (without ID collisions)." << endl <<
         "   sort:    Print a GFA file in HSLP / HSEFGUO order." << endl <<
@@ -32,11 +33,22 @@ int gfakluge_package_help(char** argv){
 
 }
 
+
 void extract_help(char** argv){
     cerr << argv[0] <<  " extract: extract a FASTA file from GFA" << endl
-        << "Usage: " << argv[0] << "extract [ -p ] <GFA_FILE> > file.fa " << endl
+        << "Usage: " << argv[0] << " extract [ -p ] <GFA_FILE> > file.fa " << endl
             << " -p / --include-paths  include paths in output" << endl
             << " -v / --version        print GFAK version and exit." << endl
+        << endl;
+}
+
+void fillseq_help(char** argv){
+    cerr << argv[0] << " fillseq: fill in S(equence) line sequences from a FASTA file." << endl
+        << "Usage: " << argv[0] << " fillseq [options] -f <fasta.fa> <GFA_FILE> >> gfa_filled.gfa." << endl
+        << "Options:" << endl
+        << " -f / --fasta <f.fa>   {REQUIRED} a FASTA file containing sequences, with the GFA IDs as FASTA IDs." << endl
+        << "                      Multiple FASTA files may be passed." << endl
+        << " -S / --spec <SPEC>   Output in GFA version <SPEC>" << endl
         << endl;
 }
 
@@ -196,6 +208,97 @@ int extract_main(int argc, char** argv){
     }
     
 	return 0;
+}
+
+int fillseq_main(int argc, char** argv){
+    if (argc < 3){
+        cerr << "fillseq requires a GFA file." << endl << endl;
+        fillseq_help(argv);
+        exit(9);
+    }
+
+    string fasta_file;
+    string gfa_file;
+
+    double spec_version = 0.0;
+    bool block_order = false;
+
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"fasta", required_argument, 0, 'f'},
+            {"spec", required_argument, 0, 'S'},
+            {"block-order", no_argument, 0, 'b'},
+            {"version", no_argument, 0, 'v'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hbf:S:v", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case '?':
+            case 'h':
+                extract_help(argv);
+                exit(0);
+            case 'b':
+                block_order = true;
+                break;
+            case 'v':
+                print_version_help();
+                exit(1);
+            case 'S':
+                spec_version = stod(optarg);
+                break;
+            case 'f':
+                fasta_file = string(optarg);
+                break;
+            default:
+                abort();
+        }
+    }
+    gfa_file = argv[optind];
+
+    GFAKluge gg;
+    gg.parse_gfa_file(gfa_file);
+    gg.fill_sequences(fasta_file.c_str());
+    //cerr << TFA::checkFAIndexFileExists(fasta_file.c_str()) << endl;
+
+
+    if (spec_version == 0.1){
+        gg.set_version(0.1);
+    }
+    else if (spec_version == 1.0){
+        gg.set_version(1.0);
+    }
+    else if (spec_version == 2.0){
+        gg.set_version(2.0);
+    }
+    else if (spec_version != 0.0){
+        cerr << "Invalid specification number: " << spec_version << endl
+        << "Please provide one of [0.1, 1.0, 2.0]." << endl;
+        exit(22);
+    }
+    
+
+    if (block_order){
+        cout << gg.block_order_string();
+    }
+    else{
+        cout << gg.to_string();
+    }
+
+
+
+
+return 0;
+
 }
 
 /**
@@ -910,6 +1013,9 @@ int main(int argc, char** argv){
     }
     else if (strcmp(argv[1], "--help") == 0){
         gfakluge_package_help(argv);
+    }
+    else if (strcmp(argv[1], "fillseq") == 0){
+        return fillseq_main(argc, argv);
     }
     else {
         cerr << "No command " << '"' << argv[1] << '"' << endl;
