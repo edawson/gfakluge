@@ -11,6 +11,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <bitset>
+#include <sys/stat.h>
+
+#include "tinyfa.hpp"
 #include "pliib.hpp"
 
 namespace gfak{
@@ -444,14 +447,6 @@ namespace gfak{
 
             void groups_as_paths();
 
-            // Minimize memory consumption by converting everything
-            // to GFA2 compatible containers. We can then convert
-            // this if we want to go back to GFA1.
-            //void compact();
-
-
-
-
             /** End GFA2.0. Begin 1.0 / 0.1 **/
 
             void add_contained(std::string seq_name, contained_elem c);
@@ -464,11 +459,14 @@ namespace gfak{
             void add_path(std::string pathname, path_elem path);
             void add_walk(std::string walkname, walk_elem w);
 
+
+            /** Versioning functions **/
             double get_version();
             void set_version(double version);
             void set_version();
             void set_walks(bool ws);
 
+            /** Getter methods for elements, to keep users out of our data structures **/
             std::vector<link_elem> get_links(const sequence_elem& seq);
             std::vector<link_elem> get_links(const std::string& seq_name);
 
@@ -492,6 +490,7 @@ namespace gfak{
             std::map<std::string, std::vector<gap_elem>> get_seq_to_gaps();
             std::map<std::string, group_elem> get_groups();
 
+            /** Convert paths to walks and walks to paths **/
             void paths_as_walks();
             void walks_as_paths();
 
@@ -506,17 +505,20 @@ namespace gfak{
             std::string block_order_string_2();
             void output_to_stream(std::ostream& os, bool output_block_order = false);
 
+            /** Methods for folks that want streaming output. **/
             void write_element(std::ostream& os, const sequence_elem& s);
             void write_element(std::ostream& os, edge_elem e);
             void write_element(std::ostream& os, const fragment_elem& f);
             void write_element(std::ostream& os, const group_elem& g);
             void write_element(std::ostream& os, const gap_elem& g);
+            
             // ID manipulators
             std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
             std::string max_ids_string();
             void re_id(std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>& new_mx);
             void re_id(std::string new_mx_str);
 
+            /** Merge two GFA graphs **/
             void merge(GFAKluge& gg);
 
             /** Assembly stats **/
@@ -529,7 +531,8 @@ namespace gfak{
             // double simple_connectivity() // reports avg edges / sequence
             // double weighted_connectivity() // weight areas of high connectivity higher
             //      behaves kind of like [(N_edges)^2 / (N_seqs)^2 if N_edges > 2]
-
+            
+            void fill_sequences(const char* fasta_file);
 
             private:
             bool use_walks = false;

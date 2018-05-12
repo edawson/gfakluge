@@ -66,6 +66,31 @@ namespace gfak{
         this->groups[g.id] = g;
     }
 
+    void GFAKluge::fill_sequences(const char* fasta_file){
+
+        TFA::tiny_faidx_t tf;
+        if (TFA::checkFAIndexFileExists(fasta_file)){
+            TFA::parseFAIndex(fasta_file, tf);
+        }
+        else{
+            //cerr << "Creating index for " << fasta_file << "." << endl;
+            TFA::createFAIndex(fasta_file, tf);
+            TFA::writeFAIndex(fasta_file, tf);
+            //cerr << "Index created." << endl;
+        }
+        
+        for (std::map<string, sequence_elem, custom_key>::iterator it = name_to_seq.begin(); it != name_to_seq.end(); it++){
+            if (tf.hasSeqID(it->second.name.c_str())){
+                char* s;
+                TFA::getSequence(tf, it->second.name.c_str(), s);
+                it->second.sequence.assign(s);
+                it->second.length = strlen(s);
+                delete [] s;
+            }
+        }
+    }
+
+
     void GFAKluge::groups_as_paths(){
         for (auto g : groups){
             if (g.second.ordered){
