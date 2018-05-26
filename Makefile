@@ -8,10 +8,10 @@ BUILD_DIR:=build
 LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./$(BUILD_DIR)
 
-gfak: $(BUILD_DIR)/main.o libgfakluge.a .GFAK_pre-build src/tinyFA/pliib.hpp src/tinyFA/tinyfa.hpp .GFAK_pre-build
+gfak: $(BUILD_DIR)/main.o libgfakluge.a .GFAK_pre-build src/gfa_builder.hpp src/tinyFA/pliib.hpp src/tinyFA/tinyfa.hpp .GFAK_pre-build
 	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
-$(BUILD_DIR)/main.o: src/main.cpp .GFAK_pre-build src/gfakluge.hpp src/tinyFA/pliib.hpp src/tinyFA/tinyfa.hpp
+$(BUILD_DIR)/main.o: src/main.cpp .GFAK_pre-build src/gfakluge.hpp src/gfa_builder.hpp src/tinyFA/pliib.hpp src/tinyFA/tinyfa.hpp
 	+$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
 
 libgfakluge.a: $(BUILD_DIR)/gfakluge.o src/tinyFA/pliib.hpp src/tinyFA/tinyfa.hpp .GFAK_pre-build

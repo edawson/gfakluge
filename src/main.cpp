@@ -1,6 +1,7 @@
 #include <getopt.h>
 #include <cstring>
 #include "gfakluge.hpp"
+#include "gfa_builder.hpp"
 
 using namespace std;
 using namespace gfak;
@@ -97,7 +98,7 @@ void merge_help(char** argv){
 
 void build_help(char** argv){
     cerr << argv[0] << " build: generate a GFA variation graph from a FASTA reference and a VCF." << endl
-    "Usage: " << argv[0] << " build [options] -r <FASTA> -v <VCF>" << endl
+    << "Usage: " << argv[0] << " build [options] -r <FASTA> -v <VCF>" << endl
     << "Options: " << endl
     << "  -m / --max-node-length <Int>  Maximum size for a node in basepairs (default: 1000)." << endl
     << "  -r / --reference  <FASTA>     A fasta file to use for constructing the graph backbone." << endl
@@ -220,7 +221,7 @@ int extract_main(int argc, char** argv){
 	return 0;
 }
 
-int build_main(int argv, char** argv){
+int build_main(int argc, char** argv){
     
     return 0;
 }
