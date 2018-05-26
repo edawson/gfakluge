@@ -283,8 +283,8 @@ inline void parseFAIndex(const char* fastaFileName, tiny_faidx_t& fai){
 
 inline void getSequenceLength(const tiny_faidx_t& fai, const char* seqname, uint32_t& length){
 
-    tiny_faidx_t* entry;
-    if (fai.hasSeqId(seqname)){
+    tiny_faidx_entry_t* entry;
+    if (fai.hasSeqID(seqname)){
         fai.get(seqname, entry);
         length = entry->seq_len;
     }

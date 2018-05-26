@@ -233,6 +233,14 @@ namespace pliib{
         s = ret;
     };
 
+    inline void strip(std::string& s, char r){
+        int slen = s.length();
+        char* t = new char[slen + 1];
+        memcpy(t, s.c_str(), slen);
+        strip(t, slen, r);
+        s = std::string(t);
+    };
+
 
     /** Removes a character from within a string **/
     inline void remove_char(char*& s, const int& len, char r){
