@@ -511,6 +511,9 @@ namespace gfak{
             void write_element(std::ostream& os, const fragment_elem& f);
             void write_element(std::ostream& os, const group_elem& g);
             void write_element(std::ostream& os, const gap_elem& g);
+            void write_element(std::ostream& os, const header_elem& h);
+
+            std::string header_string();
             
             // ID manipulators
             std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();

@@ -223,6 +223,55 @@ int extract_main(int argc, char** argv){
 
 int build_main(int argc, char** argv){
     
+    std::string fasta_file;
+    std::string vcf_file;
+    char* insertion_fasta = NULL;
+
+    double spec_version = 2.0;
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"fasta", required_argument, 0, 'f'},
+            {"spec", required_argument, 0, 'S'},
+            {"vcf", no_argument, 0, 'v'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hi:f:S:v:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case '?':
+            case 'h':
+                extract_help(argv);
+                exit(0);
+            case 'v':
+                vcf_file = string(optarg);
+                break;
+            case 'i':
+                insertion_fasta = optarg;
+                break;
+            case 'S':
+                spec_version = stod(optarg);
+                break;
+            case 'f':
+                fasta_file = string(optarg);
+                break;
+            default:
+                abort();
+        }
+    }
+    gfak::GFAKluge gg;
+    gg.set_version(spec_version);
+
+    construct_gfa( (char*) fasta_file.c_str(), (char*) vcf_file.c_str(), (char*) insertion_fasta, gg);
+
     return 0;
 }
 
@@ -1032,6 +1081,9 @@ int main(int argc, char** argv){
     }
     else if (strcmp(argv[1], "fillseq") == 0){
         return fillseq_main(argc, argv);
+    }
+    else if (strcmp(argv[1], "build") == 0){
+        return build_main(argc, argv);
     }
     else {
         cerr << "No command " << '"' << argv[1] << '"' << endl;

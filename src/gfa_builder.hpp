@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <set>
 #include <zlib.h>
+#include <ostream>
 #include "gfakluge.hpp"
 #include "tinyfa.hpp"
 #include "pliib.hpp"
@@ -29,18 +30,43 @@
  *
  */
 struct VCF_Variant{
-    VCF_Variant(){
-
-    };
-    VCF_Variant(std::string line){
-        std::vector<string> splits = pliib::split(line, '\t');
-
-    };
     std::string seq;
     int pos;
     std::string ref;
     std::vector<std::string> alts;
     std::map<std::string, std::string> info;
+    std::string raw_info_line;
+
+    VCF_Variant(){
+
+    };
+    VCF_Variant(std::string line){
+        std::vector<std::string> splits = pliib::split(line, '\t');
+        seq = splits[0];
+        pos = stoi(splits[1]);
+        ref = splits[3];
+        alts = pliib::split(splits[4], ',');
+
+        raw_info_line = splits[7];
+        std::vector<std::string> isplits = pliib::split(splits[7], ';');
+        for (auto i : isplits){
+            std::vector<string> xsplits = pliib::split(i, '=');
+            if (xsplits.size() == 1){
+                this->info[xsplits[0]] = xsplits[0];
+            }
+            else{
+                this->info[xsplits[0]] = xsplits[1];
+            }
+        }
+    };
+    std::string to_string(){
+        std::stringstream st;
+        st << seq << '\t' <<
+            pos << '\t' << "." << '\t' << 
+            ref << '\t' <<
+            endl;
+        return st.str();
+    };
 };
 
 inline void set_gfa_edge_defaults(gfak::edge_elem& e){
@@ -108,10 +134,12 @@ inline void make_contig_to_breakpoints(char* vcf_file,
                 VCF_Variant* vv = new VCF_Variant(line);
                 std::string contig = vv->seq;
                 std::pair<int, int> breaks = variant_to_breakpoint(*vv);
+                cerr << vv->seq << " " << vv->pos << " " << breaks.first << " " << breaks.second << endl; 
                 if (breaks.first != -1){
                     contig_to_breakpoints[contig].push_back(breaks.first);
                     contig_to_breakpoints[contig].push_back(breaks.second);
                     contig_to_breakpoints_to_variants[contig][breaks.first].push_back(vv);
+                    contig_to_variants[contig].push_back(vv);
                 }
 
                 if (vv->info.at("SVTYPE").empty()){
@@ -122,6 +150,10 @@ inline void make_contig_to_breakpoints(char* vcf_file,
                 }
             }
         }
+    }
+    else{
+        cerr << "ERROR [gfak build] : could not open VCF file " << vcf_file << endl;
+        exit(9);
     }
 };
 
@@ -169,9 +201,12 @@ inline void construct_contig_graph(string contig_name,
         uint32_t seq_len,
         vector<int>& breakpoints,
         map<int, vector<VCF_Variant*>>& bp_to_variants,
-        vector<VCF_Variant*> variants,
+        vector<VCF_Variant*>& variants,
         char* insertion_fasta,
-        gfak::GFAKluge gg){
+        gfak::GFAKluge& gg,
+        std::ostream& os,
+        int& base_seq_id,
+        int base_edge_id){
 
     int numbp = breakpoints.size();
     int prev = 0;
@@ -189,8 +224,8 @@ inline void construct_contig_graph(string contig_name,
     }
 
 
-    int current_id = 0;
-    int current_edge_id = 0;
+    int current_id = base_seq_id;
+    int current_edge_id = base_edge_id;
     int current_pos = 0;
     std::vector<int64_t> ins_nodes;
     bool snptrip;
@@ -201,6 +236,8 @@ inline void construct_contig_graph(string contig_name,
     std::map<std::string, std::unordered_set<int>> path_to_nodes;
     std::map<int, std::string> node_to_path;
     std::unordered_map<int, int> bp_to_node_id;
+
+    std::unordered_map<string, int> insertion_id_to_node_id;
 
 
     for (int i = 0; i < numbp; ++i){
@@ -214,15 +251,22 @@ inline void construct_contig_graph(string contig_name,
         s.id = current_id;
         node_to_path[current_id] = contig_name;
         path_to_nodes[contig_name].insert(s.id);
+        bp_to_node_id[current_pos] = current_id;
+        bp_to_node_id[bp - 1] = current_id;
+
+        gg.write_element(os, s);
 
         if (i > 0){
             if (snptrip){
                 int prev_ref = contig_node_ids.size() - 2;
                 while ( path_to_nodes[contig_name].find(prev_ref) == path_to_nodes[contig_name].end()){
+                    break;
                     gfak::edge_elem e;
                     set_gfa_edge_defaults(e);
                     e.source_name = std::to_string(contig_node_ids[prev_ref]);
                     e.sink_name = std::to_string(current_id);
+                    
+                    gg.write_element(os, e);
                     prev_ref--;
                 }
                 snptrip = false;
@@ -232,21 +276,26 @@ inline void construct_contig_graph(string contig_name,
             if ( path_to_nodes[contig_name].find( contig_node_ids.back() ) == path_to_nodes[contig_name].end() ){
                 int prev_ref = contig_node_ids.size() - 1;
                 while ( path_to_nodes[contig_name].find(prev_ref) != path_to_nodes[contig_name].end() ){
+                    break;
                     gfak::edge_elem e;
                     set_gfa_edge_defaults(e);
                     e.source_name = std::to_string(contig_node_ids[prev_ref]);
                     e.sink_name = std::to_string(current_id);
+
+                    gg.write_element(os, e);
                     --prev_ref;
                 }
                 gfak::edge_elem e;
                 e.source_name = std::to_string(contig_node_ids[prev_ref]);
                 e.sink_name = std::to_string(current_id);
                 snptrip = true;
+                gg.write_element(os, e);
             }
             else{
                 gfak::edge_elem e;
                 e.source_name = std::to_string(contig_node_ids.back());
                 e.sink_name = std::to_string(current_id);
+                gg.write_element(os, e);
             }
         }
         contig_node_ids.push_back(current_id);
@@ -262,12 +311,16 @@ inline void construct_contig_graph(string contig_name,
                     s.id = ++current_id;
                     //max_alt_size = max(max_alt_size, bvar->alts[altp]);
 
+                    gg.write_element(os, s);
+
                     gfak::edge_elem e;
                     set_gfa_edge_defaults(e);
                     e.source_name = prev_id;
                     e.sink_name = current_id;
                     //ins_offset = max(ins_offset, max_alt_size);
                     ins_offset = max(ins_offset, (int) bvar->alts[altp].size());
+
+                    gg.write_element(os, e);
                 }
             }
             else if (bvar->info.at("SVTYPE") == "INS"){
@@ -290,14 +343,17 @@ inline void construct_contig_graph(string contig_name,
                         continue;
                     }
                     ins_node.sequence.assign(seq);
-                    
                     ins_node.id = ++current_id;
+
+                    gg.write_element(os, ins_node);
 
                     gfak::edge_elem e;
                     set_gfa_edge_defaults(e);
                     e.source_name = to_string(s.id);
                     e.sink_name = to_string(ins_node.id);
                     ins_offset = max(ins_offset, (int) seq.length());
+
+                    gg.write_element(os, e);
 
                }
             }
@@ -306,6 +362,7 @@ inline void construct_contig_graph(string contig_name,
             }
         }
         // update current_pos here??
+        current_pos = breakpoints[i];
     }
 
     for (auto vvar : variants){
@@ -314,12 +371,16 @@ inline void construct_contig_graph(string contig_name,
                 gfak::edge_elem e_from;
                 e_from.source_name = bp_to_node_id[ vvar->pos - 1 - 1];
                 e_from.sink_name = bp_to_node_id[vvar->pos -1 + stoi(vvar->info.at("SVLEN"))];
+
+                gg.write_element(os, e_from);
             }
             else if (vvar->info.at("SVTYPE") == "INS"){
                 gfak::edge_elem e_to;
                 //e_to.source_id = insertion_id_to_node_id.at( vvar-> 
                 // TODO this won't work as-is
                 //
+
+                gg.write_element(os, e_to);
             }
             else if (vvar->info.at("SVTYPE") == "DUP"){
 
@@ -327,25 +388,98 @@ inline void construct_contig_graph(string contig_name,
             else if (vvar->info.at("SVTYPE") == "INV"){
                 gfak::edge_elem e_from;
                 gfak::edge_elem e_to;
+
+                set_gfa_edge_defaults(e_from);
+                set_gfa_edge_defaults(e_to);
+                
+                e_from.source_name = to_string(bp_to_node_id[vvar->pos - 1 - 1]);
+                e_from.sink_name = to_string(bp_to_node_id[vvar->pos -1 + stoi(vvar->info.at("SVLEN"))]);
+                
+                e_to.source_name = to_string(bp_to_node_id[vvar->pos - 1]);
+                e_to.sink_name = to_string(bp_to_node_id[ vvar->pos - 1 + stoi(vvar->info.at("SVLEN"))]);
+
+                gg.write_element(os, e_from);
+                gg.write_element(os, e_to);
             }
         }
     }
 
     for (auto p : path_to_nodes){
+        
 
     }
 
 
 };
 
-inline void construct_gfa(char* fasta_file, char* vcf_file, gfak::GFAKluge gg){
+inline void construct_gfa(char* fasta_file, char* vcf_file, char* insertion_fasta, gfak::GFAKluge gg){
 
+    int max_node_length = 128;
+    
+    std::map<std::string, std::vector<VCF_Variant*>> contig_to_variants;
+    std::map<std::string, std::map<int, std::vector<VCF_Variant*>>> contig_to_breakpoints_to_variants;
+    std::vector<VCF_Variant*> insertions;
+    std::map<string, std::vector<int>> contig_to_breakpoints;
     // Read in vcf file and transform to variants
+
+    make_contig_to_breakpoints(vcf_file, 
+                        contig_to_variants,
+                        contig_to_breakpoints_to_variants,
+                        contig_to_breakpoints,
+                        insertions);
+
+    cerr << contig_to_variants.size() << " contigs to process" << endl;
+
 
     // For each contig, get the relevant sequence from 
     // the FASTA file
+    TFA::tiny_faidx_t tf;
+    if (TFA::checkFAIndexFileExists(fasta_file)){
+        TFA::parseFAIndex(fasta_file, tf);
+    }
+    else{
+        TFA::createFAIndex(fasta_file, tf);
+        TFA::writeFAIndex(fasta_file, tf);
+    }
 
-    // 
+    int base_seq_id = 0;
+    int base_edge_id = 0;
+
+    for (auto contig : contig_to_variants){
+        cerr << "Processing contig: " << contig.first << endl;
+        if (tf.hasSeqID(contig.first.c_str())){
+            
+            char* seq;
+            uint32_t len;
+            getSequence(tf, contig.first.c_str(), seq);
+            getSequenceLength(tf, contig.first.c_str(), len);
+
+            std::vector<VCF_Variant*> vars = contig.second;
+            std::vector<int> bps;
+            std::map<int, vector<VCF_Variant*>> bp_to_var;
+            make_breakpoints(contig.first, fasta_file, vars, bps, bp_to_var, max_node_length);
+            construct_contig_graph(contig.first, seq, len, bps,
+                    bp_to_var, vars, insertion_fasta,
+                    gg, std::cout,
+                    base_seq_id, base_edge_id);
+
+
+        }
+    }
+    
+
+
+    /* void construct_contig_graph(string contig_name,
+        char* contig_seq,
+        uint32_t seq_len,
+        vector<int>& breakpoints,
+        map<int, vector<VCF_Variant*>>& bp_to_variants,
+        vector<VCF_Variant*> variants,
+        char* insertion_fasta,
+        gg,
+        cout); **/
+
+
 
 };
 
