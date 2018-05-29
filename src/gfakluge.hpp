@@ -128,7 +128,7 @@ namespace gfak{
         std::string name;
         uint64_t length = UINT64_MAX;
         std::vector<opt_elem> opt_fields;
-        long id;
+        uint32_t id = 0;
         std::string to_string_2() const{
             std::ostringstream st;
 
@@ -207,10 +207,10 @@ namespace gfak{
            sink_orientation_forward = l.source_orientation_forward;
            alignment = l.cigar;
            tags = l.opt_fields;
-           ends.set(0,0);
-           ends.set(1,0);
-           ends.set(2,1);
-           ends.set(3,1);
+           ends.set(0,1);
+           ends.set(1,1);
+           ends.set(2,0);
+           ends.set(3,0);
            id = "*";
         }
         edge_elem(const contained_elem& c){
