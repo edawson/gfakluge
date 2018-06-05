@@ -222,6 +222,11 @@ int extract_main(int argc, char** argv){
 }
 
 int build_main(int argc, char** argv){
+
+    if (argc < 3){
+        build_help(argv);
+        exit(1);
+    }
     
     std::string fasta_file;
     std::string vcf_file;
@@ -249,7 +254,7 @@ int build_main(int argc, char** argv){
         switch (c){
             case '?':
             case 'h':
-                extract_help(argv);
+                build_help(argv);
                 exit(0);
             case 'v':
                 vcf_file = string(optarg);
