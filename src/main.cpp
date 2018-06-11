@@ -1,6 +1,7 @@
 #include <getopt.h>
 #include <cstring>
 #include "gfakluge.hpp"
+#include "gfa_builder.hpp"
 
 using namespace std;
 using namespace gfak;
@@ -93,6 +94,16 @@ void merge_help(char** argv){
         << "  -b / --block-order   Output GFA in block order [HSLP / HSLW | HSEFGUO]." << endl
         << "  -v / --version        print GFAK version and exit." << endl
         << endl; 
+}
+
+void build_help(char** argv){
+    cerr << argv[0] << " build: generate a GFA variation graph from a FASTA reference and a VCF." << endl
+    << "Usage: " << argv[0] << " build [options] -r <FASTA> -v <VCF>" << endl
+    << "Options: " << endl
+    << "  -m / --max-node-length <Int>  Maximum size for a node in basepairs (default: 1000)." << endl
+    << "  -f / --fasta  <FASTA>     A fasta file to use for constructing the graph backbone." << endl
+    << "  -v / --vcf <VCF>              A VCF file containing variants to put in the graph." << endl 
+    << endl;
 }
 
 void sort_help(char** argv){
@@ -208,6 +219,70 @@ int extract_main(int argc, char** argv){
     }
     
 	return 0;
+}
+
+int build_main(int argc, char** argv){
+
+    if (argc < 3){
+        build_help(argv);
+        exit(1);
+    }
+    
+    std::string fasta_file;
+    std::string vcf_file;
+    char* insertion_fasta = NULL;
+    int max_node_size = 128;
+
+    double spec_version = 2.0;
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"fasta", required_argument, 0, 'f'},
+            {"spec", required_argument, 0, 'S'},
+            {"vcf", required_argument, 0, 'v'},
+            {"max-node-size", required_argument, 0, 'm'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hm:i:f:S:v:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case '?':
+            case 'h':
+                build_help(argv);
+                exit(0);
+            case 'v':
+                vcf_file = string(optarg);
+                break;
+            case 'i':
+                insertion_fasta = optarg;
+                break;
+            case 'S':
+                spec_version = stod(optarg);
+                break;
+            case 'f':
+                fasta_file = string(optarg);
+                break;
+            case 'm':
+                max_node_size = atoi(optarg);
+                break;
+            default:
+                abort();
+        }
+    }
+    gfak::GFAKluge gg;
+    gg.set_version(spec_version);
+
+    construct_gfa( (char*) fasta_file.c_str(), (char*) vcf_file.c_str(), (char*) insertion_fasta, gg, max_node_size);
+
+    return 0;
 }
 
 int fillseq_main(int argc, char** argv){
@@ -790,6 +865,10 @@ int stats_main(int argc, char** argv){
             case 'A':
                 all = true;
                 break;
+            case 'p':
+                show_paths = true;
+                all = false;
+                break;
 
             default:
                 abort();
@@ -1016,6 +1095,9 @@ int main(int argc, char** argv){
     }
     else if (strcmp(argv[1], "fillseq") == 0){
         return fillseq_main(argc, argv);
+    }
+    else if (strcmp(argv[1], "build") == 0){
+        return build_main(argc, argv);
     }
     else {
         cerr << "No command " << '"' << argv[1] << '"' << endl;

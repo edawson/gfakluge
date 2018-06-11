@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS:=-O3 -std=c++11 
+CXXFLAGS:= -O3 -pipe -march=native -mtune=native -Wa,-q -std=c++11 -pg -ggdb
 
 
 BIN_DIR:=bin
@@ -34,7 +34,6 @@ clean:
 	$(RM) gfak
 	$(RM) src/*.o
 	$(RM) *.a
-	$(RM) test
 	$(RM) x.sort
 	$(RM) y.sort
 	rm -rf $(BIN_DIR)

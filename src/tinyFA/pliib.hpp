@@ -40,6 +40,14 @@ namespace pliib{
         85, 86, 87, 88, 89, 90
     };
 
+    enum BREAKEND_TYPES {
+        DEL,
+        INS,
+        INV,
+        DUP,
+        INTERCHROM,
+        COMPLEX
+    };
 
     // Check a string (as a char*) for non-canonical DNA bases
     inline bool canonical(const char* x, int len){
@@ -180,7 +188,7 @@ namespace pliib{
         return ret;
 
     }
-    inline string join(vector<string> splits, char glue){
+    inline string join(const vector<string>& splits, char glue){
         stringstream ret;
         for (int i = 0; i < splits.size(); i++){
             if (i != 0){
@@ -231,6 +239,14 @@ namespace pliib{
         ret[rsz] = '\0';
         delete [] s;
         s = ret;
+    };
+
+    inline void strip(std::string& s, char r){
+        int slen = s.length();
+        char* t = new char[slen + 1];
+        memcpy(t, s.c_str(), slen);
+        strip(t, slen, r);
+        s = std::string(t);
     };
 
 
@@ -293,6 +309,47 @@ namespace pliib{
 
         return ret.str();
     }
+
+    inline void parse_breakend_field(const char* bend,
+        const int& len,
+        char*& contig,
+        uint32_t& position,
+        int& type,
+        bool forward = false){
+            int first_bracket_index = -1;
+            int last_bracket_index = len;
+            int colon_index = -1;
+
+            int i = 0;
+            while(i < len){
+                char c = bend[i];
+                if (c == ']' || c == '['){
+                    if (first_bracket_index == -1){
+                        first_bracket_index = i;
+                    }
+                    else{
+                        last_bracket_index = i;
+                        break;
+                    }
+                }
+                if (c == ':'){
+                    colon_index = i;
+                }
+                ++i;
+            }
+        if (contig != NULL){
+            delete [] contig;
+        }
+        contig = new char[colon_index - first_bracket_index];
+        contig[colon_index - first_bracket_index - 1] = '\0';
+        memcpy(contig, bend + first_bracket_index + 1, colon_index - first_bracket_index - 1);
+        
+        char* pstr = new char[last_bracket_index - colon_index];
+        pstr[last_bracket_index - colon_index - 1] = '\0';
+        memcpy(pstr, bend + colon_index + 1, last_bracket_index - colon_index - 1);
+        position = atoi(pstr);
+
+    };
 
 
     /** 
