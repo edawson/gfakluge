@@ -40,6 +40,14 @@ namespace pliib{
         85, 86, 87, 88, 89, 90
     };
 
+    static const enum breakend_type_t {
+        DEL,
+        INS,
+        INV,
+        DUP,
+        INTERCHROM,
+        COMPLEX
+    } BREAKEND_TYPES;
 
     // Check a string (as a char*) for non-canonical DNA bases
     inline bool canonical(const char* x, int len){
@@ -306,6 +314,7 @@ namespace pliib{
         const int& len,
         char*& contig,
         uint32_t& position,
+        int& type,
         bool forward = false){
             int first_bracket_index = -1;
             int last_bracket_index = len;

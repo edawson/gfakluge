@@ -76,6 +76,13 @@ struct dummy_node{
     char* path = NULL;
 };
 
+struct bp_allele{
+    uint32_t prev_node_length;
+    uint64_t prev_node_id;
+    vector<char*> alt_seqs;
+    bool isRef = false;
+};
+
 inline void set_gfa_edge_defaults(gfak::edge_elem& e, uint32_t base_edge_id = 0){
     e.source_name = "";
     e.id = to_string(base_edge_id);
@@ -102,11 +109,17 @@ inline void set_gfa_node_values(gfak::sequence_elem& s){
 std::pair<int, int> variant_to_breakpoint(const VCF_Variant& var){
     int front = 0;
     int back = 0;
-    if ( !var.info.count("SVTYPE") && !var.info.count("SVLEN")){
+    if ( var.info.find("SVTYPE") == var.info.end() &&
+        var.info.find("SVLEN") == var.info.end() && 
+        var.info.find("END") == var.info.end()){
+        // This is an SNV or indel;
+        // We'll need a break at both ends of its REF
+        // sequence, and we'll wire any edges/or nodes
+        // to those breakpoints.
         front = var.pos - 1;
         back = var.pos - 1 + var.ref.length();
     }
-    if (var.info.at("SVTYPE") == "DEL"){
+    else if (var.info.at("SVTYPE") == "DEL"){
         front = var.pos - 1;
         back = var.pos - 1 + (uint32_t) stoi(var.info.at("SVLEN"));
     }
@@ -125,10 +138,12 @@ std::pair<int, int> variant_to_breakpoint(const VCF_Variant& var){
         back = var.pos - 1 + (uint32_t) stoi(var.info.at("SVLEN"));
     }
     else if (var.info.at("SVTYPE") == "TRA"){
-
+        front = var.pos - 1;
+        back = -1;
     }
     else if (var.info.at("SVTYPE") == "BND"){
-
+        front = var.pos - 1;
+        back = -1;
     }
     else{
         cerr << "No end info. Skipping variant." << endl;
@@ -262,7 +277,7 @@ void construct_contig_graph(string contig_name,
     int current_edge_id = base_edge_id;
     int current_pos = 0;
     std::vector<int64_t> ins_nodes;
-    bool snptrip;
+    bool snptrip = false;
 
 
 
@@ -318,19 +333,25 @@ void construct_contig_graph(string contig_name,
             if ( contig_nodes.back()->path == NULL ){
                 int prev_ref = contig_nodes.size() - 1;
                 while ( (contig_nodes[prev_ref])->path == NULL ){
-                    gfak::edge_elem e;
-                    set_gfa_edge_defaults(e, ++base_edge_id);
-                    e.source_name = std::to_string((contig_nodes[prev_ref])->id);
-                    e.sink_name = std::to_string(current_id);
+                    // SNP / insertion nodes are already connected properly.
+                    // gfak::edge_elem e;
+                    // set_gfa_edge_defaults(e, ++base_edge_id);
+                    // e.source_name = std::to_string((contig_nodes[prev_ref])->id);
+                    // e.sink_name = std::to_string(s.id);
+                    //e.source_begin = contig_nodes[prev_ref]->length;
+                    //e.source_end = contig_nodes[prev_ref]->length;
 
-                    gg.write_element(os, e);
-                    os << endl;
+                    //gg.write_element(os, e);
+                    //os << endl;
                     --prev_ref;
                 }
+                // Connect up to the last reference nodes.
                 gfak::edge_elem e;
                 set_gfa_edge_defaults(e, ++base_edge_id);
                 e.source_name = std::to_string((contig_nodes[prev_ref])->id);
                 e.sink_name = std::to_string(current_id);
+                e.source_begin = contig_nodes[prev_ref]->length;
+                e.source_end = contig_nodes[prev_ref]->length;
                 snptrip = true;
                 gg.write_element(os, e);
                 os << endl;
@@ -348,11 +369,12 @@ void construct_contig_graph(string contig_name,
         }
 
         dummy_node* dn = new dummy_node();
-        dn->id = current_id;
+        dn->id = s.id;
         dn->length = current_length;
         dn->path = dummy_name;
+
         contig_nodes.push_back(dn);
-        path_to_nodes[contig_name].insert(current_id);
+        path_to_nodes[contig_name].insert(s.id);
 
         std::vector<VCF_Variant*> bp_vars = bp_to_variants[bp];
         for (int i = 0; i < bp_vars.size(); ++i){
@@ -360,25 +382,32 @@ void construct_contig_graph(string contig_name,
             if (bvar->info.find("SVTYPE") == bvar->info.end()){
                 //int max_alt_size = 0;
                 for (int altp = 0; altp < bvar->alts.size(); ++altp){
-                    gfak::sequence_elem s;
-                    int prev_id = current_id;
-                    s.sequence.assign(bvar->alts[altp]);
-                    s.id = ++current_id;
-                    set_gfa_node_values(s);
+                    gfak::sequence_elem snp_s;
+                    snp_s.sequence.assign(bvar->alts[altp]);
+                    snp_s.id = ++current_id;
+                    set_gfa_node_values(snp_s);
+                    dummy_node* snn = new dummy_node();
+                    snn->id = snp_s.id;
+                    snn->length = snp_s.length;
+                    snn->path = NULL;
+                    contig_nodes.push_back(snn);
 
-
-                    gg.write_element(os, s);
+                    gg.write_element(os, snp_s);
                     os << endl;
+
                     gfak::edge_elem e;
                     set_gfa_edge_defaults(e, ++base_edge_id);
-                    e.source_name = prev_id;
-                    e.sink_name = current_id;
+                    e.source_name = std::to_string( s.id );
+                    e.sink_name = std::to_string(snp_s.id);
+                    e.source_begin = s.length;
+                    e.source_end = s.length;
                     //ins_offset = max(ins_offset, max_alt_size);
                     ins_offset = max(ins_offset, (int) bvar->alts[altp].size());
 
                     gg.write_element(os, e);
                     os << endl;
 
+                    //exit(1);
                 }
             }
             else if (bvar->info.at("SVTYPE") == "INS"){
@@ -400,6 +429,7 @@ void construct_contig_graph(string contig_name,
                         seq = "N";
                         continue;
                     }
+
                     string insert_id = "INS_" + to_string(bvar->pos) + "_" + to_string(altp);
                     ins_node.sequence.assign(seq);
                     ins_node.id = ++current_id;
@@ -449,8 +479,9 @@ void construct_contig_graph(string contig_name,
             else if (vvar->info.at("SVTYPE") == "INS"){
                 gfak::edge_elem e_to;
                 set_gfa_edge_defaults(e_to, ++base_edge_id);
-                for (int altp = 0; altp < vvar->alt.size(); ++altp){
-                    string ins_id = "INS_" + to_string(vvar->pos) + "_" + to_string(altp);
+                string ins_id;
+                for (int altp = 0; altp < vvar->alts.size(); ++altp){
+                    ins_id = "INS_" + to_string(vvar->pos) + "_" + to_string(altp);
                 }
                 e_to.source_name = to_string(bp_to_node_id.at(vvar->pos - 1));
                 e_to.source_begin = node_id_to_length.at(bp_to_node_id.at( vvar->pos - 1));
@@ -462,7 +493,14 @@ void construct_contig_graph(string contig_name,
                 os << endl;
             }
             else if (vvar->info.at("SVTYPE") == "DUP"){
-
+                gfak::edge_elem e_cycle;
+                set_gfa_edge_defaults(e_cycle, ++base_edge_id);
+                e_cycle.source_name = to_string(bp_to_node_id.at(vvar->pos - 1 - 1 + stoi(vvar->info.at("SVLEN"))));
+                e_cycle.sink_name = to_string(bp_to_node_id.at(vvar->pos - 1));
+                e_cycle.source_begin = node_id_to_length.at(bp_to_node_id.at(vvar->pos - 1));
+                e_cycle.source_end = node_id_to_length.at(bp_to_node_id.at(vvar->pos - 1));
+                gg.write_element(os, e_cycle);
+                os << endl;
             }
             else if (vvar->info.at("SVTYPE") == "INV"){
                 gfak::edge_elem e_from;
@@ -472,10 +510,10 @@ void construct_contig_graph(string contig_name,
                 set_gfa_edge_defaults(e_to, ++base_edge_id);
                 
                 e_from.source_name = to_string(bp_to_node_id[vvar->pos - 1 - 1]);
-                e_from.sink_name = to_string(bp_to_node_id[vvar->pos -1 + stoi(vvar->info.at("SVLEN"))]);
+                e_from.sink_name = to_string(bp_to_node_id[vvar->pos -1 + stoi(vvar->info.at("SVLEN")) - 1]);
                 e_from.source_orientation_forward = true;
                 e_from.sink_orientation_forward = false;
-                e_from.source_begin = node_id_to_length.at(bp_to_node_id.at(vvar->pos - 1 - 1);
+                e_from.source_begin = node_id_to_length.at(bp_to_node_id.at(vvar->pos - 1 - 1));
                 
                 e_to.source_name = to_string(bp_to_node_id[vvar->pos - 1]);
                 e_to.sink_name = to_string(bp_to_node_id[ vvar->pos - 1 + stoi(vvar->info.at("SVLEN"))]);
@@ -488,6 +526,15 @@ void construct_contig_graph(string contig_name,
                 gg.write_element(os, e_to);
                 os << endl;
             }
+            else if (vvar->info.at("SVTYPE") == "TRA"){
+
+            }
+            else if (vvar->info.at("SVTYPE") == "BND"){
+                
+            }
+        }
+        else{
+            // SNV / indels
         }
     }
 

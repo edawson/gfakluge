@@ -101,7 +101,7 @@ void build_help(char** argv){
     << "Usage: " << argv[0] << " build [options] -r <FASTA> -v <VCF>" << endl
     << "Options: " << endl
     << "  -m / --max-node-length <Int>  Maximum size for a node in basepairs (default: 1000)." << endl
-    << "  -r / --reference  <FASTA>     A fasta file to use for constructing the graph backbone." << endl
+    << "  -f / --fasta  <FASTA>     A fasta file to use for constructing the graph backbone." << endl
     << "  -v / --vcf <VCF>              A VCF file containing variants to put in the graph." << endl 
     << endl;
 }
@@ -231,6 +231,7 @@ int build_main(int argc, char** argv){
     std::string fasta_file;
     std::string vcf_file;
     char* insertion_fasta = NULL;
+    int max_node_size = 128;
 
     double spec_version = 2.0;
     int c;
@@ -241,12 +242,13 @@ int build_main(int argc, char** argv){
             {"help", no_argument, 0, 'h'},
             {"fasta", required_argument, 0, 'f'},
             {"spec", required_argument, 0, 'S'},
-            {"vcf", no_argument, 0, 'v'},
+            {"vcf", required_argument, 0, 'v'},
+            {"max-node-size", required_argument, 0, 'm'},
             {0,0,0,0}
         };
     
         int option_index = 0;
-        c = getopt_long(argc, argv, "hi:f:S:v:", long_options, &option_index);
+        c = getopt_long(argc, argv, "hm:i:f:S:v:", long_options, &option_index);
         if (c == -1){
             break;
         }
@@ -268,6 +270,9 @@ int build_main(int argc, char** argv){
             case 'f':
                 fasta_file = string(optarg);
                 break;
+            case 'm':
+                max_node_size = atoi(optarg);
+                break;
             default:
                 abort();
         }
@@ -275,7 +280,7 @@ int build_main(int argc, char** argv){
     gfak::GFAKluge gg;
     gg.set_version(spec_version);
 
-    construct_gfa( (char*) fasta_file.c_str(), (char*) vcf_file.c_str(), (char*) insertion_fasta, gg);
+    construct_gfa( (char*) fasta_file.c_str(), (char*) vcf_file.c_str(), (char*) insertion_fasta, gg, max_node_size);
 
     return 0;
 }
