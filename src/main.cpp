@@ -865,6 +865,10 @@ int stats_main(int argc, char** argv){
             case 'A':
                 all = true;
                 break;
+            case 'p':
+                show_paths = true;
+                all = false;
+                break;
 
             default:
                 abort();
