@@ -171,11 +171,13 @@ inline std::pair<int, int> variant_to_breakpoint(const VCF_Variant& var){
  * 
  * 
  */
-void make_contig_to_breakpoints(char* vcf_file,
+void make_contig_to_breakpoints(char* fasta_file,
+        char* vcf_file,
         std::map<string, std::vector<VCF_Variant*>>& contig_to_variants,
         std::map<string, std::map<int, std::vector<VCF_Variant*>>>& contig_to_breakpoints_to_variants,
         std::map<string, std::vector<int>>& contig_to_breakpoints,
-        std::vector<VCF_Variant*>& insertions){
+        std::vector<VCF_Variant*>& insertions,
+        int max_node_length = 100){
 
     std::ifstream ifi;
     ifi.open(vcf_file);
@@ -219,6 +221,32 @@ void make_contig_to_breakpoints(char* vcf_file,
         cerr << "ERROR [gfak build] : could not open VCF file " << vcf_file << endl;
         exit(9);
     }
+
+
+    TFA::tiny_faidx_t tf;
+    if (TFA::checkFAIndexFileExists(fasta_file)){
+        TFA::parseFAIndex(fasta_file, tf);
+    }
+    else{
+        TFA::createFAIndex(fasta_file, tf);   
+    }
+
+    for (auto k : contig_to_breakpoints){
+        uint32_t seq_len = 0;
+        TFA::getSequenceLength(tf, k.first.c_str(), seq_len);
+
+        for (int i = max_node_length; i < seq_len; i += max_node_length){
+            contig_to_breakpoints[k.first].push_back(i);
+        }
+        contig_to_breakpoints[k.first].push_back(seq_len);
+        std::set<int> bpset (k.second.begin(), k.second.end());
+        std::vector<int> sbp (bpset.begin(), bpset.end());
+        std::sort(sbp.begin(), sbp.end());
+        contig_to_breakpoints[k.first] = sbp;
+
+    
+    }
+
 };
 
 
@@ -246,9 +274,12 @@ void make_breakpoints(const std::string& contig, char* fasta_file,
     //breakpoints.reserve(numvars * 2);
     for (int i = 0; i < numvars; ++i){
         std::pair<int, int> bps = variant_to_breakpoint(*variants[i]);
-        breakpoints.push_back(bps.first);
-        breakpoints.push_back(bps.second);
-        bp_to_variants[bps.first].push_back(variants[i]);
+        if (bps.first != -1 && bps.second != -1){
+            breakpoints.push_back(bps.first);
+            breakpoints.push_back(bps.second);
+            bp_to_variants[bps.first].push_back(variants[i]);
+        }
+        
     }
 
     uint32_t seq_len = 0; 
@@ -668,7 +699,7 @@ void construct_gfa(char* fasta_file, char* vcf_file, char* insertion_fasta, gfak
     std::map<string, std::vector<int>> contig_to_breakpoints;
     // Read in vcf file and transform to variants
 
-    make_contig_to_breakpoints(vcf_file, 
+    make_contig_to_breakpoints(fasta_file, vcf_file, 
                         contig_to_variants,
                         contig_to_breakpoints_to_variants,
                         contig_to_breakpoints,
@@ -705,7 +736,6 @@ void construct_gfa(char* fasta_file, char* vcf_file, char* insertion_fasta, gfak
             std::vector<VCF_Variant*> vars = contig.second;
             std::vector<int> bps;
             std::map<int, vector<VCF_Variant*>> bp_to_var;
-            make_breakpoints(contig.first, fasta_file, vars, bps, bp_to_var, max_node_length);
             construct_contig_graph(contig.first, seq, len, bps,
                     bp_to_var, vars, insertion_fasta,
                     gg, std::cout,
