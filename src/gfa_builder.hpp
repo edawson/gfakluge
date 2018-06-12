@@ -83,6 +83,10 @@ struct bp_allele{
     bool isRef = false;
 };
 
+/**
+ * 
+ * 
+ */
 inline void set_gfa_edge_defaults(gfak::edge_elem& e, uint32_t base_edge_id = 0){
     e.source_name = "";
     e.id = to_string(base_edge_id);
@@ -105,8 +109,18 @@ inline void set_gfa_node_values(gfak::sequence_elem& s){
 };
 
 
-
-std::pair<int, int> variant_to_breakpoint(const VCF_Variant& var){
+/**
+ * Convert a variant to 1 or 2 breakpoints (in basepairs)
+ * input: A VCF_Variant struct, which should have
+ * a sequence, a position, and reference + alternate alleles.
+ * Optionally can have an SVLEN info field.
+ * 
+ * Returns: a pair<int, int>, where the first integer is the first
+ * breakpoint and the second is either the second breakpoint or
+ * -1, indicating the second break is off the contig.
+ * 
+ */
+inline std::pair<int, int> variant_to_breakpoint(const VCF_Variant& var){
     int front = 0;
     int back = 0;
     if ( var.info.find("SVTYPE") == var.info.end() &&
@@ -152,6 +166,11 @@ std::pair<int, int> variant_to_breakpoint(const VCF_Variant& var){
     return std::make_pair(front, back);
 };
 
+
+/**
+ * 
+ * 
+ */
 void make_contig_to_breakpoints(char* vcf_file,
         std::map<string, std::vector<VCF_Variant*>>& contig_to_variants,
         std::map<string, std::map<int, std::vector<VCF_Variant*>>>& contig_to_breakpoints_to_variants,
@@ -202,6 +221,21 @@ void make_contig_to_breakpoints(char* vcf_file,
     }
 };
 
+
+/**
+ * Format the breakpoint vector for a single contig in a FASTA file.
+ * inputs:
+ *   - contig: contig name
+ *   - fasta_file: fasta file containing contig sequence
+ *   - variants: A vector of variants on the contig contig
+ *   - breakpoints: an empty int vector, which is modified to hold breakpoints.
+ *   - bp_to_variants: a map which points from a breakpoint (in basepairs) to the variants at that breakpoint
+ *   - max_node_length: the maximum length of a node
+ * 
+ * modified: 
+ *   - breakpoints
+ *   - bp_to_variants
+ */
 void make_breakpoints(const std::string& contig, char* fasta_file,
         const std::vector<VCF_Variant*>& variants,
         std::vector<int>& breakpoints,
@@ -209,7 +243,7 @@ void make_breakpoints(const std::string& contig, char* fasta_file,
         const int& max_node_length){
 
     int numvars = variants.size();
-    breakpoints.reserve(numvars * 3);
+    //breakpoints.reserve(numvars * 2);
     for (int i = 0; i < numvars; ++i){
         std::pair<int, int> bps = variant_to_breakpoint(*variants[i]);
         breakpoints.push_back(bps.first);
@@ -241,17 +275,39 @@ void make_breakpoints(const std::string& contig, char* fasta_file,
 
 }
 
+
+/**
+ * Constructs a contig graph
+ * inputs:
+ *   - contig_name:
+ *   - contig_seq:
+ *   - seq_len:
+ *   - breakpoints:
+ *   - bp_to_variants:
+ *   - variants: 
+ *   - insertion_fasta: a fasta file pointer or NULL
+ *   - gg: a GFAKluge object, set to the desired version
+ *   - os: a std::ostream (e.g. stdout)
+ *   - base_seq_id: the starting index for seq names
+ *   - base_edge_id: the starting index for edge ids
+ * 
+ * modified:
+ *   - gg may have its state modified
+ *   - os is modified and elements are written to it.
+ *   - base_edge_id and base_seq_id are modified
+ * 
+ */
 void construct_contig_graph(string contig_name,
         char* contig_seq,
         uint32_t seq_len,
-        vector<int>& breakpoints,
-        map<int, vector<VCF_Variant*>>& bp_to_variants,
-        vector<VCF_Variant*>& variants,
+        const vector<int>& breakpoints,
+        const map<int, vector<VCF_Variant*>>& bp_to_variants,
+        const vector<VCF_Variant*>& variants,
         char* insertion_fasta,
         gfak::GFAKluge& gg,
         std::ostream& os,
         int& base_seq_id,
-        int base_edge_id){
+        int& base_edge_id){
 
     char* dummy_name = new char[contig_name.size() + 1];
     memcpy(dummy_name, contig_name.c_str(), contig_name.size() + 1);
@@ -284,9 +340,9 @@ void construct_contig_graph(string contig_name,
 
     std::vector<dummy_node*> contig_nodes;
     std::map<std::string, std::set<int>> path_to_nodes;
-    std::unordered_map<int, int> bp_to_node_id;
-    std::unordered_map<int, int> node_id_to_length;
-    std::unordered_map<string, int> insertion_id_to_node_id;
+    std::map<int, int> bp_to_node_id;
+    std::map<int, int> node_id_to_length;
+    std::map<string, int> insertion_id_to_node_id;
 
 
     for (int i = 0; i < numbp; ++i){
@@ -327,6 +383,8 @@ void construct_contig_graph(string contig_name,
                     prev_ref--;
                 }
                 snptrip = false;
+                //vector<dummy_node>().swap(contig_nodes);
+                contig_nodes.clear();
             }
 
             // SNPs / insertions aren't on the reference path
@@ -376,7 +434,9 @@ void construct_contig_graph(string contig_name,
         contig_nodes.push_back(dn);
         path_to_nodes[contig_name].insert(s.id);
 
-        std::vector<VCF_Variant*> bp_vars = bp_to_variants[bp];
+    if (bp_to_variants.find(bp) != bp_to_variants.end()){
+
+        std::vector<VCF_Variant*> bp_vars = bp_to_variants.at(bp);
         for (int i = 0; i < bp_vars.size(); ++i){
             VCF_Variant* bvar = bp_vars[i];
             if (bvar->info.find("SVTYPE") == bvar->info.end()){
@@ -454,13 +514,11 @@ void construct_contig_graph(string contig_name,
                 continue;
             }
         }
+    }
         // update current_pos here??
         current_pos = breakpoints[i];
     }
 
-    //for (auto k : bp_to_node_id){
-    //    cout << k.first << " " << k.second << endl;
-    //}
     
     for (auto vvar : variants){
         if (vvar->info.find("SVTYPE") != vvar->info.end()){

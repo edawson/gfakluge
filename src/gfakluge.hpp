@@ -43,6 +43,17 @@ namespace gfak{
         }
     };
 
+    struct gfak_stats_t{
+        uint64_t num_nodes = 0;
+        uint64_t num_edges = 0;
+        uint64_t num_fragments = 0;
+        uint64_t num_gaps = 0;
+        uint64_t num_paths = 0;
+        
+        double N50 = 0.0;
+        double N90 = 0.0;
+    };
+
     struct comment_elem {
         std::vector<std::string> comments;
     };
