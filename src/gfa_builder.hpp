@@ -383,8 +383,8 @@ void construct_contig_graph(string contig_name,
                     prev_ref--;
                 }
                 snptrip = false;
-                //vector<dummy_node>().swap(contig_nodes);
-                contig_nodes.clear();
+                vector<dummy_node*>().swap(contig_nodes);
+                //contig_nodes.clear();
             }
 
             // SNPs / insertions aren't on the reference path
@@ -471,44 +471,85 @@ void construct_contig_graph(string contig_name,
                 }
             }
             else if (bvar->info.at("SVTYPE") == "INS"){
-               for (int altp = 0; altp < bvar->alts[altp].size(); ++altp){
-                    gfak::sequence_elem ins_node;
-                    std::string seq = bvar->alts[altp];
-                    if (seq[0] == '<' && insertion_fasta != NULL){
-                        pliib::strip(seq, '<');
-                        pliib::strip(seq, '>');
-                        if (insert_tf->hasSeqID(seq.c_str())){
-                            char* ins_seq;
-                            TFA::getSequence(*insert_tf, seq.c_str(), ins_seq);
-                        }
-                    }
-                    else if (pliib::canonical(seq)){
-                        // Don't do anything, as the alt sequence was already valid DNA
-                    }
-                    else{
-                        seq = "N";
-                        continue;
-                    }
 
-                    string insert_id = "INS_" + to_string(bvar->pos) + "_" + to_string(altp);
-                    ins_node.sequence.assign(seq);
+                int altp = 0;
+                std::string seq;
+                gfak::sequence_elem ins_node;
+
+              
+                if (bvar->info.find("SEQ") != bvar->info.end() && 
+                   bvar->info.at("SEQ").find(",") == std::string::npos){
+                // Since there is a "SEQ" field in the info, we'll use it as our
+                // node sequence.
+                // NB: no checking is done for validity.
+                    seq.assign(bvar->info.at("SEQ"));
                     ins_node.id = ++current_id;
-                    insertion_id_to_node_id[insert_id] = ins_node.id;
-                    set_gfa_node_values(ins_node);
+                    ins_node.sequence.assign(seq);
+                    stringstream ins_id_st;
+                    ins_id_st << bvar->seq << '_' << bvar->pos << '_' << altp;
+                    insertion_id_to_node_id[ins_id_st.str()] = ins_node.id;
+                }
+                else if (bvar->alts.size() == 1){
+                    // We will check if the single alt is canonical DNA, then if it
+                    // has a sequence (FASTA) tag, and finally we'll
+                    // and just put a run of 'N's.
+                    if (pliib::canonical(bvar->alts[0])){
+                        seq.assign(bvar->alts[0]);
+                        ins_node.id = ++current_id;
+                        ins_node.sequence.assign(seq);
+                        stringstream ins_id_st;
+                        ins_id_st << bvar->seq << '_' << bvar->pos << '_' << altp;
+                        insertion_id_to_node_id[ins_id_st.str()] = ins_node.id;
+                    }
+                    else if (bvar->alts[0][0] == '<' && 
+                        bvar->alts[0][bvar->alts[0].size() - 1] == '>' ){
 
-                    gg.write_element(os, ins_node);
-                    os << endl;
+                        }
+                }
+                else{
+                    // There are multiple alt sequences.
+                    // Iterate over each one and wire up a single node and a single edge.
+                    cerr << "Multiple alt sequences" << endl;
+                }
 
-                    gfak::edge_elem e;
-                    set_gfa_edge_defaults(e, ++base_edge_id);
-                    e.source_name = to_string(s.id);
-                    e.sink_name = to_string(ins_node.id);
-                    ins_offset = max(ins_offset, (int) seq.length());
+            //    for (altp = 0; altp < bvar->alts[altp].size(); ++altp){
+            //         gfak::sequence_elem ins_node;
+            //         std::string seq = bvar->alts[altp];
+            //         if (seq[0] == '<' && insertion_fasta != NULL){
+            //             //pliib::strip(seq, '<');
+            //             //pliib::strip(seq, '>');
+            //             if (insert_tf->hasSeqID(seq.c_str())){
+            //                 char* ins_seq;
+            //                 TFA::getSequence(*insert_tf, seq.c_str(), ins_seq);
+            //             }
+            //         }
+            //         else if (pliib::canonical(seq)){
+            //             // Don't do anything, as the alt sequence was already valid DNA
+            //         }
+            //         else{
+            //             seq = "N";
+            //             continue;
+            //         }
 
-                    gg.write_element(os, e);
-                    os << endl;
+                    //string insert_id = "INS_" + to_string(bvar->pos) + "_" + to_string(0);
+                    //ins_node.sequence.assign(seq);
+                    //ins_node.id = ++current_id;
+                    //insertion_id_to_node_id[insert_id] = ins_node.id;
+                    //set_gfa_node_values(ins_node);
 
-               }
+                    //gg.write_element(os, ins_node);
+                    //os << endl;
+
+                    // gfak::edge_elem e;
+                    // set_gfa_edge_defaults(e, ++base_edge_id);
+                    // e.source_name = to_string(s.id);
+                    // e.sink_name = to_string(ins_node.id);
+                    // ins_offset = max(ins_offset, (int) seq.length());
+
+                    // gg.write_element(os, e);
+                    // os << endl;
+
+               //}
             }
             else{
                 continue;
@@ -544,7 +585,7 @@ void construct_contig_graph(string contig_name,
                 e_to.source_name = to_string(bp_to_node_id.at(vvar->pos - 1));
                 e_to.source_begin = node_id_to_length.at(bp_to_node_id.at( vvar->pos - 1));
                 e_to.source_end = node_id_to_length.at(bp_to_node_id.at( vvar->pos - 1));
-                e_to.sink_name = to_string(insertion_id_to_node_id.at(ins_id));
+                //e_to.sink_name = to_string(insertion_id_to_node_id.at(ins_id));
                 // TODO double check this bit above, as it might be funky.
 
                 gg.write_element(os, e_to);
@@ -594,6 +635,7 @@ void construct_contig_graph(string contig_name,
         else{
             // SNV / indels
         }
+        delete vvar;
     }
 
     for (auto p : path_to_nodes){
@@ -610,6 +652,9 @@ void construct_contig_graph(string contig_name,
     for (auto cc : contig_nodes){
         delete cc;
     }
+    // for (auto vv : variants){
+    //     delete vv;
+    // }
 
 
 };
@@ -629,7 +674,7 @@ void construct_gfa(char* fasta_file, char* vcf_file, char* insertion_fasta, gfak
                         contig_to_breakpoints,
                         insertions);
 
-    //cerr << contig_to_variants.size() << " contigs to process" << endl;
+    cerr << contig_to_variants.size() << " contigs to process" << endl;
 
 
     // For each contig, get the relevant sequence from 
@@ -648,11 +693,12 @@ void construct_gfa(char* fasta_file, char* vcf_file, char* insertion_fasta, gfak
     
     std:: cout << gg.header_string();
     for (auto contig : contig_to_variants){
-        //cerr << "Processing contig: " << contig.first << endl;
+        cerr << "Processing contig: " << contig.first  << " with " <<
+        contig.second.size() << " variants." << endl;
         if (tf.hasSeqID(contig.first.c_str())){
             
             char* seq;
-            uint32_t len;
+            uint32_t len = 0;
             TFA::getSequence(tf, contig.first.c_str(), seq);
             TFA::getSequenceLength(tf, contig.first.c_str(), len);
 
@@ -664,7 +710,8 @@ void construct_gfa(char* fasta_file, char* vcf_file, char* insertion_fasta, gfak
                     bp_to_var, vars, insertion_fasta,
                     gg, std::cout,
                     base_seq_id, base_edge_id);
-
+            delete [] seq;
+            vector<VCF_Variant*>().swap(vars);
 
         }
     }
