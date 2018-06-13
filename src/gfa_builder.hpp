@@ -241,8 +241,9 @@ void make_contig_to_breakpoints(char* fasta_file,
         contig_to_breakpoints[k.first].push_back(seq_len);
         std::set<int> bpset (k.second.begin(), k.second.end());
         std::vector<int> sbp (bpset.begin(), bpset.end());
-        std::sort(sbp.begin(), sbp.end());
+        //std::sort(sbp.begin(), sbp.end());
         contig_to_breakpoints[k.first] = sbp;
+        std::sort(contig_to_breakpoints.at(k.first).begin(), contig_to_breakpoints.at(k.first).end());
 
     
     }
@@ -507,7 +508,7 @@ void construct_contig_graph(string contig_name,
                 std::string seq;
                 gfak::sequence_elem ins_node;
 
-              
+                cerr << "Processing insertion at " << bvar->seq << " " << bvar->pos << endl;
                 if (bvar->info.find("SEQ") != bvar->info.end() && 
                    bvar->info.at("SEQ").find(",") == std::string::npos){
                 // Since there is a "SEQ" field in the info, we'll use it as our
@@ -517,8 +518,9 @@ void construct_contig_graph(string contig_name,
                     ins_node.id = ++current_id;
                     ins_node.sequence.assign(seq);
                     stringstream ins_id_st;
-                    ins_id_st << bvar->seq << '_' << bvar->pos << '_' << altp;
+                    ins_id_st << "INS_" << bvar->seq << '_' << bvar->pos << '_' << altp;
                     insertion_id_to_node_id[ins_id_st.str()] = ins_node.id;
+                    cerr << ins_id_st.str() << endl;
                 }
                 else if (bvar->alts.size() == 1){
                     // We will check if the single alt is canonical DNA, then if it
@@ -529,8 +531,9 @@ void construct_contig_graph(string contig_name,
                         ins_node.id = ++current_id;
                         ins_node.sequence.assign(seq);
                         stringstream ins_id_st;
-                        ins_id_st << bvar->seq << '_' << bvar->pos << '_' << altp;
+                        ins_id_st << "INS_" << bvar->seq << '_' << bvar->pos << '_' << altp;
                         insertion_id_to_node_id[ins_id_st.str()] = ins_node.id;
+                        cerr << ins_id_st.str() << endl;
                     }
                     else if (bvar->alts[0][0] == '<' && 
                         bvar->alts[0][bvar->alts[0].size() - 1] == '>' ){
@@ -591,7 +594,8 @@ void construct_contig_graph(string contig_name,
         current_pos = breakpoints[i];
     }
 
-    
+    cerr << "Processing tail edges" << endl;
+
     for (auto vvar : variants){
         if (vvar->info.find("SVTYPE") != vvar->info.end()){
             
@@ -610,13 +614,17 @@ void construct_contig_graph(string contig_name,
                 gfak::edge_elem e_to;
                 set_gfa_edge_defaults(e_to, ++base_edge_id);
                 string ins_id;
-                for (int altp = 0; altp < vvar->alts.size(); ++altp){
-                    ins_id = "INS_" + to_string(vvar->pos) + "_" + to_string(altp);
-                }
+                int altp = 0;
+                //for (int altp = 0; altp < vvar->alts.size(); ++altp){
+                ins_id = "INS_" + vvar->seq + "_"  + to_string(vvar->pos) + "_" + to_string(altp);
+                //}
+                cerr << ins_id << endl;
+
                 e_to.source_name = to_string(bp_to_node_id.at(vvar->pos - 1));
                 e_to.source_begin = node_id_to_length.at(bp_to_node_id.at( vvar->pos - 1));
                 e_to.source_end = node_id_to_length.at(bp_to_node_id.at( vvar->pos - 1));
-                //e_to.sink_name = to_string(insertion_id_to_node_id.at(ins_id));
+                e_to.sink_name = to_string(insertion_id_to_node_id.at(ins_id));
+                
                 // TODO double check this bit above, as it might be funky.
 
                 gg.write_element(os, e_to);
@@ -734,8 +742,8 @@ void construct_gfa(char* fasta_file, char* vcf_file, char* insertion_fasta, gfak
             TFA::getSequenceLength(tf, contig.first.c_str(), len);
 
             std::vector<VCF_Variant*> vars = contig.second;
-            std::vector<int> bps;
-            std::map<int, vector<VCF_Variant*>> bp_to_var;
+            std::vector<int> bps = contig_to_breakpoints.at(contig.first);
+            std::map<int, vector<VCF_Variant*>> bp_to_var = contig_to_breakpoints_to_variants.at(contig.first);
             construct_contig_graph(contig.first, seq, len, bps,
                     bp_to_var, vars, insertion_fasta,
                     gg, std::cout,
