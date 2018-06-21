@@ -10,7 +10,7 @@ authors:
    orcid:  0000-0001-5448-1653
    affiliation: "1, 2"
  - name: Richard Durbin
-   orcid: 0000-0000-0000-0000
+   orcid: 0000-0002-9130-1006
    affiliation: "2, 3"
 affiliations:
  - name: Division of Cancer Epidemiology and Genetics, National Cancer Institute, Rockville, MD, USA
