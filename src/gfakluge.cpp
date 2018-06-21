@@ -1591,6 +1591,18 @@ namespace gfak{
         }
     }
 
+    std::string GFAKluge::header_string(){
+        std::stringstream st;
+        for (auto h : get_header()){
+            write_element(st, h.second);
+        }
+        return st.str();
+    }
+
+    void GFAKluge::write_element(std::ostream& os, const header_elem& h){
+        os << h.to_string();
+    }
+
     void GFAKluge::write_element(std::ostream& os, const sequence_elem& s){
         if (this->version >= 2.0){
             os << s.to_string_2();

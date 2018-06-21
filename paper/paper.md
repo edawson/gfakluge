@@ -42,11 +42,12 @@ bioinformatics programs.
 
 # Command Line Utilities
 GFAKluge provides a command line interface for working with GFA. This includes replacements for
-common tasks on FASTA assemblies such as calculating assembly N90. There are also methods for merging
-assemblies, reformating files for readability, and converting between legacy GFA formats. To our knowledge,
+common tasks on FASTA assemblies such as calculating assembly N50 or graph statistics. There are also methods for merging
+assemblies, reformating files for readability, and converting between legacy GFA formats. A tool for constructing basic variation graphs
+from a FASTA file and a VCF file is also included. To our knowledge,
 GFAKluge is the only publically-available software package that can consume and produce both GFA1 and GFA2, though many other tools
 exist for manipulating one of the GFA formats [@GFA-SPEC]. By allowing interconversion
-between the compatble subsets of the formats, the gfak convert tool allows programs that usually can't communicate to share data
+between the compatible subsets of the formats, the gfak convert tool allows programs that usually can't communicate to share data
 without changes to their code. We have used GFAKluge to convert GFA from TwoPaCo [@TwoPaCo] for visualization in Bandage [@Bandage], to calculate assembly
 statistics from the Falcon assembler [@Falcon], and to extract FASTA from a vg msga assembly [@vg]. We see the command line utilities as being very useful
 to the development community in the short term.
