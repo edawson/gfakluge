@@ -92,6 +92,7 @@ namespace gfak{
     struct path_elem{
         std::string name;
         std::vector<std::string> segment_names;
+        // Orientation of each segment occurrence in the path. True for forward (+), false for reverse (-)
         std::vector<bool> orientations;
         std::vector<std::string> overlaps;
         std::map<std::string, opt_elem> opt_fields;
