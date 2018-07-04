@@ -855,7 +855,7 @@ namespace gfak{
                     w.name = it->second.name;
                     w.rank = i;
                     w.source_name = it->second.segment_names[i];
-                    w.is_reverse = (it->second.orientations[i]);
+                    w.is_reverse = (!it->second.orientations[i]);
                     for (int z = 0; z < it->second.overlaps.size(); z++){
                         w.cigar = it->second.overlaps[z];
                     }
@@ -899,7 +899,7 @@ namespace gfak{
                 //  cout << y.source_name << "\t";
                     p.segment_names.push_back(y.source_name);
                     p.overlaps.push_back(y.cigar);
-                    p.orientations.push_back(y.is_reverse);
+                    p.orientations.push_back(!y.is_reverse);
                 }
                 //cout << endl;
                 add_path(p.name, p);
