@@ -20,7 +20,35 @@ namespace gfak{
 
     // ( <header> | <segment> | <fragment> | <edge> | <gap> | <group> )
 
-    enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE};
+    enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE,PATH_LINE};
+
+    inline int detect_line_type(const string& line){
+        char c = line[0];
+        if (c == 'S'){
+            return SEGMENT_LINE;
+        }
+        else if (c == 'E' || c == 'L' || c == 'C'){
+            return EDGE_LINE;
+        }
+        else if (c == 'P'){
+            return PATH_LINE;
+        }
+        else if (c == 'F'){
+            return FRAGMENT_LINE;
+        }
+        else if (c = 'G'){
+            return GAP_LINE;
+        }
+        else if (c == 'O' || c == 'U'){
+            return GROUP_LINE;
+        }
+        else{
+            cerr << "Unknown GFA line type: " << line << endl;
+            return -1;
+        }
+        
+    };
+    
 
     struct custom_key{
         bool isdigit(const std::string &s) const {
@@ -421,9 +449,6 @@ namespace gfak{
             return st.str();
         }
         };
-
-        int determine_line_type(char* line);
-
 
         class GFAKluge{
             friend std::ostream& operator<<(std::ostream& os, GFAKluge& g);

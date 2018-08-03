@@ -684,8 +684,8 @@ namespace gfak{
             paths_as_walks();
         }
 
-        gfa_1_ize();
-        gfa_2_ize();
+        //gfa_1_ize();
+        //gfa_2_ize();
         
 
         return true;
