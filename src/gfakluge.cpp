@@ -220,7 +220,7 @@ namespace gfak{
                 }
             }
             // Paths -> ordered groups
-            walks_as_paths();
+            //walks_as_paths();
             for (auto p : name_to_path){
                 group_elem g;
                 g.id = p.first;
@@ -607,12 +607,16 @@ namespace gfak{
                     p.name = tokens[1];
                     vector<string> ids_and_orientations;
                     pliib::split(tokens[2], ',', ids_and_orientations);
-                    for (auto x : ids_and_orientations){
+                    p.segment_names.resize(ids_and_orientations.size());
+                    p.orientations.resize(ids_and_orientations.size());
+                    for (int t = 0; t < ids_and_orientations.size(); ++t){
+                        string x = ids_and_orientations[t];
                         bool orientation = ((x.back()) == '+' || x.front() == '+');
                         string id = x.substr(0, x.length() - 1);
-                        p.segment_names.push_back(id);
-                        p.orientations.push_back(orientation);
+                        p.segment_names[t] = id;
+                        p.orientations[t] = orientation;
                     }
+
 
                     if (tokens.size() > 3){
                         vector<string> spltz = pliib::split(tokens[3], ',');
@@ -627,6 +631,7 @@ namespace gfak{
                             p.overlaps.push_back("*");
                         }
                     }
+
                     name_to_path[p.name] = p;
                 }
                 else if (this->version < 1.0){
@@ -678,10 +683,10 @@ namespace gfak{
         }
 
         if (! (this->normalized_paths)){
-            walks_as_paths();
+            //walks_as_paths();
         }
         if (! ( this->normalized_walks)){
-            paths_as_walks();
+            //paths_as_walks();
         }
 
         //gfa_1_ize();

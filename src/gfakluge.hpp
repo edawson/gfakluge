@@ -143,6 +143,17 @@ namespace gfak{
             return "";
         }
 
+        void write_as_walks(std::ostream& os){
+            std::stringstream st;
+            int32_t rank = 0;
+            for (int i = 0; i < segment_names.size(); ++i){
+                ++rank;
+                st << 'W' << '\t' << segment_names[i] << '\t' << name << '\t' << rank << '\t' << (orientations[i] ? "+" : "-") << '\t' << overlaps[i] << endl;
+                os << st.str();
+            }
+
+        }
+
     };
 
     struct walk_elem{
