@@ -645,15 +645,13 @@ namespace gfak{
                     name_to_path[p.name] = p;
                 }
                 else if (this->version < 1.0){
-                    string pname;
-                    string wname;
+                    string pname(tokens[2]);
+                    string wname(tokens[1]);
                     int rank;
                     bool ori;
                     string overlap;
                     vector<opt_elem> opts;
              
-                    pname = tokens[2];
-                    wname = tokens[1];
                     if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
                         rank = 0;
                         ori = (tokens[3] == "-" ? false : true);
@@ -664,7 +662,6 @@ namespace gfak{
                         ori = (tokens[4] == "-" ? false : true);
                         overlap = tokens[5];
                     }
-
 
                     add_walk(pname, rank, wname, ori, overlap, opts);
                 }
@@ -714,10 +711,13 @@ namespace gfak{
     }
 
     void GFAKluge::add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts){
-        if (name_to_path.find(pathname) != name_to_path.end()){
-            auto& p = name_to_path.at(pathname);
-            p.add_ranked_segment( rank, segname, ori, overlap, opts);
+        if (name_to_path.find(pathname) == name_to_path.end()){
+            path_elem p;
+            p.name = pathname;
+            add_path(pathname, p);
         }
+        name_to_path.at(pathname).add_ranked_segment( rank, segname, ori, overlap, opts);
+
     }
 
     void GFAKluge::add_link(const sequence_elem& seq, const link_elem& link){
