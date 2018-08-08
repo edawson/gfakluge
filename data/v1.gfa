@@ -12,9 +12,9 @@ L	5	+	2	+	0M
 L	5	+	6	+	0M
 S	6	T
 L	6	+	3	+	0M
-P	1	ref 1	+	1M
-P	2	ref 2	+	1M
-P	3	ref 3	+	1M
+P	1	ref	1	+	1M
+P	2	ref	2	+	1M
+P	3	ref	3	+	1M
 P	1	path1	1	+	1M
 P	4	path1	2	+	1M
 P	5	path1	3	+	1M
