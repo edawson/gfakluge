@@ -107,6 +107,11 @@ namespace gfak{
         }
     }
 
+    void GFAKluge::compatibilize(){
+        gfa_1_ize();
+        gfa_2_ize();
+    }
+
     void GFAKluge::gfa_1_ize(){
         if (!one_compat){
 
@@ -583,22 +588,27 @@ namespace gfak{
                 add_edge(e.source_name, e);
             }
             else if (tokens[0] == "W"){
-                walk_elem w;
-                w.source_name = tokens[1];
-                w.name = tokens[2];
-                //TODO check wheteher the next token is rank or direction
+                string pname;
+                string wname;
+                int rank;
+                bool ori;
+                string overlap;
+                vector<opt_elem> opts;
+             
+                pname = tokens[2];
+                wname = tokens[1];
                 if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
-                    w.rank = 0;
-                    w.is_reverse = tokens[3] == "+" ? false : true;
-                    w.cigar = tokens[4];
-
+                    rank = 0;
+                    ori = (tokens[3] == "-" ? false : true);
+                    overlap = tokens[4];
                 }
                 else{
-                    w.rank = atol(tokens[3].c_str());
-                    w.is_reverse = tokens[4] == "+" ? false : true;
-                    w.cigar = tokens[5];
+                    rank = atoi(tokens[3].c_str());
+                    ori = (tokens[4] == "-" ? false : true);
+                    overlap = tokens[5];
                 }
-                add_walk(w.source_name, w);
+
+                add_walk(pname, rank, wname, ori, overlap, opts);
             }
             else if (tokens[0] == "P"){
                 if (this->version >= 1.0 && this->version < 2.0){
@@ -635,22 +645,28 @@ namespace gfak{
                     name_to_path[p.name] = p;
                 }
                 else if (this->version < 1.0){
-                    walk_elem w;
-                    w.source_name = tokens[1];
-                    w.name = tokens[2];
-                    //TODO check wheteher the next token is rank or direction
+                    string pname;
+                    string wname;
+                    int rank;
+                    bool ori;
+                    string overlap;
+                    vector<opt_elem> opts;
+             
+                    pname = tokens[2];
+                    wname = tokens[1];
                     if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
-                        w.rank = 0;
-                        w.is_reverse = tokens[3] == "+" ? false : true;
-                        w.cigar = tokens[4];
-
+                        rank = 0;
+                        ori = (tokens[3] == "-" ? false : true);
+                        overlap = tokens[4];
                     }
                     else{
-                        w.rank = stol(tokens[3].c_str());
-                        w.is_reverse = tokens[4] == "+" ? false : true;
-                        w.cigar = tokens[5];
+                        rank = atoi(tokens[3].c_str());
+                        ori = (tokens[4] == "-" ? false : true);
+                        overlap = tokens[5];
                     }
-                    add_walk(w.source_name, w);
+
+
+                    add_walk(pname, rank, wname, ori, overlap, opts);
                 }
                 else{
                     cerr << "Cannot parse; version of GFA is too new. Version: " << this->version << endl;
@@ -681,14 +697,6 @@ namespace gfak{
             }
 
         }
-
-        if (! (this->normalized_paths)){
-            //walks_as_paths();
-        }
-        if (! ( this->normalized_walks)){
-            //paths_as_walks();
-        }
-
         //gfa_1_ize();
         //gfa_2_ize();
         
@@ -705,8 +713,11 @@ namespace gfak{
         name_to_path[path_name] = p;
     }
 
-    void GFAKluge::add_walk(string seq_name, walk_elem w){
-        seq_to_walks[seq_name].push_back(w);
+    void GFAKluge::add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts){
+        if (name_to_path.find(pathname) != name_to_path.end()){
+            auto& p = name_to_path.at(pathname);
+            p.add_ranked_segment( rank, segname, ori, overlap, opts);
+        }
     }
 
     void GFAKluge::add_link(const sequence_elem& seq, const link_elem& link){
@@ -846,76 +857,6 @@ namespace gfak{
         this->use_walks = ws;
     }
 
-    void GFAKluge::paths_as_walks(){
-        if (!this->normalized_paths && seq_to_walks.empty() && !name_to_path.empty()){
-            if (name_to_path.empty() && !this->normalized_walks){
-                walks_as_paths();
-            }
-        
-            map<string, path_elem>::iterator it;
-            for (it = name_to_path.begin(); it != name_to_path.end(); it++){
-                // Create a Walk for every segment in the path's segment list
-                for (int i = 0; i < it->second.segment_names.size(); i++){
-                    walk_elem w;
-                    w.name = it->second.name;
-                    w.rank = i;
-                    w.source_name = it->second.segment_names[i];
-                    w.is_reverse = (!it->second.orientations[i]);
-                    for (int z = 0; z < it->second.overlaps.size(); z++){
-                        w.cigar = it->second.overlaps[z];
-                    }
-                    for (int z = it->second.overlaps.size(); z < it->second.segment_names.size(); z++ ){
-                        w.cigar = "*";
-                    }
-                    add_walk(w.source_name, w);
-                }
-            }
-            this->normalized_paths = true;
-            }
-        
-    }
-
-    void GFAKluge::walks_as_paths(){
-        if (!this->normalized_walks && name_to_path.empty() && !seq_to_walks.empty()){
-            if (seq_to_walks.empty() && !this->normalized_paths){
-                paths_as_walks();
-            }
-            map<string, vector<walk_elem> > pathname_to_walk_elems;
-            for(auto n_to_s : name_to_seq){
-                for (auto w : seq_to_walks[n_to_s.first]){
-                    pathname_to_walk_elems[w.name].push_back(w);
-                }   
-            }
-
-            struct walk_sort_key{
-                inline bool operator() (walk_elem first, walk_elem second){
-                    return (first.rank != 0 && second.rank != 0) ? (first.rank < second.rank) : false;
-                }
-            };
-            
-
-            for (auto x : pathname_to_walk_elems){
-                path_elem p;
-                p.name = x.first;
-                //cout << x.first << "\t";
-                std::sort(x.second.begin(), x.second.end(), walk_sort_key());
-                for (auto y : x.second){
-                    
-                //  cout << y.source_name << "\t";
-                    p.segment_names.push_back(y.source_name);
-                    p.overlaps.push_back(y.cigar);
-                    p.orientations.push_back(!y.is_reverse);
-                }
-                //cout << endl;
-                add_path(p.name, p);
-            }
-        
-            this->normalized_walks = true;
-        }
-            
-
-    }
-
     string GFAKluge::opt_string(vector<opt_elem> opts){
         string ret = "";
         for (int i = 0; i < opts.size(); i++){
@@ -944,12 +885,7 @@ namespace gfak{
 			if (header.size() > 0){
 					ret << header_string(header) + "\n";
 			}
-            if (!normalized_paths){
-                walks_as_paths();
-            }
-            if (!normalized_walks){
-                paths_as_walks();
-            }
+ 
 			map<std::string, sequence_elem>::iterator st;
 
 			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
@@ -1095,12 +1031,6 @@ namespace gfak{
             ret << header_string(header) + "\n";
         }
         
-        if (!this->normalized_walks){
-            walks_as_paths();
-        }
-        if (!this->normalized_paths){
-            paths_as_walks();
-        }
         if (name_to_path.size() > 0 && this->version >= 1.0){
                 map<string, path_elem>::iterator pt;
                 for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
@@ -1460,13 +1390,6 @@ namespace gfak{
 			}
 
 
-            if (!this->normalized_walks){
-                walks_as_paths();
-            }
-            if (!this->normalized_paths){
-                paths_as_walks();
-            }
-
 			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                 for (auto e : seq_to_edges[st->first]){
                     if (e.type == 1){
@@ -1528,12 +1451,6 @@ namespace gfak{
                 os << header_string(header) + "\n";
             }
         
-            if (!this->normalized_walks){
-                walks_as_paths();
-            }
-            if (!this->normalized_paths){
-                paths_as_walks();
-            }
             if (name_to_path.size() > 0 && this->version >= 1.0){
                     map<string, path_elem>::iterator pt;
                     for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){

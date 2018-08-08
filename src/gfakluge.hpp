@@ -124,6 +124,11 @@ namespace gfak{
         std::vector<bool> orientations;
         std::vector<std::string> overlaps;
         std::map<std::string, opt_elem> opt_fields;
+        void add_ranked_segment( const int& rank, const string& seg_name, const bool& ori, const string& overlap, vector<opt_elem> opts){
+            segment_names.insert( segment_names.begin() + rank - 1, seg_name);
+            orientations.insert( orientations.begin() + rank - 1, ori);
+            overlaps.insert( overlaps.begin() + rank - 1, overlap);
+        };
         std::string to_string() const {
             std::ostringstream st;
             std::vector<std::string> p_segs;
@@ -505,7 +510,7 @@ namespace gfak{
 
             void add_sequence(sequence_elem s);
             void add_path(std::string pathname, path_elem path);
-            void add_walk(std::string walkname, walk_elem w);
+            void add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts);
 
 
             /** Versioning functions **/
@@ -539,11 +544,9 @@ namespace gfak{
             std::map<std::string, group_elem> get_groups();
 
             /** Convert paths to walks and walks to paths **/
-            void paths_as_walks();
-            void walks_as_paths();
-
             void gfa_2_ize();
             void gfa_1_ize();
+            void compatibilize();
 
             // TODO check whether writing to file is functional
             // Perhaps a write_gfa_file(string filename) method too?
