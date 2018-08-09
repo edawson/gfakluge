@@ -163,14 +163,17 @@ namespace gfak{
         void write_as_walks(std::ostream& os){
             std::stringstream st;
             int32_t rank = 0;
-            for (int i = 0; i < segment_names.size(); ++i){
+            for (int i = 0; i < this->segment_names.size(); ++i){
                 ++rank;
-                st << 'W' << '\t' << segment_names[i] << '\t' << name << '\t' << rank << '\t' << (orientations[i] ? "+" : "-");
-                if (overlaps.size() == segment_names.size()){
+                st << 'W' << '\t' << this->segment_names[i] << '\t' << 
+                    this->name << '\t' << rank << '\t' <<
+                     (this->orientations[i] ? "+" : "-");
+                if (this->overlaps.size() == this->segment_names.size()){
                    st << '\t' << overlaps[i];
                 }
                 st << endl;
                 os << st.str();
+                st.str("");
             }
 
         }
