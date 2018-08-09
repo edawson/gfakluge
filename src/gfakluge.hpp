@@ -152,7 +152,12 @@ namespace gfak{
             return st.str();
         }
         std::string to_string_2() const{
-            return "";
+            stringstream st;
+            std::vector<std::string> p_segs;
+            for (int i = 0; i < segment_names.size(); ++i){
+                p_segs.push_back(segment_names[i] + (orientations[i] ? "+" : "-") );
+            }
+            st << "O" << '\t' << name << '\t' << pliib::join(p_segs, ",");
         }
 
         void write_as_walks(std::ostream& os){
@@ -160,20 +165,16 @@ namespace gfak{
             int32_t rank = 0;
             for (int i = 0; i < segment_names.size(); ++i){
                 ++rank;
-                st << 'W' << '\t' << segment_names[i] << '\t' << name << '\t' << rank << '\t' << (orientations[i] ? "+" : "-") << '\t' << overlaps[i] << endl;
+                st << 'W' << '\t' << segment_names[i] << '\t' << name << '\t' << rank << '\t' << (orientations[i] ? "+" : "-");
+                if (overlaps.size() == segment_names.size()){
+                   st << '\t' << overlaps[i];
+                }
+                st << endl;
                 os << st.str();
             }
 
         }
 
-    };
-
-    struct walk_elem{
-        std::string source_name;
-        std::string name;
-        long rank;
-        bool is_reverse;
-        std::string cigar = "*";
     };
 
 
@@ -541,7 +542,6 @@ namespace gfak{
             std::map<std::string, std::vector<link_elem> > get_seq_to_link();
             std::map<std::string, std::vector<contained_elem> > get_seq_to_contained();
             std::map<std::string, std::vector<alignment_elem> > get_seq_to_alignment();
-            std::map<std::string, std::vector<walk_elem> > get_seq_to_walks();
             std::map<std::string, path_elem> get_name_to_path();
 
             // GFA2 getters
@@ -626,7 +626,6 @@ namespace gfak{
             std::string header_string(std::map<std::string, header_elem>& opts);
             std::string opt_string(std::vector<opt_elem> opts);
 
-            std::map<std::string, std::vector<walk_elem> > seq_to_walks;
             std::map<std::string, path_elem> name_to_path;
 
             /** GFA 2.0 containers **/

@@ -97,6 +97,17 @@ namespace gfak{
                 path_elem p;
                 p.name = g.first;
                 p.segment_names = g.second.items;
+                if (this->name_to_seq.size() > 0){
+                    p.overlaps.resize(p.segment_names.size());
+                    for (int i = 0; i < p.segment_names.size(); ++i){
+                        int len = 0;
+                        if (name_to_seq.find(p.segment_names[i]) != name_to_seq.end()){
+                            std::string s(name_to_seq.at(p.segment_names[i]).sequence);
+                            len = s.length();
+                        }
+                        p.overlaps[i].assign(std::to_string(len) + "M");
+                    }
+                }
                 p.orientations = g.second.orientations;
                 p.opt_fields = g.second.tags;
                 add_path(p.name, p);
@@ -252,7 +263,6 @@ namespace gfak{
         // we cheat and use their names (which are sort of guaranteed to be
         // unique.
         map<string, sequence_elem, custom_key> name_to_seq;
-        map<string, vector<walk_elem>, custom_key > seq_to_walks;
         map<string, path_elem> name_to_path;
         //cout << fixed << setprecision(2);
 
@@ -654,12 +664,12 @@ namespace gfak{
              
                     if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
                         rank = 0;
-                        ori = (tokens[3] == "-" ? false : true);
+                        ori = (tokens[3] == "+");
                         overlap = tokens[4];
                     }
                     else{
                         rank = atoi(tokens[3].c_str());
-                        ori = (tokens[4] == "-" ? false : true);
+                        ori = (tokens[4] == "+");
                         overlap = tokens[5];
                     }
 
@@ -694,8 +704,8 @@ namespace gfak{
             }
 
         }
-        //gfa_1_ize();
-        //gfa_2_ize();
+        gfa_1_ize();
+        gfa_2_ize();
         
 
         return true;
@@ -793,9 +803,6 @@ namespace gfak{
         return name_to_path;
     }
 
-    map<string, vector<walk_elem> > GFAKluge::get_seq_to_walks(){
-        return seq_to_walks;
-    }
 
     map<string, vector<contained_elem> > GFAKluge::get_seq_to_contained(){
         for (auto s : name_to_seq){
@@ -911,22 +918,6 @@ namespace gfak{
                 }
             }
             
-			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-                if (this->version < 1.0 && seq_to_walks[st->first].size() > 0){
-                    for (i = 0; i < seq_to_walks[st->first].size(); i++){
-								stringstream pat;
-								pat << (use_walks ? "W" : "P") << "\t" + seq_to_walks[st->first][i].source_name << "\t";
-								pat << seq_to_walks[st->first][i].name << "\t";
-								if (!(seq_to_walks[st->first][i].rank ==  0L)){
-										pat << seq_to_walks[st->first][i].rank << "\t";
-								}
-								pat << (seq_to_walks[st->first][i].is_reverse ? "-" : "+");
-								pat << "\t";
-								pat << seq_to_walks[st->first][i].cigar + "\n";
-								ret << pat.str();
-					}
-                }
-			}
             if (name_to_path.size() > 0 && this->version == 1.0){
                 map<string, path_elem>::iterator pt;
                 for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
@@ -935,7 +926,7 @@ namespace gfak{
                     vector<string> ovec;
                     for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
                         stringstream o_str;
-                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "-" : "+");
+                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "+" : "-");
                         ovec.push_back(o_str.str());
                     }
                     pat << join(ovec, ",");
@@ -946,6 +937,12 @@ namespace gfak{
                     ret << pat.str();
                 }
             }
+            else if (this->version < 1.0){
+                for (auto p : name_to_path){
+                    stringstream st;
+                    p.second.write_as_walks(st);
+                }
+            } 
 			return ret.str();
 
     }
@@ -1384,11 +1381,9 @@ namespace gfak{
 					os << header_string(header) + "\n";
 			}
 			map<std::string, sequence_elem>::iterator st;
-
 			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
 				os << st->second.to_string_1() << endl;
 			}
-
 
 			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                 for (auto e : seq_to_edges[st->first]){
@@ -1406,24 +1401,8 @@ namespace gfak{
 
                 }
             }
-            
-			for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-                if (this->version < 1.0 && seq_to_walks[st->first].size() > 0){
-                    for (int i = 0; i < seq_to_walks[st->first].size(); i++){
-								stringstream pat;
-								pat << (use_walks ? "W" : "P") << "\t" + seq_to_walks[st->first][i].source_name << "\t";
-								pat << seq_to_walks[st->first][i].name << "\t";
-								if (!(seq_to_walks[st->first][i].rank ==  0L)){
-										pat << seq_to_walks[st->first][i].rank << "\t";
-								}
-								pat << (seq_to_walks[st->first][i].is_reverse ? "-" : "+");
-								pat << "\t";
-								pat << seq_to_walks[st->first][i].cigar + "\n";
-								os << pat.str();
-					}
-                }
-			}
-            if (name_to_path.size() > 0 && this->version == 1.0){
+
+            if (name_to_path.size() > 0 && this->version >= 1.0){
                 map<string, path_elem>::iterator pt;
                 for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                     stringstream pat;
@@ -1431,7 +1410,7 @@ namespace gfak{
                     vector<string> ovec;
                     for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
                         stringstream o_str;
-                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "-" : "+");
+                        o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "+" : "-");
                         ovec.push_back(o_str.str());
                     }
                     pat << join(ovec, ",");
@@ -1440,6 +1419,12 @@ namespace gfak{
                     }
                     pat << "\n";
                     os << pat.str();
+                }
+            }
+            else if (this->version < 1.0 && name_to_path.size() > 0){
+                map<string, path_elem>::iterator pt;
+                for (pt = name_to_path.begin(); pt != name_to_path.end(); pt++){
+                    pt->second.write_as_walks(os);
                 }
             }
 
@@ -1471,24 +1456,13 @@ namespace gfak{
                         os << pat.str();
                     }
             }
-
-			map<std::string, sequence_elem>::iterator st;
-            for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-                if (this->version < 1.0 && seq_to_walks[st->first].size() > 0){
-                    for (int i = 0; i < seq_to_walks[st->first].size(); i++){
-								stringstream pat;
-								pat << (use_walks ? "W" : "P") << "\t" + seq_to_walks[st->first][i].source_name << "\t";
-								pat << seq_to_walks[st->first][i].name << "\t";
-								if (!(seq_to_walks[st->first][i].rank ==  0L)){
-										pat << seq_to_walks[st->first][i].rank << "\t";
-								}
-								pat << (seq_to_walks[st->first][i].is_reverse ? "-" : "+");
-								pat << "\t";
-								pat << seq_to_walks[st->first][i].cigar + "\n";
-								os << pat.str();
-					}
+            else if (this->version < 1.0 && name_to_path.size() > 0){
+                map<string, path_elem>::iterator pt;
+                for (pt = name_to_path.begin(); pt != name_to_path.end(); pt++){
+                    pt->second.write_as_walks(os);
                 }
-			}
+            }
+
             for (auto s : name_to_seq){
                 os << s.second.to_string_1() << endl;
                 for (auto e : seq_to_edges[s.first]){
