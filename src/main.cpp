@@ -762,6 +762,7 @@ int sort_main(int argc, char** argv){
             case 'v':
                 print_version_help();
                 exit(1);
+                break;
 
             case 'S':
                 spec_version = stod(optarg);
@@ -792,7 +793,7 @@ int sort_main(int argc, char** argv){
     }
 
     //cout << gg.block_order_string();
-    gg.output_to_stream(cout, true);
+    gg.output_to_stream(cout, block_order);
     
     return 0;
 }
