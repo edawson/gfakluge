@@ -118,13 +118,14 @@ namespace gfak{
     };
 
     struct path_elem{
-               std::string name;
+        std::string name;
         std::vector<std::string> segment_names;
         // Orientation of each segment occurrence in the path. True for forward (+), false for reverse (-)
         std::vector<bool> orientations;
         std::vector<std::string> overlaps;
         std::map<std::string, opt_elem> opt_fields;
         path_elem(){
+            std::string name = "";
             std::vector<std::string> segment_names;
             std::vector<bool> orientations;
             std::vector<std::string> overlaps;
@@ -132,9 +133,13 @@ namespace gfak{
         };
 
         void add_ranked_segment( const int& rank, const string& seg_name, const bool& ori, const string& overlap, vector<opt_elem> opts){
-            segment_names.insert( segment_names.begin() + rank - 1, seg_name);
-            orientations.insert( orientations.begin() + rank - 1, ori);
-            overlaps.insert( overlaps.begin() + rank - 1, overlap);
+            int corrected_rank = rank;
+            if (rank == 0){
+                corrected_rank = this->segment_names.size() + 1;
+            }
+            segment_names.insert( segment_names.begin() + corrected_rank - 1, seg_name);
+            orientations.insert( orientations.begin() + corrected_rank - 1, ori);
+            overlaps.insert( overlaps.begin() + corrected_rank - 1, overlap);
         };
         std::string to_string() const {
             std::ostringstream st;

@@ -598,15 +598,13 @@ namespace gfak{
                 add_edge(e.source_name, e);
             }
             else if (tokens[0] == "W"){
-                string pname;
-                string wname;
+                string pname(tokens[2]);
+                string wname(tokens[1]);
                 int rank;
                 bool ori;
                 string overlap;
                 vector<opt_elem> opts;
              
-                pname = tokens[2];
-                wname = tokens[1];
                 if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
                     rank = 0;
                     ori = (tokens[3] == "-" ? false : true);
@@ -663,8 +661,10 @@ namespace gfak{
                     vector<opt_elem> opts;
              
                     if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
+                        // TODO: this is a hack
+                        // if no rank is present, insert at the end
                         rank = 0;
-                        ori = (tokens[3] == "+");
+                        ori = (tokens[3].compare("+") == 0);
                         overlap = tokens[4];
                     }
                     else{
@@ -672,7 +672,6 @@ namespace gfak{
                         ori = (tokens[4] == "+");
                         overlap = tokens[5];
                     }
-
                     add_walk(pname, rank, wname, ori, overlap, opts);
                 }
                 else{
@@ -724,7 +723,7 @@ namespace gfak{
         if (name_to_path.find(pathname) == name_to_path.end()){
             path_elem p;
             p.name = pathname;
-            add_path(pathname, p);
+            add_path(p.name, p);
         }
         name_to_path.at(pathname).add_ranked_segment( rank, segname, ori, overlap, opts);
 
