@@ -25,16 +25,16 @@ bibliography: paper.bib
 
 # Summary
 GFAKluge [@GFAKluge] is a set of command line utilities and a C++ library for parsing and
-manipulating the Graphical Fragment Assembly format. 
-Genome assembly algorithms often uses graph structures
+manipulating the Graphical Fragment Assembly (GFA) format. 
+Genome assembly algorithms often use graph structures
 to represent relationships between reads during the assembly process. Such information
-is typically thrown away when assemblies are converted to FASTA; previous attempts to integrate 
-graph information did not gain widespread acceptance largely because
-they were difficult for humans to parse. The Graphical Fragment Assembly
+is typically thrown away when assemblies are converted to FASTA files of contig sequences. 
+Previous attempts to convey graph information did not gain widespread acceptance because there were no standard representations that were easily parsed and extensively used.
+The Graphical Fragment Assembly
 (GFA) format was proposed as a way to encode the graph structure of an assembly in a human-readable
 text format [@GFAOriginal]. 
-GFA also aims to provide a single format for interchange between software for assembly,
-visualization, read mapping and variant calling. Such programs are often written in high-performance
+GFA aims to provide a single format for interchange between software for assembly, scaffolding, assessment and
+visualization. Such programs are often written in high-performance
 programming languages such as C or C++. GFAKluge facilitates interprogram exchange by providing
 a high-level C++ API for developers and a set of command line tools for users. We hope the availability of an open-source,
 easily extensible API will encourage software developers to consider adding support for GFA to their
@@ -53,10 +53,10 @@ statistics from the Falcon assembler [@Falcon], and to extract FASTA from a vg m
 to the development community in the short term.
 
 # Integrating GFAKluge into an existing program
-As an example of how to use the GFAKluge API, we examine its use in the variation graph toolkit [vg](https://github.com/vgteam/vg) [@vg].
-vg creates string graphs from assemblies and population variation that are then used for read mapping and variant calling. We incorporated
-GFAKluge for input and output of GFA in vg, replacing an existing parser. Reading in a GFA file requires one line of code and is agnostic to
-the GFA version used. Converting from GFA to vg's internal structures and vice versa requires forty source lines of code. Changing output from
-GFA v1.0 to GFA v2.0 requires a single API call. This allows vg to take assemblies in GFA format from TwoPaCo and other assembly algorithms.
-The gfak command line tools can be used to calculate assembly statistics on assemblies produced by vg.
+As an example of how to use the GFAKluge API, we briefly summarize its use in the variation graph toolkit [vg](https://github.com/vgteam/vg) [@vg].
+vg creates bidirected sequence graphs from assemblies and population variation that can then be used for read mapping and variant calling. We incorporated
+GFAKluge in vg to support input and output of GFA. Reading in a GFA file requires one line of code and is agnostic to
+the GFA version used. Converting from GFA to vg's internal structures and vice versa requires approximately forty lines of code. Changing output from
+GFA v1.0 to GFA v2.0 requires a single API call. This allows vg to take assemblies in GFA format from TwoPaCo and many other assembly algorithms.
+The gfak command line tools can be used to calculate assembly graph statistics on graphs produced by vg.
 
