@@ -58,7 +58,7 @@ struct tiny_faidx_entry_t {
     int32_t line_byte_len = 0;
     int64_t seq_len = 0;
     int64_t raw_len = 0;
-    uint64_t offset = -1;
+    int64_t offset = -1;
     tiny_faidx_entry_t(){
         name = NULL;
         name_len = 0;
