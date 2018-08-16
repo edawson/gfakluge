@@ -343,7 +343,6 @@ int fillseq_main(int argc, char** argv){
     GFAKluge gg;
     gg.parse_gfa_file(gfa_file);
     gg.fill_sequences(fasta_file.c_str());
-    //cerr << TFA::checkFAIndexFileExists(fasta_file.c_str()) << endl;
 
 
     if (spec_version == 0.1){
