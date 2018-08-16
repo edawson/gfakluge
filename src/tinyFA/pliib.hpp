@@ -102,6 +102,13 @@ namespace pliib{
         }
     };
 
+    inline void destroy_splits(char**& splits, const int& num_splits, int*& split_sizes){
+        //for (int i = 0; i < num_splits; ++i){
+        //    delete [] splits[i];
+        //}
+        delete [] splits;
+        delete [] split_sizes;
+    };
 
     // Modified from: https://techoverflow.net/2017/01/23/zero-copy-in-place-string-splitting-in-c/
     inline void split(char* s, char delimiter, char**& ret, int& retsize, int*& split_sizes){
@@ -152,6 +159,7 @@ namespace pliib{
         for (int i = 0; i < retsz; ++i){
             ret[i].assign(string( splitret[i])); 
         }
+        destroy_splits(splitret, retsz, splitsz);
 
     };
 
@@ -174,6 +182,7 @@ namespace pliib{
         for (int i = 0; i < retsz; ++i){
             ret[i].assign(string( splitret[i])); 
         }
+        destroy_splits(splitret, retsz, splitsz);
 
         return ret;
 
