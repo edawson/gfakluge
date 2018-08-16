@@ -196,8 +196,8 @@ namespace gfak{
     };
 
     struct sequence_elem{
-        std::string sequence;
-        std::string name;
+        std::string sequence = "*";
+        std::string name = "*";
         uint64_t length = UINT64_MAX;
         std::vector<opt_elem> opt_fields;
         uint32_t id = 0;
