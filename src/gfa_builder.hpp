@@ -235,7 +235,7 @@ void make_contig_to_breakpoints(char* fasta_file,
         uint32_t seq_len = 0;
         TFA::getSequenceLength(tf, k.first.c_str(), seq_len);
 
-        for (int i = max_node_length; i < seq_len; i += max_node_length){
+        for (int i = max_node_length; i <= seq_len; i += max_node_length){
             contig_to_breakpoints[k.first].push_back(i);
         }
         contig_to_breakpoints[k.first].push_back(seq_len);
@@ -711,7 +711,7 @@ void construct_gfa(char* fasta_file, char* vcf_file, char* insertion_fasta, gfak
                         contig_to_variants,
                         contig_to_breakpoints_to_variants,
                         contig_to_breakpoints,
-                        insertions);
+                        insertions, max_node_length);
 
     cerr << contig_to_variants.size() << " contigs to process" << endl;
 
