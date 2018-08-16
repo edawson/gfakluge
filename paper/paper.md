@@ -1,5 +1,5 @@
 ---
-title: 'GFAKluge: A C++ library and command line utilities for the Graphical Fragment Assembly formats.'
+title: 'GFAKluge: A C++ library and command line utilities for the Graphical Fragment Assembly formats'
 tags:
   - GFA
   - C++
