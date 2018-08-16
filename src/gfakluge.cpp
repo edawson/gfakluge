@@ -73,10 +73,13 @@ namespace gfak{
             TFA::parseFAIndex(fasta_file, tf);
         }
         else{
-            //cerr << "Creating index for " << fasta_file << "." << endl;
+            cerr << "Creating index for " << fasta_file << "." << endl;
             TFA::createFAIndex(fasta_file, tf);
+            cerr << "Created index." << endl;
             TFA::writeFAIndex(fasta_file, tf);
-            //cerr << "Index created." << endl;
+            cerr << "Wrote index to file." << endl;
+            //TFA::parseFAIndex(fasta_file, tf);
+            //cerr << "Index parsed." << endl;
         }
         
         for (std::map<string, sequence_elem, custom_key>::iterator it = name_to_seq.begin(); it != name_to_seq.end(); it++){
@@ -321,7 +324,9 @@ namespace gfak{
             return false;
         }
 
-        return parse_gfa_file(gfi);
+        bool ret = parse_gfa_file(gfi);
+        gfi.close();
+        return ret;
 
     }
 
