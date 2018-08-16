@@ -78,8 +78,6 @@ namespace gfak{
             cerr << "Created index." << endl;
             TFA::writeFAIndex(fasta_file, tf);
             cerr << "Wrote index to file." << endl;
-            TFA::parseFAIndex(fasta_file, tf);
-            //cerr << "Index parsed." << endl;
         }
         
         for (std::map<string, sequence_elem, custom_key>::iterator it = name_to_seq.begin(); it != name_to_seq.end(); it++){
