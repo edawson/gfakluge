@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -Wa,-q -std=c++11 -pg -ggdb
+CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -Wall -Wa,-q -std=c++11 -pg -ggdb
 
 
 BIN_DIR:=bin
