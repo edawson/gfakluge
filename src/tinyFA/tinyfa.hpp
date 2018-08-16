@@ -176,8 +176,9 @@ inline void createFAIndex(const char* fastaName, tiny_faidx_t& fai){
                 pliib::trim_after_char(name, strlen(name), ' ');
                 //cerr << name << endl;
                 entry->name_len = std::strlen(name);
-                entry->name = new char[entry->name_len];
+                entry->name = new char[entry->name_len + 1];
                 std::strcpy(entry->name, name);
+                entry->name[entry->name_len] = '\0';
                 
             }
             else if (line[0] == '+'){
@@ -204,7 +205,6 @@ inline void createFAIndex(const char* fastaName, tiny_faidx_t& fai){
             fai.add(entry);
         }
     }
-
     faFile.close();
 };
 
@@ -256,6 +256,7 @@ inline void parseFAIndex(const char* fastaFileName, tiny_faidx_t& fai){
     else{
         cerr << "Couldn't open index " << ifn << "." << endl;
     }
+    ifi.close();
     delete ifn;
 };
 

@@ -78,7 +78,7 @@ namespace gfak{
             cerr << "Created index." << endl;
             TFA::writeFAIndex(fasta_file, tf);
             cerr << "Wrote index to file." << endl;
-            //TFA::parseFAIndex(fasta_file, tf);
+            TFA::parseFAIndex(fasta_file, tf);
             //cerr << "Index parsed." << endl;
         }
         
