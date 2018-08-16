@@ -1,6 +1,9 @@
 #ifndef TINY_FA_HPP
 #define TINY_FA_HPP
 
+#include <sys/types.h>
+#include <cstdio>
+
 #pragma once
 #define _FILE_OFFSET_BITS 64
 #ifdef WIN32
@@ -22,7 +25,6 @@ typedef __off64_t off_type;
 #include <string>
 #include <sstream>
 #include <ostream>
-#include <cstdio>
 #include <vector>
 #include <fstream>
 #include <unordered_map>
@@ -51,13 +53,14 @@ struct custom_char_comparator
 
 struct tiny_faidx_entry_t {
     char* name;
-    int name_len;
-    int32_t line_char_len;
-    int32_t line_byte_len;
-    int64_t seq_len;
-    int64_t raw_len;
-    uint64_t offset;
+    int name_len = 0;
+    int32_t line_char_len = -1;
+    int32_t line_byte_len = 0;
+    int64_t seq_len = 0;
+    int64_t raw_len = 0;
+    uint64_t offset = -1;
     tiny_faidx_entry_t(){
+        name_len = 0;
         line_char_len = -1;
         line_byte_len = 0;
         seq_len = 0;
@@ -104,7 +107,7 @@ struct tiny_faidx_t{
         }
     };
 
-    void add(tiny_faidx_entry_t* entry){
+    void add(tiny_faidx_entry_t*& entry){
         seq_to_entry[entry->name] = entry;
     };
     ~tiny_faidx_t(){
@@ -142,33 +145,6 @@ struct tiny_faidx_t{
 } ;
 
 
-// typedef struct {
-//     std::unordered_map<char*, char*, custom_char_comparator> name_to_seq;
-
-//     tiny_fasta_map_t(){
-
-//     }
-
-//     tiny_fasta_map_t(const char* filename){
-
-//     }
-
-//     void get(const char* name, char*&s){
-//         if (name_to_seq.count(name) != 0){
-//             s = name_to_seq[name];
-//         }
-//     };
-
-//     void put(const char* name, const char* s){
-//         name_to_seq[name] = s;
-//     }
-// } tiny_fasta_map_t;
-
-
-// inline void parseFasta(const char* filename, tiny_faidx_t& fai, tiny_fasta_map_t& fam){
-
-// };
-
 inline void createFAIndex(const char* fastaName, tiny_faidx_t& fai){
     
     uint64_t line_number = 0;
@@ -202,7 +178,7 @@ inline void createFAIndex(const char* fastaName, tiny_faidx_t& fai){
                 entry->name_len = std::strlen(name);
                 entry->name = new char[entry->name_len];
                 std::strcpy(entry->name, name);
-
+                
             }
             else if (line[0] == '+'){
                 std::getline(faFile, line);
@@ -228,6 +204,8 @@ inline void createFAIndex(const char* fastaName, tiny_faidx_t& fai){
             fai.add(entry);
         }
     }
+
+    faFile.close();
 };
 
 inline void writeFAIndex(const char* fastaName, const tiny_faidx_t& fai){
@@ -301,7 +279,7 @@ inline void getSequence( const tiny_faidx_t& fai, const char* seqname, char*& se
         seq[sz - 1] = '\0';
         fseek64(fai.fasta, entry->offset, SEEK_SET);
         if (fread(seq, sizeof(char), entry->seq_len, fai.fasta)){
-            pliib::remove_nulls_and_whitespace(seq, entry->seq_len);
+           pliib::remove_nulls_and_whitespace(seq, entry->seq_len);
         }
     }
     else{
