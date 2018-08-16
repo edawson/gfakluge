@@ -287,12 +287,13 @@ inline void getSequence( const tiny_faidx_t& fai, const char* seqname, char*& se
     }
     if (fai.hasSeqID(seqname)){
         fai.get(seqname, entry);
-        sz = entry->seq_len + 1;
+        int num_line_breaks = entry->seq_len / entry->line_byte_len;
+        sz = entry->seq_len + num_line_breaks + 1;
         seq = new char[sz];
         seq[sz - 1] = '\0';
         fseek64(fai.fasta, entry->offset, SEEK_SET);
-        if (fread(seq, sizeof(char), entry->seq_len, fai.fasta)){
-           pliib::remove_nulls_and_whitespace(seq, entry->seq_len);
+        if (fread(seq, sizeof(char), sz, fai.fasta)){
+           pliib::remove_nulls_and_whitespace(seq, sz);
         }
     }
     else{
