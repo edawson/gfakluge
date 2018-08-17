@@ -53,7 +53,7 @@ namespace pliib{
     inline bool canonical(const char* x, int len){
         bool trip = false;
         for (int i = 0; i < len; ++i){
-            trip |= valid_dna[x[i]];
+            trip |= valid_dna[ static_cast<int> (x[i]) ];
         }
         return !trip;
     };

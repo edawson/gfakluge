@@ -643,6 +643,8 @@ int ids_main(int argc, char** argv){
     }
     cerr << "Done." << endl;
 
+    return 0;
+
 }
 
 int merge_main(int argc, char** argv){
@@ -801,8 +803,6 @@ int stats_main(int argc, char** argv){
     string gfa_file = "";
     bool show_nodes = false;
     bool show_edges = false;
-    bool show_containments = false;
-    bool show_alignments = false;
     bool show_length = false;
     bool assembly_stats = false;
     bool show_paths = false;
@@ -1052,7 +1052,9 @@ int subset_main(int argc, char** argv){
             outg.set_version(spec);
         }
         cout << outg.to_string() << endl;
+
     }
+    return 0;
 }
 
 

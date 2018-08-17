@@ -36,7 +36,7 @@ namespace gfak{
         else if (c == 'F'){
             return FRAGMENT_LINE;
         }
-        else if (c = 'G'){
+        else if (c == 'G'){
             return GAP_LINE;
         }
         else if (c == 'O' || c == 'U'){
@@ -163,6 +163,7 @@ namespace gfak{
                 p_segs.push_back(segment_names[i] + (orientations[i] ? "+" : "-") );
             }
             st << "O" << '\t' << name << '\t' << pliib::join(p_segs, ",");
+            return st.str();
         }
 
         void write_as_walks(std::ostream& os){
