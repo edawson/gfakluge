@@ -498,12 +498,11 @@ namespace gfak{
             //3. Perhaps links and containeds should be added using methods like
             //  add_contained(contained_elem c)
             // to guarantee that they are actually added by their source.
-            void add_link(const std::string& seq_name, const link_elem& l);
-            void add_link(const sequence_elem& s, const link_elem& l);
-
+            
             /**
              * GFA2.0 handlers
              */
+            void add_sequence(sequence_elem s);
             void add_edge(const std::string& seqname, const edge_elem& e);
             void add_edge(const sequence_elem& s, const edge_elem& e);
 
@@ -524,9 +523,11 @@ namespace gfak{
             void add_alignment(std::string s, alignment_elem a);
             void add_alignment(sequence_elem s, alignment_elem a);
 
-            void add_sequence(sequence_elem s);
+
             void add_path(std::string pathname, path_elem path);
             void add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts);
+            void add_link(const std::string& seq_name, const link_elem& l);
+            void add_link(const sequence_elem& s, const link_elem& l);
 
 
             /** Versioning functions **/
@@ -536,8 +537,6 @@ namespace gfak{
             void set_walks(bool ws);
 
             /** Getter methods for elements, to keep users out of our data structures **/
-            std::vector<link_elem> get_links(const sequence_elem& seq);
-            std::vector<link_elem> get_links(const std::string& seq_name);
 
             std::vector<contained_elem> get_contained(std::string seq_name);
             std::vector<contained_elem> get_contained(sequence_elem seq);
