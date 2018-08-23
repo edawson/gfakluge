@@ -13,7 +13,7 @@
 using namespace std;
 
 namespace pliib{
-    // Crazy hack char table to test for canonical bases
+    // Char table to test for canonical bases
     static const int valid_dna[127] = {
         1,
         1,1,1,1,1,1,1,1,1,1,
@@ -86,7 +86,7 @@ namespace pliib{
 
     /* Capitalize a string */
     inline string to_upper(string& seq){
-        for (int i = 0; i < seq.length(); i++){
+        for (size_t i = 0; i < seq.length(); i++){
             char c = seq[i];
             seq[i] =  ((c - 91) > 0 ? c - 32 : c);
         }
@@ -278,13 +278,11 @@ namespace pliib{
      *  Complexity: linear time in |s| **/
     inline void remove_nulls_and_whitespace(char*& s, const int& len){
         int write_index = 0;
-        int read_index = 0;
-        for (int i = 0; i < len, read_index < len; ++i){
+        for (size_t i = 0; i < len; ++i){
             if (s[i] != '\n' && s[i] != '\t' && s[i] != '\0' && s[i] != ' '){
-                s[write_index] = s[read_index];
+                s[write_index] = s[i];
                 ++write_index;
             }
-            ++read_index;
         }
         s[write_index] = '\0';
     };

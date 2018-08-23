@@ -48,9 +48,6 @@ struct custom_char_comparator
 };
 
 
-
-
-
 struct tiny_faidx_entry_t {
     char* name = NULL;
     int name_len = 0;
@@ -73,7 +70,8 @@ struct tiny_faidx_entry_t {
         this->name_len = splits[0].length();
         this->name = new char[this->name_len + 1];
         memcpy(this->name, splits[0].c_str(), splits[0].length() * sizeof(char));
-        this->seq_len = std::stol(splits[1]);
+        this->name[this->name_len] = '\0';
+        this->seq_len = std::stoll(splits[1]);
         this->offset = std::stoull(splits[2]);
         this->line_char_len = std::stoi(splits[3]);
         this->line_byte_len = std::stoi(splits[4]);
@@ -287,13 +285,23 @@ inline void getSequence( const tiny_faidx_t& fai, const char* seqname, char*& se
     }
     if (fai.hasSeqID(seqname)){
         fai.get(seqname, entry);
-        int num_line_breaks = entry->seq_len / entry->line_byte_len;
-        sz = entry->seq_len + num_line_breaks + 1;
-        seq = new char[sz];
-        seq[sz - 1] = '\0';
+        int num_line_breaks = entry->seq_len / entry->line_char_len;
+        sz = entry->seq_len + num_line_breaks;
+        seq = new char[sz + 1];
         fseek64(fai.fasta, entry->offset, SEEK_SET);
         if (fread(seq, sizeof(char), sz, fai.fasta)){
-           pliib::remove_nulls_and_whitespace(seq, sz);
+           #ifdef DEBUG
+            cerr << entry->seq_len << " " <<
+             entry->line_byte_len << " " <<
+              num_line_breaks << endl;
+            #endif
+            
+            seq[sz] = '\0';
+            pliib::remove_nulls_and_whitespace(seq, sz);
+            
+            #ifdef DEBUG
+                cerr << strlen(seq) << endl;
+            #endif 
         }
     }
     else{
