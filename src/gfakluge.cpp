@@ -85,7 +85,8 @@ namespace gfak{
                 char* s;
                 TFA::getSequence(tf, it->second.name.c_str(), s);
                 it->second.sequence.assign(s);
-                //it->second.length = strlen(s);
+                // The length field should already be filled, but it
+                // might be good to check.
                 delete [] s;
             }
         }
@@ -757,15 +758,6 @@ namespace gfak{
 
     void GFAKluge::add_contained(string seq_name, contained_elem con){
         seq_to_contained[seq_name].push_back(con);
-    }
-
-    vector<link_elem> GFAKluge::get_links(const string& seq_name){
-        return seq_to_link[seq_name];
-    }
-
-    vector<link_elem> GFAKluge::get_links(const sequence_elem& seq){
-        string seq_name = seq.name;
-        return seq_to_link[seq_name];
     }
 
     vector<contained_elem> GFAKluge::get_contained(string seq_name){
