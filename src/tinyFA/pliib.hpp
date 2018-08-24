@@ -199,7 +199,7 @@ namespace pliib{
     }
     inline string join(const vector<string>& splits, char glue){
         stringstream ret;
-        for (int i = 0; i < splits.size(); i++){
+        for (size_t i = 0; i < splits.size(); i++){
             if (i != 0){
                 ret << glue;
             }
@@ -360,22 +360,36 @@ namespace pliib{
 
 
     /** 
-     * Applies a lambda function lambda to all elements of a vector v, returning
+     * Applies a lambda function <lambda> to all elements of a vector v, returning
      * a results vector the same size and type as v.
      */
     template <typename DataType, typename A>
-        inline std::vector<DataType, A> p_vv_map(std::vector<DataType, A> v, typename std::function<DataType(DataType)> lambda){
+        inline std::vector<DataType, A> p_vv_map(const std::vector<DataType, A> v, typename std::function<DataType(DataType)> lambda){
             std::vector<DataType> results(v.size());
-            int sz = v.size();
-            // As we guarantee synchronicity,
-            // we should TODO something to guarantee it.
+            size_t sz = v.size();
             #pragma omp parallel for
-            for (int i = 0; i < sz; ++i){
+            for (size_t i = 0; i < sz; ++i){
                 results[i] = lambda(v[i]);
             }
 
             return results;
         }
+
+    /**
+     *  Applies a lambda function <lambda> to all elements of v, and returns those elements in v
+     *  for which lambda returns true.
+     */
+    template<typename DataType, typename A>
+        inline std::vector<DataType, A> p_vv_filter(const std::vector<DataType, A>& v, typename std::function<bool(DataType)> lambda){
+            std::vector<DataType> results;
+            size_t sz = v.size();
+            for (size_t i = 0; i < sz; ++i){
+                if (lambda(v[i])){
+                    results.push_back(v[i]);
+                }
+            }
+            return results;
+        };
 
 
     /**
@@ -383,9 +397,9 @@ namespace pliib{
      * vector v, modifying the elements of v in place.
      */
     template<typename DataType, typename A>
-        inline void p_vv_apply(std::vector<DataType, A> &v, typename std::function<DataType(DataType)> lambda){
+        inline void p_vv_apply(std::vector<DataType, A>& v, typename std::function<DataType(DataType)> lambda){
             #pragma omp parallel for //private(i)
-            for (int i = 0; i < v.size(); i++){
+            for (size_t i = 0; i < v.size(); i++){
                 auto r = lambda(v[i]);
 
                 #pragma omp atomic write
