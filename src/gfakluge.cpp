@@ -101,7 +101,7 @@ namespace gfak{
                 p.segment_names = g.second.items;
                 if (this->name_to_seq.size() > 0){
                     p.overlaps.resize(p.segment_names.size());
-                    for (int i = 0; i < p.segment_names.size(); ++i){
+                    for (size_t i = 0; i < p.segment_names.size(); ++i){
                         int len = 0;
                         if (name_to_seq.find(p.segment_names[i]) != name_to_seq.end()){
                             std::string s(name_to_seq.at(p.segment_names[i]).sequence);
@@ -371,8 +371,8 @@ namespace gfak{
                     }
                     tag_index = 3;
                 }
-                //s.id = atol(s.name.c_str());
-                int i;
+                
+                size_t i;
                 if (tokens.size() > 3){
                     for (i = tag_index; i < tokens.size(); i++){
                         //opt fields are in key:type:val format
@@ -422,7 +422,7 @@ namespace gfak{
                 e.alignment = tokens[8];
 
                 if (tokens.size() > 9){
-                    for (int i = 9; i < tokens.size(); i++){
+                    for (size_t i = 9; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
                         vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
@@ -461,7 +461,7 @@ namespace gfak{
                 f.ends.set(3, (tokens[6].back() == '$' ? 1 : 0));
                 f.alignment = tokens[7];
                 if (tokens.size() > 8){
-                    for (int i = 9; i < tokens.size(); i++){
+                    for (size_t i = 9; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
                         vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
@@ -482,12 +482,12 @@ namespace gfak{
                     g.id = std::to_string(++base_group_id);
                 }
                 vector<string> g_ids = pliib::split(tokens[2], ' ');
-                for (int i = 0 ; i < g_ids.size(); i++){
+                for (size_t i = 0 ; i < g_ids.size(); i++){
                         g.items.push_back(g_ids[i].substr(0, g_ids[i].length() - 1));
                         g.orientations.push_back(g_ids[i].back() == '+');
                 }
                 if (tokens.size() > 8){
-                    for (int i = 9; i < tokens.size(); i++){
+                    for (size_t i = 9; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
                         vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
@@ -509,7 +509,7 @@ namespace gfak{
                 }
                 g.items = pliib::split(tokens[2], ' ');
                 if (tokens.size() > 8){
-                    for (int i = 9; i < tokens.size(); i++){
+                    for (size_t i = 9; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
                         vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
@@ -545,7 +545,7 @@ namespace gfak{
                 }
 
                 if (tokens.size() >= 7){
-                    for (int i = 6; i < tokens.size(); i++){
+                    for (size_t i = 6; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
                         vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
@@ -586,7 +586,7 @@ namespace gfak{
                 }
 
                 if (tokens.size() >= 8){
-                    for (int i = 8; i < tokens.size(); i++){
+                    for (size_t i = 8; i < tokens.size(); i++){
                          //opt fields are in key:type:val format
                         vector<string> opt_field = pliib::split(tokens[i], ':');
                         opt_elem o;
@@ -631,7 +631,7 @@ namespace gfak{
                     pliib::split(tokens[2], ',', ids_and_orientations);
                     p.segment_names.resize(ids_and_orientations.size());
                     p.orientations.resize(ids_and_orientations.size());
-                    for (int t = 0; t < ids_and_orientations.size(); ++t){
+                    for (size_t t = 0; t < ids_and_orientations.size(); ++t){
                         string x = ids_and_orientations[t];
                         bool orientation = ((x.back()) == '+' || x.front() == '+');
                         string id = x.substr(0, x.length() - 1);
@@ -828,7 +828,7 @@ namespace gfak{
 
     string GFAKluge::join(const vector<string>& splits, const string& glue){
         string ret = "";
-        for (int i = 0; i < splits.size(); i++){
+        for (size_t i = 0; i < splits.size(); i++){
             if (i != 0){
                 ret += glue;
             }
@@ -860,7 +860,7 @@ namespace gfak{
 
     string GFAKluge::opt_string(vector<opt_elem> opts){
         string ret = "";
-        for (int i = 0; i < opts.size(); i++){
+        for (size_t i = 0; i < opts.size(); i++){
             opt_elem o = opts[i];
             if (i != 0){
                 ret += "\t";
@@ -881,7 +881,7 @@ namespace gfak{
             return block_order_string_2();
         }
 			stringstream ret;
-			int i;
+
 			//First print header lines.
 			if (header.size() > 0){
 					ret << header_string(header) + "\n";
@@ -918,7 +918,7 @@ namespace gfak{
                     stringstream pat;
                     pat << "P\t" << pt->second.name << "\t";
                     vector<string> ovec;
-                    for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
+                    for (size_t oi = 0; oi < pt->second.segment_names.size(); oi++){
                         stringstream o_str;
                         o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "+" : "-");
                         ovec.push_back(o_str.str());
@@ -1016,7 +1016,6 @@ namespace gfak{
         }
 
         stringstream ret;
-        int i;
         //First print header lines.
         if (header.size() > 0){
             ret << header_string(header) + "\n";
@@ -1029,7 +1028,7 @@ namespace gfak{
                     pat << "P" << "\t";
                     pat << pt->second.name << "\t";
                     vector<string> ovec;
-                    for (int seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
+                    for (size_t seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
                         stringstream o_str;
                         o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "+" : "-");
                         ovec.push_back(o_str.str());
@@ -1109,8 +1108,6 @@ namespace gfak{
         map<string, vector<gap_elem>> s_g;
         map<string, group_elem> g_g;
 
-
-
         for (auto ns : name_to_seq){
             string old_name = ns.second.name;
             ns.second.id = ++base_seq_id;
@@ -1153,7 +1150,7 @@ namespace gfak{
                 for (auto g : groups){
                     //We may not want to increment group IDs, as they might represent unique paths!
                     //g.second.id = to_string(++base_group_id);
-                    for (int i = 0; i < g.second.items.size(); ++i){
+                    for (size_t i = 0; i < g.second.items.size(); ++i){
                         g.second.items[i] = std::to_string(seg_diff + stoul(g.second.items[i]));
                     }
                     g_g[g.first] = g.second;
@@ -1236,7 +1233,7 @@ namespace gfak{
         std::sort(s_lens.begin(), s_lens.end());
         //int middle = floor((double) s_lens.size() / 2.0);
         double cumul_size = 0.0;
-        for (int i = 0; i < s_lens.size(); i++){
+        for (size_t i = 0; i < s_lens.size(); i++){
             cumul_size += s_lens[i];
             if (cumul_size >= avg){
                 n = s_lens[i];
@@ -1258,7 +1255,7 @@ namespace gfak{
         std::sort(s_lens.rbegin(), s_lens.rend());
         //int middle = floor((double) s_lens.size() / 2.0);
         double cumul_size = 0.0;
-        for (int i = 0; i < s_lens.size(); i++){
+        for (size_t i = 0; i < s_lens.size(); i++){
             cumul_size += s_lens[i];
             if (cumul_size >= avg){
                 n = s_lens[i];
@@ -1272,7 +1269,6 @@ namespace gfak{
     int GFAKluge::get_L50(){
         vector<double> s_lens;
         uint64_t total_len = 0;
-        double n = 0.0;
         for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
             s_lens.push_back(s->second.length);
             total_len += s->second.length;
@@ -1281,7 +1277,7 @@ namespace gfak{
         std::sort(s_lens.rbegin(), s_lens.rend());
         //int middle = floor((double) s_lens.size() / 2.0);
         double cumul_size = 0.0;
-        for (int i = 0; i < s_lens.size(); i++){
+        for (size_t i = 0; i < s_lens.size(); i++){
             cumul_size += s_lens[i];
             if (cumul_size >= avg){
                 return i + 1;
@@ -1293,7 +1289,6 @@ namespace gfak{
     int GFAKluge::get_L90(){
         vector<double> s_lens;
         uint64_t total_len = 0;
-        double n = 0.0;
         for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
             s_lens.push_back(s->second.length);
             total_len += s->second.length;
@@ -1302,7 +1297,7 @@ namespace gfak{
         std::sort(s_lens.rbegin(), s_lens.rend());
         //int middle = floor((double) s_lens.size() / 2.0);
         double cumul_size = 0.0;
-        for (int i = 0; i < s_lens.size(); i++){
+        for (size_t i = 0; i < s_lens.size(); i++){
             cumul_size += s_lens[i];
             if (cumul_size >= avg){
                 return i + 1;
@@ -1402,7 +1397,7 @@ namespace gfak{
                     stringstream pat;
                     pat << "P\t" << pt->second.name << "\t";
                     vector<string> ovec;
-                    for (int oi = 0; oi < pt->second.segment_names.size(); oi++){
+                    for (size_t oi = 0; oi < pt->second.segment_names.size(); oi++){
                         stringstream o_str;
                         o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "+" : "-");
                         ovec.push_back(o_str.str());
@@ -1437,7 +1432,7 @@ namespace gfak{
                         pat << "P" << "\t";
                         pat << pt->second.name << "\t";
                         vector<string> ovec;
-                        for (int seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
+                        for (size_t seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
                             stringstream o_str;
                             o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "+" : "-");
                             ovec.push_back(o_str.str());

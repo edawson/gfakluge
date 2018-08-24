@@ -50,6 +50,9 @@ namespace gfak{
     };
     
 
+    // Provides the proper sorting behavior,
+    // where number-based keys get sorted in numerical order
+    // and strings are in lexicographic order.
     struct custom_key{
         bool isdigit(const std::string &s) const {
             //const char* s_str = s.c_str();
@@ -71,6 +74,7 @@ namespace gfak{
         }
     };
 
+    // Contains basic stats about a GFA graph.
     struct gfak_stats_t{
         uint64_t num_nodes = 0;
         uint64_t num_edges = 0;
@@ -82,10 +86,8 @@ namespace gfak{
         double N90 = 0.0;
     };
 
-    struct comment_elem {
-        std::vector<std::string> comments;
-    };
-
+    // Contains a GFA 1/2 header line,
+    // Which begin with an 'H' and hold an array of <key:type:value> triples.
     struct header_elem {
         std::string key;
         std::string type;
@@ -96,11 +98,10 @@ namespace gfak{
             st << 'H' << '\t' << key << ':' << type << ':' << val << '\n';
             return st.str();
         }
-        // TODO make the val a vector<std::string>; this should handle every case
-        // essentially, a single header_elem will encode all lines beginning with that key.
-        // e.g. multiple program lines.
     };
 
+    // Encodes a <key:type:value> triple, which are used as
+    // annotations for other GFA line types.
     struct opt_elem {
         std::string key;
         std::string type;
@@ -112,11 +113,21 @@ namespace gfak{
         }
     };
 
+    /** 
+     * Encodes an annotation line.
+    *  These begin with an 'x', and are not part of the official
+    *  community GFA spec, but have appeared in early GFA files.
+    */
     struct annotation_elem{
         std::string key;
         std::string info;
     };
 
+    /**
+     *  Encodes a 'P' (path) line from GFA 0.1-1.0.
+     *  These describe a trace through sequence_elem elements (i.e. nodes) in a graph
+     *  These are analogous and convertible to ordered groups in GFA2.
+     */
     struct path_elem{
         std::string name;
         std::vector<std::string> segment_names;
@@ -132,6 +143,10 @@ namespace gfak{
             std::map<std::string, opt_elem> opt_fields;
         };
 
+        /**
+         *  Adds a GFA 0.1-style path_element (a "Walk") to a
+         *  GFA1-style path container (which is a collection of these elements).
+         */
         void add_ranked_segment( const int& rank, const string& seg_name, const bool& ori, const string& overlap, vector<opt_elem> opts){
             int corrected_rank = rank;
             if (rank == 0){
@@ -141,7 +156,10 @@ namespace gfak{
             orientations.insert( orientations.begin() + corrected_rank - 1, ori);
             overlaps.insert( overlaps.begin() + corrected_rank - 1, overlap);
         };
-        std::string to_string() const {
+        /**
+         *  Writes a path to a string in GFA1 format.
+         */
+        std::string to_string_1() const {
             std::ostringstream st;
             std::vector<std::string> p_segs;
             for (int i = 0; i < segment_names.size(); ++i){
@@ -156,6 +174,10 @@ namespace gfak{
             st << '\t' << pliib::join(opt_strs, "\t");
             return st.str();
         }
+        /**
+         *  Writes a path to a string in GFA2 format,
+         *  which is identical to the output format for an ordered group
+         */
         std::string to_string_2() const{
             stringstream st;
             std::vector<std::string> p_segs;
@@ -166,6 +188,9 @@ namespace gfak{
             return st.str();
         }
 
+        /**
+         *  Writes a path as GFA0.1-style walks to an outstream
+         */
         void write_as_walks(std::ostream& os){
             std::stringstream st;
             int32_t rank = 0;
@@ -187,6 +212,10 @@ namespace gfak{
     };
 
 
+    /**
+     *  Represents the non-spec alignment line element.
+     * These occasionally appear in early GFA 0.1.
+     */
     struct alignment_elem{
         std::string source_name;
         int position;
@@ -196,6 +225,10 @@ namespace gfak{
         std::map<std::string, std::string> opt_fields;
     };
 
+    /**
+     *  Represents a portion of sequence (i.e. a node)
+     *  in a graph across all GFA versions.
+     */
     struct sequence_elem{
         std::string sequence = "*";
         std::string name = "*";
@@ -223,6 +256,10 @@ namespace gfak{
             }
             return st.str();
         }
+        /**
+         *   Write the sequence_elems name and sequence
+         *   in FASTA format.
+         */
         std::string as_fasta_record() const{
             std::ostringstream st;
             st << '>' << ' ' << name << endl
@@ -265,8 +302,13 @@ namespace gfak{
     };
 
 
-    // These elements, along with the <length> field in sequence_elem,
-    // are all that's needed to parse to GFA2
+    /**
+     *  Represents an edge line in GFA.
+     *  Can represent "links", which are end-to-end, or "containments", which
+     *  represent overlaps. All GFA versions use this representation - the link_elem
+     *  and containment_elem structs get converted to this internally and exist
+     *  for convenience.
+     */
     struct edge_elem{
 
         edge_elem(){
@@ -449,7 +491,7 @@ namespace gfak{
 
                 st << "P" << "\t" << id << "\t";
                 st << items[0] << (ordered ? (orientations[0] ? "+" : "-") : "" );
-                for (int i = 1; i < items.size(); ++i){
+                for (size_t i = 1; i < items.size(); ++i){
                     st << " " << items[i] << (ordered ? (orientations[i] ? "+" : "-") : "");
                 }
                 for (auto i : tags){
@@ -462,7 +504,7 @@ namespace gfak{
                 std::stringstream st;
                 st << (ordered ? "O" : "U") << "\t" << id << "\t";
                 st << items[0] << (ordered ? (orientations[0] ? "+" : "-") : "" );
-                for (int i = 1; i < items.size(); ++i){
+                for (size_t i = 1; i < items.size(); ++i){
                     st << " " << items[i] << (ordered ? (orientations[i] ? "+" : "-") : "");
                 }
                 for (auto i : tags){
@@ -476,7 +518,7 @@ namespace gfak{
             }
             int rank = 0;
             stringstream st;
-            for (int i = 0; i < items.size(); ++i){
+            for (size_t i = 0; i < items.size(); ++i){
                 st << "W" << items[i] << '\t' << ++rank << '\t' << orientations[i] << "*" << endl;
             }
             return st.str();
