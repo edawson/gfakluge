@@ -513,7 +513,7 @@ namespace gfak{
                 return st.str();
             }
         std::string to_walk_string(){
-            if (ordered){
+            if (!ordered){
                 return "";
             }
             int rank = 0;
