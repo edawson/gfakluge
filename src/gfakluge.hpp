@@ -268,6 +268,10 @@ namespace gfak{
         };
     };
 
+    /** Represents a link (a non-contained edge) between two sequence_elems
+     *  Note: these are no longer stored internally; instead, they get converted to
+     *  edge_elems.
+     */
     struct link_elem{
         std::string source_name;
         std::string sink_name;
@@ -291,6 +295,11 @@ namespace gfak{
         }
     };
 
+    /**
+     * Represents a containment edge, which defines how one sequence element is
+     * contained within another. Like link_elems, these are no longer stored internally,
+     * but are converted to edge_elems.
+     */
     struct contained_elem {
         std::string source_name;
         std::string sink_name;
@@ -343,7 +352,7 @@ namespace gfak{
            id = "*";
         }
         std::string id = "*";
-        // 0: unset, 1: link, 2: containment, 3: generic edge or both C/L set (impossible)
+        // 0: unset, 1: link, 2: containment, 3: generic edge or both C/L set (which should be impossible)
         int type;
         std::string source_name;
         std::string sink_name;
@@ -423,6 +432,7 @@ namespace gfak{
         }
         };
 
+        /** Represents a GAP type line ('G'), which is specific to GFA2 */
         struct gap_elem{
             std::string id;
             std::string source_name;
@@ -445,6 +455,9 @@ namespace gfak{
 
         };
 
+        /** Represents a fragment, which is a portion of sequence contained within
+         * a sequence. These are GFA2-specific and are stored relative to their sequence_elem
+         */
         struct fragment_elem{
             std::string id;
             std::string ref;
@@ -477,6 +490,9 @@ namespace gfak{
             }
         };
 
+        /** Represents a group of sequence_elems, which could be an ordered path
+         *  or an unordered collection.
+         */
         struct group_elem{
             std::string id;
             bool ordered = false;
@@ -512,6 +528,7 @@ namespace gfak{
                 }
                 return st.str();
             }
+            /** Convert a group (which must be ordered) to a GFA0.1 style walk string. */
         std::string to_walk_string(){
             if (!ordered){
                 return "";
@@ -531,16 +548,15 @@ namespace gfak{
             public:
             GFAKluge();
             ~GFAKluge();
+            /** Parse a GFA file to a GFAKluge object. */
             bool parse_gfa_file(const std::string &filename);
             bool parse_gfa_file(std::istream& gfa_stream);
 
-            //TODO: we should enforce graph structure,
-            //i.e.:
-            //1. Throw errors on dangling edges
-            //2. Guarantee contained elements fall in valid sequences
-            //3. Perhaps links and containeds should be added using methods like
-            //  add_contained(contained_elem c)
-            // to guarantee that they are actually added by their source.
+            // GFAKluge does not, but maybe should, enforce graph structure,
+            // i.e.:
+            // 1. Throw errors on dangling edges
+            // 2. Guarantee contained elements fall in valid sequences
+
             
             /**
              * GFA2.0 handlers
@@ -556,19 +572,41 @@ namespace gfak{
 
             void add_group(const group_elem& g);
 
+            // Convert group_elems (i.e. U or O lines) to path_elems (P lines)
             void groups_as_paths();
 
             /** End GFA2.0. Begin 1.0 / 0.1 **/
 
+            /** Add a containment line to the GFAKluge object
+             *  Behind the scenes, an edge_elem is created and
+             *  used to represent the contained_elem, which
+             *  are provided as syntactic sugar.
+             *  N.B.: these are stored relative to the sequence_elem
+             *  in which they are contained.
+             */
             void add_contained(std::string seq_name, contained_elem c);
             void add_contained(sequence_elem s, contained_elem c);
 
+            /**
+             * Add an alignment_elem to the GFAKluge object.
+             * These are stored by the sequence_elem to which they align.
+             */
             void add_alignment(std::string s, alignment_elem a);
             void add_alignment(sequence_elem s, alignment_elem a);
 
 
+            /**
+             * Functions for adding paths or walks (which are single elements in an ordered path)
+             */
             void add_path(std::string pathname, path_elem path);
             void add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts);
+            
+            /**
+             *  Add a link_elem to represent a link between two sequence_elems.
+             *  These are stored relative to their source sequence_elem.
+             *  N.B.: An edge_elem is created internally to represent the link
+             *  and no link_elem is stored. They're simply provided as syntactic sugar.
+             */
             void add_link(const std::string& seq_name, const link_elem& l);
             void add_link(const sequence_elem& s, const link_elem& l);
 
@@ -577,10 +615,12 @@ namespace gfak{
             double get_version();
             void set_version(double version);
             void set_version();
+            // Use walks, rather than paths, for outputting GFA below v2.0.
             void set_walks(bool ws);
 
-            /** Getter methods for elements, to keep users out of our data structures **/
-
+            /** Getter methods for elements, to keep users out of our data structures
+             *  All of these return a copy of the backing structure in the GFAKluge object. 
+             */
             std::vector<contained_elem> get_contained(std::string seq_name);
             std::vector<contained_elem> get_contained(sequence_elem seq);
 
@@ -600,20 +640,42 @@ namespace gfak{
             std::map<std::string, std::vector<gap_elem>> get_seq_to_gaps();
             std::map<std::string, group_elem> get_groups();
 
-            /** Convert paths to walks and walks to paths **/
+            /** 
+             * Convert between GFA1 and GFA2 representations internally.
+             * paths/groups are conveted to walks and walks to paths,
+             * and edge_elems get their type field set.
+             *   **/
             void gfa_2_ize();
             void gfa_1_ize();
+            // Wraps both gfa_1_ize() and gfa_2_ize()
             void compatibilize();
 
-            // TODO check whether writing to file is functional
-            // Perhaps a write_gfa_file(string filename) method too?
+            /**
+             * Output the entire GFAKluge object as a string,
+             * outputting the GFA version set on read or by set_version()
+             */
             std::string to_string();
+            // Force GFA2 string output
             std::string to_string_2();
+            
+            /**
+             * Output a block_ordered GFA string representing the entire
+             * GFAKluge object.
+             */
             std::string block_order_string();
+            // Force GFA2 string output in block order.
             std::string block_order_string_2();
+
+            /**
+             * Write the GFAKluge object as GFA0.1/1.0/2.0 to an ostream (e.g. stdout)
+             */
             void output_to_stream(std::ostream& os, bool output_block_order = false);
 
-            /** Methods for folks that want streaming output. **/
+            /** Methods for folks that want streaming output.
+             *  Writes a single element to an ostream, using either
+             *  that element's to_string_1() or to_string_2() function
+             *  depending on the version set in the GFAKluge object.
+             */
             void write_element(std::ostream& os, const sequence_elem& s);
             void write_element(std::ostream& os, edge_elem e);
             void write_element(std::ostream& os, const fragment_elem& f);
@@ -621,12 +683,26 @@ namespace gfak{
             void write_element(std::ostream& os, const gap_elem& g);
             void write_element(std::ostream& os, const header_elem& h);
 
+            /** Writes the header to a string. */
             std::string header_string();
             
             // ID manipulators
+            /** Return the highest IDs present in this GFAKluge object
+             *  for sequence_elems, edge_elems,
+             *  fragment_elems, gap_elems, and group_elems.
+              */
             std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
+            /** Return the highest IDs (as above) but as a colon-delimited string rather
+             *  than a tuple.
+             */
             std::string max_ids_string();
+            /** Bump the IDs of sequence-, edge-, fragment-, gap-, and group_elems to 
+             *  be greater than new_mx. Useful for concatenating graphs.
+             */
             void re_id(std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>& new_mx);
+            /** Bump the IDs of each type of GFA2 element so that the lowest ID
+             *  for each type is defined by new_mx, which is a colon-delimited string.
+             */
             void re_id(std::string new_mx_str);
 
             /** Merge two GFA graphs **/
@@ -643,6 +719,11 @@ namespace gfak{
             // double weighted_connectivity() // weight areas of high connectivity higher
             //      behaves kind of like [(N_edges)^2 / (N_seqs)^2 if N_edges > 2]
             
+            /** Given the name of a FASTA file,
+             *  fill in the sequence field of each sequence_elem with an entry from
+             *  that file with a corresponding name. If no entry is present, maintain
+             *  the "*" placeholder that should be present in that element's sequence field.
+             */
             void fill_sequences(const char* fasta_file);
 
             private:
