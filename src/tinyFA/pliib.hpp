@@ -103,9 +103,6 @@ namespace pliib{
     };
 
     inline void destroy_splits(char**& splits, const int& num_splits, int*& split_sizes){
-        //for (int i = 0; i < num_splits; ++i){
-        //    delete [] splits[i];
-        //}
         delete [] splits;
         delete [] split_sizes;
     };
