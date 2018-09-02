@@ -274,7 +274,7 @@ namespace pliib{
      *  where whitespace is ' ' or '\t' or '\n'.
      *  Complexity: linear time in |s| **/
     inline void remove_nulls_and_whitespace(char*& s, const int& len){
-        int write_index = 0;
+        size_t write_index = 0;
         for (size_t i = 0; i < len; ++i){
             if (s[i] != '\n' && s[i] != '\t' && s[i] != '\0' && s[i] != ' '){
                 s[write_index] = s[i];

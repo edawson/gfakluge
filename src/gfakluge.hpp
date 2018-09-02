@@ -148,7 +148,7 @@ namespace gfak{
          *  GFA1-style path container (which is a collection of these elements).
          */
         void add_ranked_segment( const int& rank, const string& seg_name, const bool& ori, const string& overlap, vector<opt_elem> opts){
-            int corrected_rank = rank;
+            size_t corrected_rank = rank;
             if (rank == 0){
                 corrected_rank = this->segment_names.size() + 1;
             }
@@ -162,7 +162,7 @@ namespace gfak{
         std::string to_string_1() const {
             std::ostringstream st;
             std::vector<std::string> p_segs;
-            for (int i = 0; i < segment_names.size(); ++i){
+            for (size_t i = 0; i < segment_names.size(); ++i){
                 p_segs.push_back(segment_names[i] + (orientations[i] ? "+" : "-") );
             }
             st << 'P' << '\t' << name << '\t' << pliib::join(p_segs, ",") << '\t' << pliib::join(overlaps, ",");
@@ -194,7 +194,7 @@ namespace gfak{
         void write_as_walks(std::ostream& os){
             std::stringstream st;
             int32_t rank = 0;
-            for (int i = 0; i < this->segment_names.size(); ++i){
+            for (size_t i = 0; i < this->segment_names.size(); ++i){
                 ++rank;
                 st << 'W' << '\t' << this->segment_names[i] << '\t' << 
                     this->name << '\t' << rank << '\t' <<
