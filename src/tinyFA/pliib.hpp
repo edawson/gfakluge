@@ -143,7 +143,8 @@ namespace pliib{
 
         int slen = s.length();
         char* s_to_split = new char[slen + 1];
-        strncpy(&s_to_split[0], s.c_str(), slen);
+        strncpy(s_to_split, s.c_str(), slen);
+        s_to_split[slen] = '\0';
 
         char** splitret;
         int retsz;
