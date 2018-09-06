@@ -108,7 +108,7 @@ namespace pliib{
     };
 
     // Modified from: https://techoverflow.net/2017/01/23/zero-copy-in-place-string-splitting-in-c/
-    inline void split(char* s, char delimiter, char**& ret, int& retsize, int*& split_sizes){
+    inline void split(char*& s, char delimiter, char**& ret, int& retsize, int*& split_sizes){
         int num_delim = 0;
         countChar(s, delimiter, num_delim);
 
@@ -142,13 +142,12 @@ namespace pliib{
     inline void split(string s, char delim, vector<string>& ret){
 
         int slen = s.length();
-        char s_to_split[slen + 1];
-        strcpy(s_to_split, s.c_str());
+        char* s_to_split = new char[slen + 1];
+        strncpy(&s_to_split[0], s.c_str(), slen);
 
         char** splitret;
         int retsz;
         int* splitsz;
-
 
         split(s_to_split, delim, splitret, retsz, splitsz);
         ret.resize(retsz);
@@ -157,6 +156,7 @@ namespace pliib{
             ret[i].assign(string( splitret[i])); 
         }
         destroy_splits(splitret, retsz, splitsz);
+        delete [] s_to_split;
 
     };
 
@@ -164,8 +164,10 @@ namespace pliib{
     
         vector<string> ret;
         int slen = s.length();
-        char s_to_split[slen + 1];
-        strcpy(s_to_split, s.c_str());
+        char* s_to_split = new char[slen + 1];
+
+        strncpy(s_to_split, s.c_str(), slen);
+        s_to_split[slen] = '\0';
 
         char** splitret;
         int retsz;
@@ -180,6 +182,7 @@ namespace pliib{
             ret[i].assign(string( splitret[i])); 
         }
         destroy_splits(splitret, retsz, splitsz);
+        delete [] s_to_split;
 
         return ret;
 
