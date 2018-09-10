@@ -246,13 +246,26 @@ E	45	32-	31-	0	11	11	22$	11M
 ### Bumping the ID space of a graph.
 
 ```
-    ./gfak ids -s 10:10:10
+    ./gfak ids -s 9:9:9 data/test.gfa
 ```
 
 ```
+H   VN:Z:1.0
+S   10  CGATGCAA
+L   10  +   11  +   5M
+S   11  TGCAAAGTAC
+S   12  TGCAACGTATAGACTTGTCAC   RC:i:4
+L   12  +   11  +   0M
+L   12  +   13  -   1M1D2M1S
+S   13  GCATATA
+L   13  -   14  +   0M
+S   14  CGATGATA
+C   14  +   15  +   2   4M
+S   15  ATGA
 ```
 
 ```
+diff <() <(cat data/re\_id.gfa)
 ```
 
 

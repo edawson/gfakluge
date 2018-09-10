@@ -1113,54 +1113,49 @@ namespace gfak{
             ns.second.id = ++base_seq_id;
             ns.second.name = std::to_string(ns.second.id);    
 
-            if (one_compat){
-                // Links
 
-                // Contains
-
-                // Paths
-            }
+            // Paths
+            
         
-            if (two_compat && version >= 2.0){
-                uint64_t edge_count = 0;
-                // Edges
-                for (auto e : seq_to_edges[old_name]){
-                    e.source_name = ns.second.name;
-                    e.sink_name += std::to_string(seg_diff + stoul(e.sink_name));
-                    e.id = std::to_string(++base_edge_id);
-                    //add_edge(e.source_name, e);
-                    s_e[e.source_name].push_back(e);
-                }
-                // Fragments
-                for (auto f : seq_to_fragments[old_name]){
-                    f.id = ns.second.name;
-                    //add_fragment(f.id, f);
-                    s_f[f.id].push_back(f);
-                }
-                // Gaps
-                for (auto g : seq_to_gaps[old_name]){
-                    g.id = std::to_string(++base_gap_id);
-                    g.source_name = ns.second.name;
-                    g.sink_name = std::to_string(seg_diff + stoul(g.sink_name));
-                    s_g[g.source_name].push_back(g);
-                    //add_gap(g);
-                }
+            
+            uint64_t edge_count = 0;
+            // Edges
+            for (auto e : seq_to_edges[old_name]){
+                e.source_name = ns.second.name;
+                e.sink_name = std::to_string(seg_diff + stoul(e.sink_name));
+                e.id = std::to_string(++base_edge_id);
+                //add_edge(e.source_name, e);
+                s_e[e.source_name].push_back(e);
+            }
+            // Fragments
+            for (auto f : seq_to_fragments[old_name]){
+                f.id = ns.second.name;
+                //add_fragment(f.id, f);
+                s_f[f.id].push_back(f);
+            }
+            // Gaps
+            for (auto g : seq_to_gaps[old_name]){
+                g.id = std::to_string(++base_gap_id);
+                g.source_name = ns.second.name;
+                g.sink_name = std::to_string(seg_diff + stoul(g.sink_name));
+                s_g[g.source_name].push_back(g);
+                //add_gap(g);
+            }
 
-                // Groups
-                for (auto g : groups){
-                    //We may not want to increment group IDs, as they might represent unique paths!
-                    //g.second.id = to_string(++base_group_id);
-                    for (size_t i = 0; i < g.second.items.size(); ++i){
-                        g.second.items[i] = std::to_string(seg_diff + stoul(g.second.items[i]));
-                    }
-                    g_g[g.first] = g.second;
-                    //add_group(g.second);
+            // Groups
+            for (auto g : groups){
+                //We may not want to increment group IDs, as they might represent unique paths!
+                //g.second.id = to_string(++base_group_id);
+                for (size_t i = 0; i < g.second.items.size(); ++i){
+                    g.second.items[i] = std::to_string(seg_diff + stoul(g.second.items[i]));
                 }
+                g_g[g.first] = g.second;
+                //add_group(g.second);
+            }
                 
-                //add_sequence(ns.second);
-        }
+            //add_sequence(ns.second);
+        
         n_s[ns.second.name] = ns.second;
-
     }
 
         // Clear our internal maps
