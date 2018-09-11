@@ -10,18 +10,18 @@ The GFAKluge class defines a collection of structs representing a GFA file.
 ## Adding elements to a GFAKluge object
 The GFAKluge object has a series of "add\_\*" methods which add a given element to the graph object.
 
-- add\_sequence(sequence\_elem s) adds a sequence element to the graph
-- add\_edge(string s, edge\_elem e) and add\_edge(sequence\_elem s, edge\_elem e) add an
+- `add_sequence(sequence_elem s)` adds a sequence element to the graph
+- `add_edge(string s, edge_elem e)` and add\_edge(sequence\_elem s, edge\_elem e) add an
   edge\_element with source *s* to the graph.
-- add\_link(sequence\_elem s, link\_elem l) and add\_link(string s, link\_elem l) add an
+- `add_link(sequence_elem s, link_elem l)` and add\_link(string s, link\_elem l) add an
   edge\_element that represents a link starting at source *s*.
-- add\_contained(sequence\_elem s, contained\_elem c) and add\_contained(string s, contained\_elem c) add a contained\_elem that falls within *s*.
-- add\_fragment(sequence\_elem s, fragment\_elem f) and add\_fragment(string s, fragment\_elem f) add
+- `add_contained(sequence_elem s, contained_elem c)` and add\_contained(string s, contained\_elem c) add a contained\_elem that falls within *s*.
+- `add_fragment(sequence_elem s, fragment_elem f)` and add\_fragment(string s, fragment\_elem f) add
   a fragment\_element that overlaps *s*.
-- add\_gap(gap\_elem g) adds a gap to the GFAKluge object by its source.
-- add\_group(group\_elem g) adds a group\_elem to the GFAKluge object by its name.
-- add\_path(string s, path\_elem p) adds a path to the GFAKluge object.
-- add\_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector\<opt\_elem\> opts) adds a walk element (which is a single element on a path) to  a path in the GFAKluge object with name *pathname*.
+- `add_gap(gap_elem g)` adds a gap to the GFAKluge object by its source.
+- `add_group(group_elem g)` adds a group\_elem to the GFAKluge object by its name.
+- `add_path(string s, path_elem p)` adds a path to the GFAKluge object.
+- `add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts)` adds a walk element (which is a single element on a path) at position *rank* on a path in the GFAKluge object with name *pathname*.
 
 ## Retrieving elements from a GFAKluge object
 The raw maps containing elements in a GFAKluge object can be retrieved using the following methods:
