@@ -278,7 +278,6 @@ diff <(./gfak ids -s 9:9:9 data/test.gfa) <(cat data/re_id.gfa)
 
 
 ```
-Merging 2 graphs...
 H   VN:Z:2.0
 O   1p  12- 11+ 32+ 28- 20- 16+
 O   2p  12- 8+ 32- 31- 20- 16+ 23- 16+
