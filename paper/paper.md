@@ -19,7 +19,7 @@ affiliations:
    index: 2
  - name: Wellcome Sanger Institute, Hinxton, UK
  - index: 3
-date: 19 March 2018
+date: 17 September 2018
 bibliography: paper.bib
 ---
 
@@ -41,21 +41,21 @@ easily extensible API will encourage software developers to consider adding supp
 bioinformatics programs.
 
 # Command Line Utilities
-GFAKluge provides a command line interface for working with GFA. This includes replacements for
-common tasks on FASTA assemblies such as calculating assembly N50 or graph statistics. There are also methods for merging
+GFAKluge also provides a command line interface for working with GFA. This includes support for
+common tasks on assemblies such as calculating assembly N50 or graph statistics. There are also methods for merging
 assemblies, reformating files for readability, and converting between legacy GFA formats. A tool for constructing basic variation graphs
 from a FASTA file and a VCF file is also included. To our knowledge,
 GFAKluge is the only publically-available software package that can consume and produce both GFA1 and GFA2, though many other tools
 exist for manipulating one of the GFA formats [@GFA-SPEC]. By allowing interconversion
 between the compatible subsets of the formats, the gfak convert tool allows programs that usually can't communicate to share data
 without changes to their code. We have used GFAKluge to convert GFA from TwoPaCo [@TwoPaCo] for visualization in Bandage [@Bandage], to calculate assembly
-statistics from the Falcon assembler [@Falcon], and to extract FASTA from a vg msga assembly [@vg]. We see the command line utilities as being very useful
+statistics from the Falcon assembler [@Falcon], and to extract FASTA from a vg msga assembly [@vg]. We see the command line utilities as being useful
 to the development community in the short term.
 
 # Integrating GFAKluge into an existing program
 As an example of how to use the GFAKluge API, we briefly summarize its use in the variation graph toolkit [vg](https://github.com/vgteam/vg) [@vg].
 vg creates bidirected sequence graphs from assemblies and population variation that can then be used for read mapping and variant calling. We incorporated
-GFAKluge in vg to support input and output of GFA. Reading in a GFA file requires one line of code and is agnostic to
+GFAKluge into vg to support input and output of GFA. Reading in a GFA file requires one line of code and is agnostic to
 the GFA version used. Converting from GFA to vg's internal structures and vice versa requires approximately forty lines of code. Changing output from
 GFA v1.0 to GFA v2.0 requires a single API call. This allows vg to take assemblies in GFA format from TwoPaCo and many other assembly algorithms.
 The gfak command line tools can be used to calculate assembly graph statistics on graphs produced by vg.
