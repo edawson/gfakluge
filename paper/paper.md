@@ -17,7 +17,7 @@ affiliations:
    index: 1
  - name: Department of Genetics, University of Cambridge, Cambridge, UK
    index: 2
- - name: Wellcome Trust Sanger Institute, Hinxton, UK
+ - name: Wellcome Sanger Institute, Hinxton, UK
  - index: 3
 date: 19 March 2018
 bibliography: paper.bib
