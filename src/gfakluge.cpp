@@ -319,8 +319,8 @@ namespace gfak{
         ifstream gfi;
         gfi.open(filename.c_str(), std::ifstream::in);
         if (!gfi.good()){
-            cerr << "Invalid input stream. Exiting." << endl;
-            return false;
+            cerr << "Couldn't open GFA file " << filename << "." << endl;
+            exit(1);
         }
 
         bool ret = parse_gfa_file(gfi);
