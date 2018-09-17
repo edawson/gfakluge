@@ -8,6 +8,7 @@ to perform manipulations on GFA.
 ./gfak convert -S 2.0 data/v1.gfa
 ```
 
+Produces the following output:  
 ```
 H	VN:Z:2.0
 O	path1	1+ 4+ 5+ 2+
@@ -36,7 +37,7 @@ E	14	6+	3+	1$	1$	0	0	0M
 ### Importing a GFA file in GFA2 and converting it to GFA1
 
 ```
-    ./gfak convert -S 1.0 data/gfa\_2.gfa
+    ./gfak convert -S 1.0 data/gfa_2.gfa
 ```
 
 ```
@@ -98,7 +99,7 @@ C	5	+	6	+	2	4M
 ### Sorting a GFA2 file
 
 ```
-    ./gfak sort data/gfa\_2.gfa
+    ./gfak sort data/gfa_2.gfa
 ```
 
 ```
@@ -143,14 +144,14 @@ O	2p	12- 8+ 32- 31- 20- 16+ 23- 16+
 ```
 
 ```
-    ./gfak sort data/gfa\_2.gfa | md5sum: fa3b92296d3a23f9db99e611815788d4
+    ./gfak sort data/gfa_2.gfa | md5sum: fa3b92296d3a23f9db99e611815788d4
 ```
 
 
 ### Extracting FASTA records from a GFA file
 
 ```
-    ./gfak extract data/gfa\_2.gfa
+    ./gfak extract data/gfa_2.gfa
 ```
 
 ```
@@ -185,15 +186,15 @@ TACACGATGCGAGCAATCAAATTTCATAACATCACCATGAGTTTGGTCCGAAGCATGAGTGTTTACAATGTTTGAATACC
 
 
 ```
-./gfak extract data/gfa\_2.gfa | grep -v "^$" | sort | md5sum: 43bbe8fee3f67fd90b90ee885ddb15e3  
-cat data/no\_seqs.fa | sort | md5sum: 43bbe8fee3f67fd90b90ee885ddb15e3
+./gfak extract data/gfa_2.gfa | grep -v "^$" | sort | md5sum: 43bbe8fee3f67fd90b90ee885ddb15e3  
+cat data/no_seqs.fa | sort | md5sum: 43bbe8fee3f67fd90b90ee885ddb15e3
 ```
 
 
 ### Replacing sequence placeholders with FASTA records
 
 ```
-    ./gfak fillseq -f data/no\_seqs.fa data/no\_seqs.gfa
+    ./gfak fillseq -f data/no_seqs.fa data/no_seqs.gfa
 ```
 
 
@@ -239,7 +240,7 @@ E	45	32-	31-	0	11	11	22$	11M
 ```
 
 ```
-./gfak fillseq -f data/no\_seqs.fa data/no\_seqs.gfa | md5sum: caaf91eac390521d68d56bad57f7b3b3
+./gfak fillseq -f data/no_seqs.fa data/no_seqs.gfa | md5sum: caaf91eac390521d68d56bad57f7b3b3
 ```
 
 
@@ -265,7 +266,7 @@ S   15  ATGA
 ```
 
 ```
-diff <(./gfak ids -s 9:9:9 data/test.gfa) <(cat data/re\_id.gfa)
+diff <(./gfak ids -s 9:9:9 data/test.gfa) <(cat data/re_id.gfa)
 ```
 
 
@@ -330,7 +331,7 @@ E   45  32- 31- 0   11  11  22$ 11M
 ```
 
 ```
-./gfak merge -S 2.0 data/test.gfa data/gfa\_2.gfa | md5sum: ca3b52673b63de931cd64a50669e7147
+./gfak merge -S 2.0 data/test.gfa data/gfa_2.gfa | md5sum: ca3b52673b63de931cd64a50669e7147
 ```
 
 
