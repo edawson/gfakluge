@@ -195,8 +195,7 @@ int extract_main(int argc, char** argv){
 
     for (auto name_seq : seqs){
         cout << ">" << name_seq.second.name << endl
-            << name_seq.second.sequence << endl
-            << endl;
+            << name_seq.second.sequence << endl;
     }
     // Do the same for groups/walks/paths, as the concated
     // sequences of the oriented seq_elems create a path (e.g. a chromosome or contig)

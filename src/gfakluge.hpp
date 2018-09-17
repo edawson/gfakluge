@@ -263,7 +263,7 @@ namespace gfak{
         std::string as_fasta_record() const{
             std::ostringstream st;
             st << '>' << ' ' << name << endl
-                << sequence << endl;
+                << sequence;
             return st.str();
         };
     };
