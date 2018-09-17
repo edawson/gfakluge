@@ -160,6 +160,7 @@ inline void createFAIndex(const char* fastaName, tiny_faidx_t& fai){
 
     if (!(fai.fasta = fopen(fastaName, "r"))){
         cerr << "Error: couldn't open fasta file " << fastaName << endl;
+        exit(1);
     }
 
     tiny_faidx_entry_t* entry = new tiny_faidx_entry_t();
@@ -248,6 +249,7 @@ inline void parseFAIndex(const char* fastaFileName, tiny_faidx_t& fai){
 
     if (!(fai.fasta = fopen(fastaFileName, "r"))){
         cerr << "Error: couldn't open fasta file " << fastaFileName << endl;
+        exit(1);
     }
 
     if (ifi.is_open()){
