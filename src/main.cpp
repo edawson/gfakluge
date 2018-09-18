@@ -291,8 +291,8 @@ int fillseq_main(int argc, char** argv){
         exit(9);
     }
 
-    string fasta_file;
-    string gfa_file;
+    string fasta_file = "";
+    string gfa_file  = "";
 
     double spec_version = 0.0;
     bool block_order = false;
@@ -338,7 +338,11 @@ int fillseq_main(int argc, char** argv){
         }
     }
     gfa_file = argv[optind];
-
+    
+    if (fasta_file == ""){
+        cerr << "Error: no FASTA file provided." << endl;
+        exit(1);
+    }
     GFAKluge gg;
     gg.parse_gfa_file(gfa_file);
     gg.fill_sequences(fasta_file.c_str());
