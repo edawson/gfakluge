@@ -1,5 +1,15 @@
 CXX?=g++
-CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -Wall -Wa,-q -std=c++11 -pg -ggdb
+CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -Wall -std=c++11 -pg -ggdb
+# We want to pass -Wa,-q to GCC use the Clang assembler, but Apple Clang can't take that
+# So we do an environment variable instead
+export AS_INTEGRATED_ASSEMBLER=1
+
+ifeq ($(shell if [ -d /opt/local/include/libomp ];then echo 1;else echo 0;fi), 1)
+    # On OS X with Apple Clang, <omp.h>, which our tinyFA dependency needs, isn't always on the include path
+    # Pick it up from Macports if it is there.
+    # Homebrew ought to put it where the compiler can find it.
+    CXXFLAGS += -I/opt/local/include/libomp
+endif
 
 
 BIN_DIR:=bin
