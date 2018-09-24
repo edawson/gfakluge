@@ -2,17 +2,29 @@
   "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
   "@type": "Code",
   "author": [
-     "Eric T Dawson",
-     "Richard Durbin"
+    {
+      "@id": "0000-0001-5448-1653",
+      "@type": "Person",
+      "email": "eric.t.dawson@gmail.com",
+      "name": "Eric T. Dawson",
+      "affiliation": "Department of Genetics, University of Cambridge; Division of Cancer Epidemiology and Genetics, National Cancer Institute, National Institutes of Health"
+    },
+    {
+        "@id": "0000-0002-9130-1006",
+        "@type" : "Person",
+        "email": "rd109@cam.ac.uk",
+        "name" : "Richard Durbin"
+        "affiliation" : "Department of Genetics, University of Cambridge; Wellcome Sanger Institute"
+    }
   ],
   "identifier": "",
   "codeRepository": "https://github.com/edawson/gfakluge",
-  "datePublished": "2018-04-16",
-  "dateModified": "2018-04-16",
-  "dateCreated": "2018-04-16",
+  "datePublished": "2018-09-24",
+  "dateModified": "2018-09-24",
+  "dateCreated": "2018-09-24",
   "description": "A C++ library and utilities for manipulating the Graphical Fragment Assembly format.",
-  "keywords": "bioinformatics, GFA, genome assembly, C++",
+  "keywords": "genome assembly, GFA, C++, bioinformatics, FASTA",
   "license": "MIT",
-  "title": "A C++ library and utilities for manipulating the Graphical Fragment Assembly format.",
-  "version": "0.2.1"
+  "title": "GFAKluge: A C++ library and command line utilities for the Graphical Fragment Assembly formats",
+  "version": "1.0.0"
 }
