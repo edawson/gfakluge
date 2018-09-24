@@ -1,6 +1,8 @@
 gfakluge
 --------------------
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1434136.svg)](https://doi.org/10.5281/zenodo.1434136)
+
 ## What is it?  
 GFAKluge is a C++ parser/writer and
 a set of command line utilities for manipulating [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format).
