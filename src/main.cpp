@@ -285,14 +285,15 @@ int build_main(int argc, char** argv){
 }
 
 int fillseq_main(int argc, char** argv){
+    
     if (argc < 3){
         cerr << "fillseq requires a GFA file." << endl << endl;
         fillseq_help(argv);
         exit(9);
     }
 
-    string fasta_file = "";
-    string gfa_file  = "";
+    string fasta_file;
+    string gfa_file;
 
     double spec_version = 0.0;
     bool block_order = false;
@@ -337,9 +338,14 @@ int fillseq_main(int argc, char** argv){
                 abort();
         }
     }
-    gfa_file = argv[optind];
+
+    if (optind >= argc){
+        cerr << "Error: no GFA file provided." << endl;
+        exit(1);
+    }
     
-    if (fasta_file == ""){
+    gfa_file = argv[optind];
+    if (fasta_file.empty()){
         cerr << "Error: no FASTA file provided." << endl;
         exit(1);
     }
