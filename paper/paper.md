@@ -8,7 +8,7 @@ tags:
 authors:
  - name: Eric T. Dawson
    orcid:  0000-0001-5448-1653
-   affiliation: "1, 2"
+   affiliation: "1, 2, 3"
  - name: Richard Durbin
    orcid: 0000-0002-9130-1006
    affiliation: "2, 3"
@@ -18,7 +18,7 @@ affiliations:
  - name: Department of Genetics, University of Cambridge, Cambridge, UK
    index: 2
  - name: Wellcome Sanger Institute, Hinxton, UK
- - index: 3
+   index: 3
 date: 17 September 2018
 bibliography: paper.bib
 ---
