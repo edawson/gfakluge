@@ -113,7 +113,7 @@ namespace gfak{
 
             if (no_amb && !pliib::canonical(s.sequence)){
                 dropped_seqs.insert(s.name);
-                //name_to_seq.erase(n_to_s);
+                name_to_seq.erase(n_to_s);
                 graph_modified = true;
             }
         }
@@ -122,19 +122,21 @@ namespace gfak{
         for (s_to_e = seq_to_edges.begin(); s_to_e != seq_to_edges.end(); s_to_e++){
             // Remove all edges that have dropped sequences as their source.
             if (dropped_seqs.find(s_to_e->first) != dropped_seqs.end()){
-                //seq_to_edges.erase(s_to_e);
+                seq_to_edges.erase(s_to_e);
                 graph_modified = true;
                 continue;
             }
             // Remove any individual edges that have a dropped sequence as their sink.
-            vector<edge_elem>::iterator ee;
-            for (ee = s_to_e->second.begin(); ee != s_to_e->second.end(); ee++){
-                if (dropped_seqs.find(ee->sink_name) != dropped_seqs.end()){
-                   // s_to_e->second.erase(ee);
+            vector<edge_elem> pass_elems;
+            for (auto ee : s_to_e->second){
+                if (dropped_seqs.find(ee.source_name) == dropped_seqs.end()){
                     graph_modified = true;
+                    pass_elems.push_back(ee);
                 }
             }
+            seq_to_edges[s_to_e->first] = pass_elems;
         }
+
 
         return graph_modified;
     }
