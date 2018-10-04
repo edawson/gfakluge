@@ -39,7 +39,7 @@ void trim_help(char** argv){
     cerr << argv[0] <<  " trim: remove elements from a GFA graph." << endl
         << "Usage: " << argv[0] << " trim [OPTIONS] <GFA_FILE> " << endl
             << " -l / --length  <INT>  Remove segments (and their edges) if their sequence length is less than <INT>." << endl
-            << " -N / --no-ambiguous   Remove segments which have ambiguous bases (i.e. non-ATGC) in their sequence." << endl
+            << " -n / --no-ambiguous   Remove segments which have ambiguous bases (i.e. non-ATGC) in their sequence." << endl
             << " -v / --version        print GFAK version and exit." << endl
         << endl;
 }
@@ -188,7 +188,7 @@ int trim_main(int argc, char** argv){
         switch (c){
             case '?':
             case 'h':
-                extract_help(argv);
+                trim_help(argv);
                 exit(0);
             case 'v':
                 print_version_help();
@@ -196,7 +196,7 @@ int trim_main(int argc, char** argv){
             case 'l':
                 minlen = atoi(optarg);
                 break;
-            case 'N':
+            case 'n':
                 no_amb = true;
                 break;
             case 'p':
@@ -217,7 +217,6 @@ int trim_main(int argc, char** argv){
     GFAKluge gg;
     gg.parse_gfa_file(gfa_file);
     gg.trim_seqs(minlen, no_amb);
-
     cout << gg;
 
     return 0;
