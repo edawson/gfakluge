@@ -29,9 +29,19 @@ int gfakluge_package_help(char** argv){
         "   sort:    Print a GFA file in HSLP / HSEFGUO order." << endl <<
         "   stats:   Get assembly statistics (e.g. N50) for a GFA file." << endl <<
         "   subset:  Extract the subgraph between two IDs in a graph." << endl <<
+        "   trim:    Remove elements from a GFA graph." << endl <<
         endl;
     return 1;
 
+}
+
+void trim_help(char** argv){
+    cerr << argv[0] <<  " trim: remove elements from a GFA graph." << endl
+        << "Usage: " << argv[0] << " trim [OPTIONS] <GFA_FILE> " << endl
+            << " -l / --length  <INT>  Remove segments (and their edges) if their sequence length is less than <INT>." << endl
+            << " -n / --no-ambiguous   Remove segments which have ambiguous bases (i.e. non-ATGC) in their sequence." << endl
+            << " -v / --version        print GFAK version and exit." << endl
+        << endl;
 }
 
 
@@ -142,6 +152,77 @@ void subset_help(char** argv){
 }
 
 /**
+ * Trim segments (and their edges) from a graph
+ */
+int trim_main(int argc, char** argv){
+    string gfa_file;
+
+    int minlen = 0;
+    bool no_amb = false;
+    bool trim_paths = false;
+
+    if (argc < 3){
+        cerr << "No GFA file given as input." << endl << endl;
+        trim_help(argv);
+        exit(1);
+    }
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"trim-paths", no_argument, 0, 'p'},
+            {"length", required_argument, 0, 'l'},
+            {"no-ambiguous", no_argument, 0, 'N'},
+            {"version", no_argument, 0, 'v'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hvnpl:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case '?':
+            case 'h':
+                trim_help(argv);
+                exit(0);
+            case 'v':
+                print_version_help();
+                exit(0);
+            case 'l':
+                minlen = atoi(optarg);
+                break;
+            case 'n':
+                no_amb = true;
+                break;
+            case 'p':
+                trim_paths = true;
+                cerr << "Path trimming is not yet implemented" << endl;
+                exit(1);
+            default:
+                abort();
+        }
+    }
+
+    if (optind > argc){
+        cerr << "Error: no GFA file provided." << endl;
+        exit(1);
+    }
+    gfa_file = argv[optind];
+    
+    GFAKluge gg;
+    gg.parse_gfa_file(gfa_file);
+    gg.trim_seqs(minlen, no_amb);
+    cout << gg;
+
+    return 0;
+}
+
+/**
  * Output a fasta file from input GFA
  */
 int extract_main(int argc, char** argv){
@@ -151,7 +232,7 @@ int extract_main(int argc, char** argv){
     if (argc < 3){
         cerr << "No GFA file given as input." << endl << endl; 
         extract_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -178,7 +259,7 @@ int extract_main(int argc, char** argv){
                 exit(0);
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'p':
                 include_paths= true;
                 break;
@@ -289,7 +370,7 @@ int fillseq_main(int argc, char** argv){
     if (argc < 3){
         cerr << "fillseq requires a GFA file." << endl << endl;
         fillseq_help(argv);
-        exit(9);
+        exit(1);
     }
 
     string fasta_file;
@@ -327,7 +408,7 @@ int fillseq_main(int argc, char** argv){
                 break;
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'S':
                 spec_version = stod(optarg);
                 break;
@@ -366,7 +447,7 @@ int fillseq_main(int argc, char** argv){
     else if (spec_version != 0.0){
         cerr << "Invalid specification number: " << spec_version << endl
         << "Please provide one of [0.1, 1.0, 2.0]." << endl;
-        exit(22);
+        exit(1);
     }
     
 
@@ -392,7 +473,7 @@ int diff_main(int argc, char** argv){
     if (argc < 4){
         cerr << "diff requires two GFA files as input." << endl << endl;
         diff_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -418,7 +499,7 @@ int diff_main(int argc, char** argv){
                 exit(0);
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             default:
                 abort();
         }
@@ -472,7 +553,7 @@ int convert_main(int argc, char** argv){
     if (argc < 3){
         cerr << "No GFA file provided. Please provide a GFA file to convert" << endl;
         convert_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -500,7 +581,7 @@ int convert_main(int argc, char** argv){
             case '?':
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'h':
                 convert_help(argv);
                 exit(0);
@@ -551,7 +632,7 @@ int convert_main(int argc, char** argv){
     else if (spec_version != 0.0){
         cerr << "Invalid specification number: " << spec_version << endl
         << "Please provide one of [0.1, 1.0, 2.0]." << endl;
-        exit(22);
+        exit(1);
     }
 
     
@@ -574,7 +655,7 @@ int ids_main(int argc, char** argv){
 
     if (argc == 1){
         cerr << "gfa_ids -s S_ID:E_ID:F_ID:GA_ID:GR_ID [options] <gfa1> <gfa2> ... [gfaN]" << endl;
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -599,7 +680,7 @@ int ids_main(int argc, char** argv){
         switch (c){
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
 
             case '?':
             case 'h':
@@ -692,7 +773,7 @@ int merge_main(int argc, char** argv){
                 break;
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'S':
                 spec = stod(optarg);
                 break;
@@ -742,7 +823,7 @@ int sort_main(int argc, char** argv){
 
     if (argc <= 2){
         sort_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -767,11 +848,11 @@ int sort_main(int argc, char** argv){
             case '?':
             case 'h':
                 sort_help(argv);
-                exit(1);
+                exit(0);
                 break;
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
                 break;
 
             case 'S':
@@ -799,7 +880,7 @@ int sort_main(int argc, char** argv){
     else if (spec_version != 0.0){
         cerr << "Invalid specification number: " << spec_version << endl
         << "Please provide one of [0.1, 1.0, 2.0]." << endl;
-        exit(22);
+        exit(1);
     }
 
     //cout << gg.block_order_string();
@@ -851,10 +932,10 @@ int stats_main(int argc, char** argv){
             case 'h':
                 // nodes, edges, all stats, edges, paths
                 stats_help(argv);
-                exit(3);
+                exit(0);
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'a':
                 assembly_stats = true;
                 all = false;
@@ -967,7 +1048,7 @@ int subset_main(int argc, char** argv){
 
     if (argc == 1){
         subset_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -1010,7 +1091,7 @@ int subset_main(int argc, char** argv){
                 break;
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
 
             default:
                 abort();
@@ -1109,6 +1190,9 @@ int main(int argc, char** argv){
     }
     else if (strcmp(argv[1], "build") == 0){
         return build_main(argc, argv);
+    }
+    else if (strcmp(argv[1], "trim") == 0){
+        return trim_main(argc, argv);
     }
     else {
         cerr << "No command " << '"' << argv[1] << '"' << endl;

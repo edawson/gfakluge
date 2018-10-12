@@ -721,10 +721,18 @@ namespace gfak{
             
             /** Given the name of a FASTA file,
              *  fill in the sequence field of each sequence_elem with an entry from
-             *  that file with a corresponding name. If no entry is present, maintain
+             *  that file with a correspondinmg name. If no entry is present, maintain
              *  the "*" placeholder that should be present in that element's sequence field.
              */
             void fill_sequences(const char* fasta_file);
+
+            /**
+             * Remove any sequence_elems (and any edges connected to them) that have
+             * a sequence shorter than a certain length.
+             * Returns true if the graph is modified.
+             */
+            bool trim_seqs(const int& minlen = 0, const bool& no_ambiguous = false);
+
 
             private:
             bool use_walks = false;
