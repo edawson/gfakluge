@@ -1098,6 +1098,12 @@ int subset_main(int argc, char** argv){
         }
     }
 
+    if (argc < 3){
+        cerr << "No GFA file provided" << endl;
+        subset_help(argv);
+        exit(1);
+    }
+
     vector<string> gfiles;
     while (optind < argc){
         gfiles.push_back(argv[optind]);

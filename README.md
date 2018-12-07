@@ -12,8 +12,13 @@ graph representation. You can also convert between GFA 0.1 <-> 1.0 <-> 2.0
 to glue programs that use different GFA versions together.
 
 
-**Homepage**: https://github.com/edawson/gfakluge
-**License**: MIT
+**Homepage**: https://github.com/edawson/gfakluge  
+**License**: MIT  
+
+## Dependencies
+OpenMP (via GCC or clang)
+A C++11 compliant compiler (we recommend GCC or clang)
+**NB**: GFAKluge cannot be compiled with Apple clang, as by default openmp is not supported.
 
 ## Command line utilities
 When `make` is run, the `gfak` binary is built in the top level directory. It offers the following subcommands:  
@@ -30,9 +35,10 @@ Header -> Segment -> Link/Edge/Containment -> Path order.
 
 For CLI usage, run any of the above (including `gfak` with no subcommand) with no arguments or `-h`. To change specification version, most commands take the `-S` flag and a single `double` argument.  
 
-## Dependencies
-OpenMP (via GCC or clang)
-A C++11 compliant compiler (we recommend GCC or clang)
+## Example CLI Usage
+Examples of various commands are included in the `examples.md` file.
+
+## C++ API
 
 ## How do I build it?  
 
