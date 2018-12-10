@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -Wall -std=c++11 -pg -ggdb
+CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -Wall -std=c++11 -g -ggdb
 # We want to pass -Wa,-q to GCC use the Clang assembler, but Apple Clang can't take that
 # So we do an environment variable instead
 export AS_INTEGRATED_ASSEMBLER=1
