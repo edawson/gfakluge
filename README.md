@@ -16,9 +16,9 @@ to glue programs that use different GFA versions together.
 **License**: MIT  
 
 ## Dependencies
-OpenMP (via GCC or clang)
-A C++11 compliant compiler (we recommend GCC or clang)
-**NB**: GFAKluge cannot be compiled with Apple clang, as by default openmp is not supported.
+A C++11 compliant compiler (we recommend GCC or clang)  
+OpenMP (via GCC or clang)  
+**NB**: GFAKluge cannot be compiled with Apple clang, as it does not include OpenMP.
 
 ## Command line utilities
 When `make` is run, the `gfak` binary is built in the top level directory. It offers the following subcommands:  
@@ -39,10 +39,9 @@ For CLI usage, run any of the above (including `gfak` with no subcommand) with n
 Examples of various commands are included in the `examples.md` file.
 
 ## C++ API
+Examples of the C++ API are included in the `interface.md` file.  
 
 ## How do I build it?  
-
-
 The `gfak` utilities are available via homebrew: `brew install brewsci/bio/gfakluge`  
 
 Building GFAKluge from source requires OpenMP. This should be supported on Linux by default. On Apple Mac OS X, we recommend installing gcc:  
@@ -56,7 +55,7 @@ or
 sudo port install gcc8
 ```
 
-You can build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  
+You can then build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  
 To use GFAKluge in your program, you'll need to
 add a few lines to your code. First, add the necessary include line to your C++ code:  
                 #include "gfakluge.hpp"
