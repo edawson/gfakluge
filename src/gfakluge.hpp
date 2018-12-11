@@ -542,6 +542,55 @@ namespace gfak{
         class GFAKluge{
             friend std::ostream& operator<<(std::ostream& os, GFAKluge& g);
 
+
+
+
+            private:
+            bool use_walks = false;
+            // Store whether we've already gone walks->paths and paths->walks
+            bool normalized_paths = false;
+            bool normalized_walks = false;
+
+            bool one_compat = false;
+            bool two_compat = false;
+
+            uint64_t next_set_or_path_id = 0;
+            uint64_t base_seq_id = 0;
+            uint64_t base_edge_id = 0;
+            uint64_t base_gap_id = 0;
+            uint64_t base_frag_id = 0;
+            uint64_t base_group_id = 0;
+
+
+            double version = 0.0;
+            std::map<std::string, header_elem> header;
+            std::map<std::string, std::vector<contained_elem> > seq_to_contained;
+            std::map<std::string, std::vector<link_elem> > seq_to_link;
+            //Since we can't compare sequence elements for hashing,
+            // we cheat and use their names (which are only sort of guaranteed to be
+            // unique.
+            std::map<std::string, sequence_elem, custom_key> name_to_seq;
+            bool string_is_number(std::string s);
+            std::string join(const std::vector<std::string>& splits, const std::string& glue);
+            std::map<std::string, std::vector<alignment_elem> > seq_to_alignment;
+            std::string header_string(std::map<std::string, header_elem>& opts);
+            std::string opt_string(std::vector<opt_elem> opts);
+
+            std::map<std::string, path_elem> name_to_path;
+
+            /** GFA 2.0 containers **/
+            std::map<std::string, std::vector<fragment_elem> > seq_to_fragments;
+            std::map<std::string, std::vector<edge_elem> > seq_to_edges;
+            std::map<std::string, std::vector<gap_elem> > seq_to_gaps;
+            std::map<std::string, group_elem> groups;
+
+            double n50 = -1;
+            double l50 = -1;
+            double n90 = -1;
+            double l90 = -1;
+            double simple_connectivity = -1;
+            double weighted_connectivity = -1;
+
             public:
             GFAKluge(){
                 map<std::string, header_elem> header;
@@ -565,6 +614,419 @@ namespace gfak{
             ~GFAKluge(){
 
             };
+
+            // GFAKluge does not, but maybe should, enforce graph structure,
+            // i.e.:
+            // 1. Throw errors on dangling edges
+            // 2. Guarantee contained elements fall in valid sequences
+
+
+            /**
+             * GFA2.0 handlers
+             */
+            void add_sequence(sequence_elem s){
+                name_to_seq[s.name] = s;
+            }
+            void add_edge(const std::string& seqname, const edge_elem& e){
+                seq_to_edges[seqname].push_back(e);
+            }
+            void add_edge(const sequence_elem& s, const edge_elem& e){
+                add_edge(s.name, e);
+            }
+
+            void add_fragment(const std::string& seqname, const fragment_elem& f){
+        seq_to_fragments[seqname].push_back(f);
+    }
+            
+            void add_fragment(const sequence_elem& s, const fragment_elem& f){
+        add_fragment(s.name, f);
+    }
+
+            void add_gap(const gap_elem& g){
+        seq_to_gaps[g.source_name].push_back(g);
+    }
+
+            void add_group(const group_elem& g){
+        this->groups[g.id] = g;
+    }
+
+            // Convert group_elems (i.e. U or O lines) to path_elems (P lines)
+            void groups_as_paths(){
+        for (auto g : groups){
+            if (g.second.ordered){
+                path_elem p;
+                p.name = g.first;
+                p.segment_names = g.second.items;
+                if (this->name_to_seq.size() > 0){
+                    p.overlaps.resize(p.segment_names.size());
+                    for (size_t i = 0; i < p.segment_names.size(); ++i){
+                        int len = 0;
+                        if (name_to_seq.find(p.segment_names[i]) != name_to_seq.end()){
+                            std::string s(name_to_seq.at(p.segment_names[i]).sequence);
+                            len = s.length();
+                        }
+                        p.overlaps[i].assign(std::to_string(len) + "M");
+                    }
+                }
+                p.orientations = g.second.orientations;
+                p.opt_fields = g.second.tags;
+                add_path(p.name, p);
+            }
+            else{
+                cerr << "Group " << g.first << " is unordered; skipping adding it to the paths." << endl;
+            }
+        }
+    }
+
+            /** End GFA2.0. Begin 1.0 / 0.1 **/
+
+            /** Add a containment line to the GFAKluge object
+             *  Behind the scenes, an edge_elem is created and
+             *  used to represent the contained_elem, which
+             *  are provided as syntactic sugar.
+             *  N.B.: these are stored relative to the sequence_elem
+             *  in which they are contained.
+             */
+            void add_contained(std::string seq_name, contained_elem c){
+        seq_to_contained[seq_name].push_back(c);
+    }
+            void add_contained(sequence_elem s, contained_elem c){
+        edge_elem e(c);
+        seq_to_edges[s.name].push_back(e);
+    }
+
+            /**
+             * Add an alignment_elem to the GFAKluge object.
+             * These are stored by the sequence_elem to which they align.
+             */
+            void add_alignment(std::string s, alignment_elem a){
+                seq_to_alignment[s].push_back(a);
+            }
+            void add_alignment(sequence_elem s, alignment_elem a){
+                seq_to_alignment[s.name].push_back(a);
+            }
+
+
+            /**
+             * Functions for adding paths or walks (which are single elements in an ordered path)
+             */
+            void add_path(std::string pathname, path_elem path){
+                name_to_path[pathname] = path;
+            }
+            void add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts){
+                if (name_to_path.find(pathname) == name_to_path.end()){
+                path_elem p;
+                p.name = pathname;
+                add_path(p.name, p);
+                }
+                name_to_path.at(pathname).add_ranked_segment( rank, segname, ori, overlap, opts);
+
+            }
+
+            /**
+             *  Add a link_elem to represent a link between two sequence_elems.
+             *  These are stored relative to their source sequence_elem.
+             *  N.B.: An edge_elem is created internally to represent the link
+             *  and no link_elem is stored. They're simply provided as syntactic sugar.
+             */
+            void add_link(const std::string& seq_name, const link_elem& link){
+                edge_elem e(link);
+                seq_to_edges[seq_name].push_back(e); 
+            }
+            void add_link(const sequence_elem& s, const link_elem& link){
+                edge_elem e(link);
+                seq_to_edges[s.name].push_back(e);
+            }
+
+
+            /** Versioning functions **/
+            double get_version(){
+        return this->version;
+    }
+            void set_version(double version){
+        header_elem verz;
+        verz.key = "VN";
+        verz.type="Z";
+        this->version = version;
+        verz.val = std::to_string((double) this->version).substr(0,3);
+        this->header[verz.key] = verz;
+        //gfa_1_ize();
+        //gfa_2_ize();
+    }
+            void set_version(){
+        header_elem verz;
+        verz.key = "VN";
+        verz.type="Z";
+        verz.val = std::to_string((double) this->version).substr(0,3);
+
+        this->header[verz.key] = verz;
+    }
+            // Use walks, rather than paths, for outputting GFA below v2.0.
+            void set_walks(bool ws){
+        this->use_walks = ws;
+    }
+
+            /** Getter methods for elements, to keep users out of our data structures
+             *  All of these return a copy of the backing structure in the GFAKluge object. 
+             */
+            std::vector<contained_elem> get_contained(std::string seq_name){
+        return seq_to_contained[seq_name];
+    }
+            std::vector<contained_elem> get_contained(sequence_elem seq){
+        string seq_name = seq.name;
+        return seq_to_contained[seq_name];
+    }
+
+            std::vector<alignment_elem> get_alignments(std::string seq_name);
+            std::vector<alignment_elem> get_alignments(sequence_elem seq);
+
+            std::map<std::string, header_elem> get_header(){
+        return header;
+    }
+            std::map<std::string, sequence_elem, custom_key> get_name_to_seq(){
+        return name_to_seq;
+    }
+            std::map<std::string, std::vector<link_elem> > get_seq_to_link();
+            std::map<std::string, std::vector<contained_elem> > get_seq_to_contained();
+            std::map<std::string, std::vector<alignment_elem> > get_seq_to_alignment();
+            std::map<std::string, path_elem> get_name_to_path();
+
+            // GFA2 getters
+            inline std::map<std::string, std::vector<edge_elem>> get_seq_to_edges(){
+                return seq_to_edges;
+            };
+            inline std::map<std::string, std::vector<fragment_elem>> get_seq_to_fragments(){
+                return seq_to_fragments;
+            }
+            inline std::map<std::string, std::vector<gap_elem>> get_seq_to_gaps(){
+                return seq_to_gaps;
+            }
+            inline std::map<std::string, group_elem> get_groups(){
+                return groups;
+            }
+
+            /** 
+             * Convert between GFA1 and GFA2 representations internally.
+             * paths/groups are conveted to walks and walks to paths,
+             * and edge_elems get their type field set.
+             *   **/
+            void gfa_2_ize(){
+                if (!two_compat){
+                    // Fix S line length field if needed.
+                    for (auto s : name_to_seq){
+                        s.second.length = (s.second.sequence != "*" ? (uint64_t) s.second.sequence.length() : s.second.length);
+                        // Make an edge for each link
+                        for (auto l : seq_to_link[s.first]){
+                            edge_elem e;
+                            e.type = 1;
+                            e.source_name = l.source_name;
+                            e.sink_name = l.sink_name;
+                            e.source_orientation_forward = l.source_orientation_forward;
+                            e.sink_orientation_forward = l.sink_orientation_forward;
+                            e.ends.set(0,1);
+                            e.ends.set(1,1);
+                            e.ends.set(2,0);
+                            e.ends.set(3,0);
+                            e.alignment = l.cigar;
+                            e.tags = l.opt_fields;
+                            seq_to_edges[e.source_name].push_back(e);
+                        }
+                        // Make an edge for each containment
+                        for (auto c : seq_to_contained[s.first]){
+                            edge_elem e;
+                            e.type = 2;
+                            e.source_name = c.source_name;
+                            e.sink_name = c.sink_name;
+                            e.source_orientation_forward = c.source_orientation_forward;
+                            e.sink_orientation_forward = c.sink_orientation_forward;
+                            e.alignment = c.cigar;
+
+                            string overlap = "";
+                            int i = 0;
+                            while (std::isdigit(e.alignment[i])){
+                                overlap += e.alignment[0];
+                                ++i;
+                            }
+                            e.source_end = stoi(overlap) + e.source_begin;
+                            e.sink_end = stoi(overlap);
+
+                            if (e.source_end == s.second.length){
+                                e.ends.set(0,1);
+                                e.ends.set(1,1);
+                            }
+                            if(e.sink_end == name_to_seq[e.sink_name].length){
+                                e.ends.set(2,1);
+                                e.ends.set(3,1);
+                            }
+
+                            e.tags = c.opt_fields;
+                            seq_to_edges[e.source_name].push_back(e);
+                        }
+                    }
+                    // Paths -> ordered groups
+                    //walks_as_paths();
+                    for (auto p : name_to_path){
+                        group_elem g;
+                        g.id = p.first;
+                        g.ordered = true;
+                        g.items = p.second.segment_names;
+                        g.orientations = p.second.orientations;
+
+                        g.tags = p.second.opt_fields;
+                        add_group(g);
+                    }
+                    this->two_compat = true;
+                }
+
+            }
+            void gfa_1_ize(){
+                if (!one_compat){
+
+
+                    /**
+                     * Set base_edge_id to max_seq_id + 1
+                     * Swap edges to links
+                     * Ordered groups -> paths,
+                     * warn about missing sets
+                     * warn about missing fragments (we could output them as seqs)
+                     * warn about missing gaps (we could remove them)
+                     * 
+                     */
+                    string k = name_to_seq.rbegin()->first;
+                    if (string_is_number(k)){
+                        base_edge_id = std::stoul(k) + 1;
+                    }
+                    else{
+                        base_edge_id = name_to_seq.size();
+                    }
+                    groups_as_paths();
+                    for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
+                        if (s->second.sequence != "*"){
+                            s->second.length = s->second.sequence.length();
+                        }
+                        for (auto e = seq_to_edges[s->first].begin(); e != seq_to_edges[s->first].end(); e++){
+                            int t = e->determine_type();
+                            if (e->id == "*"){
+                                e->id = std::to_string(++base_edge_id);
+                            }
+                            if (t == 1){
+                                e->ends.set(0,1);
+                                e->ends.set(1,1);
+                                e->ends.set(2,0);
+                                e->ends.set(3,0);            
+                                e->source_begin = s->second.length;
+                                e->source_end = s->second.length;
+                                e->sink_begin = 0;
+                                e->sink_end = 0;
+                                if (e->id == "*"){
+                                    e->id = std::to_string(++base_edge_id);
+                                }
+                            }
+                            else if (t == 2){
+                                sequence_elem sink = name_to_seq[e->sink_name];
+                                e->ends.set(0,(e->source_begin == s->second.length));
+                                e->ends.set(1,(e->source_end == s->second.length));
+                                e->ends.set(2,(e->sink_begin == sink.length));
+                                e->ends.set(3, (e->sink_end == sink.length));
+                            }
+                            else{
+                                cerr << "Skipping edge not expressable in GFA2: \"" << e->to_string_2() << "\"" << endl;
+                            }
+                        }
+                    }
+                    this->one_compat = true;
+                }
+            };
+            // Wraps both gfa_1_ize() and gfa_2_ize()
+            void compatibilize();
+
+            /**
+             * Output the entire GFAKluge object as a string,
+             * outputting the GFA version set on read or by set_version()
+             */
+            std::string to_string();
+            // Force GFA2 string output
+            std::string to_string_2();
+
+            /**
+             * Output a block_ordered GFA string representing the entire
+             * GFAKluge object.
+             */
+            std::string block_order_string();
+            // Force GFA2 string output in block order.
+            std::string block_order_string_2();
+
+            /**
+             * Write the GFAKluge object as GFA0.1/1.0/2.0 to an ostream (e.g. stdout)
+             */
+            void output_to_stream(std::ostream& os, bool output_block_order = false);
+
+            /** Methods for folks that want streaming output.
+             *  Writes a single element to an ostream, using either
+             *  that element's to_string_1() or to_string_2() function
+             *  depending on the version set in the GFAKluge object.
+             */
+            void write_element(std::ostream& os, const sequence_elem& s);
+            void write_element(std::ostream& os, edge_elem e);
+            void write_element(std::ostream& os, const fragment_elem& f);
+            void write_element(std::ostream& os, const group_elem& g);
+            void write_element(std::ostream& os, const gap_elem& g);
+            void write_element(std::ostream& os, const header_elem& h);
+
+            /** Writes the header to a string. */
+            std::string header_string();
+
+            // ID manipulators
+            /** Return the highest IDs present in this GFAKluge object
+             *  for sequence_elems, edge_elems,
+             *  fragment_elems, gap_elems, and group_elems.
+             */
+            std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
+            /** Return the highest IDs (as above) but as a colon-delimited string rather
+             *  than a tuple.
+             */
+            std::string max_ids_string();
+            /** Bump the IDs of sequence-, edge-, fragment-, gap-, and group_elems to 
+             *  be greater than new_mx. Useful for concatenating graphs.
+             */
+            void re_id(std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>& new_mx);
+            /** Bump the IDs of each type of GFA2 element so that the lowest ID
+             *  for each type is defined by new_mx, which is a colon-delimited string.
+             */
+            void re_id(std::string new_mx_str);
+
+            /** Merge two GFA graphs **/
+            void merge(GFAKluge& gg);
+
+            /** Assembly stats **/
+            double get_N50();
+            double get_N90();
+
+            int get_L50();
+            int get_L90();
+            // uint64_t num_contigs();
+            // double simple_connectivity() // reports avg edges / sequence
+            // double weighted_connectivity() // weight areas of high connectivity higher
+            //      behaves kind of like [(N_edges)^2 / (N_seqs)^2 if N_edges > 2]
+
+            /** Given the name of a FASTA file,
+             *  fill in the sequence field of each sequence_elem with an entry from
+             *  that file with a correspondinmg name. If no entry is present, maintain
+             *  the "*" placeholder that should be present in that element's sequence field.
+             */
+            void fill_sequences(const char* fasta_file);
+
+            /**
+             * Remove any sequence_elems (and any edges connected to them) that have
+             * a sequence shorter than a certain length.
+             * Returns true if the graph is modified.
+             */
+            bool trim_seqs(const int& minlen = 0, const bool& no_ambiguous = false);
+
+
+
+
+
             /** Parse a GFA file to a GFAKluge object. */
             bool parse_gfa_file(const std::string &filename) {
                 ifstream gfi;
@@ -964,378 +1426,6 @@ namespace gfak{
                 return true;
 
             };
-
-            // GFAKluge does not, but maybe should, enforce graph structure,
-            // i.e.:
-            // 1. Throw errors on dangling edges
-            // 2. Guarantee contained elements fall in valid sequences
-
-
-            /**
-             * GFA2.0 handlers
-             */
-            void add_sequence(sequence_elem s){
-                name_to_seq[s.name] = s;
-            }
-            void add_edge(const std::string& seqname, const edge_elem& e){
-                seq_to_edges[seqname].push_back(e);
-            }
-            void add_edge(const sequence_elem& s, const edge_elem& e){
-                add_edge(s.name, e);
-            }
-
-            void add_fragment(const std::string& seqname, const fragment_elem& f);
-            void add_fragment(const sequence_elem& s, const fragment_elem& f);
-
-            void add_gap(const gap_elem& g);
-
-            void add_group(const group_elem& g);
-
-            // Convert group_elems (i.e. U or O lines) to path_elems (P lines)
-            void groups_as_paths();
-
-            /** End GFA2.0. Begin 1.0 / 0.1 **/
-
-            /** Add a containment line to the GFAKluge object
-             *  Behind the scenes, an edge_elem is created and
-             *  used to represent the contained_elem, which
-             *  are provided as syntactic sugar.
-             *  N.B.: these are stored relative to the sequence_elem
-             *  in which they are contained.
-             */
-            void add_contained(std::string seq_name, contained_elem c);
-            void add_contained(sequence_elem s, contained_elem c);
-
-            /**
-             * Add an alignment_elem to the GFAKluge object.
-             * These are stored by the sequence_elem to which they align.
-             */
-            void add_alignment(std::string s, alignment_elem a);
-            void add_alignment(sequence_elem s, alignment_elem a);
-
-
-            /**
-             * Functions for adding paths or walks (which are single elements in an ordered path)
-             */
-            void add_path(std::string pathname, path_elem path);
-            void add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts);
-
-            /**
-             *  Add a link_elem to represent a link between two sequence_elems.
-             *  These are stored relative to their source sequence_elem.
-             *  N.B.: An edge_elem is created internally to represent the link
-             *  and no link_elem is stored. They're simply provided as syntactic sugar.
-             */
-            void add_link(const std::string& seq_name, const link_elem& l);
-            void add_link(const sequence_elem& s, const link_elem& l);
-
-
-            /** Versioning functions **/
-            double get_version();
-            void set_version(double version);
-            void set_version();
-            // Use walks, rather than paths, for outputting GFA below v2.0.
-            void set_walks(bool ws);
-
-            /** Getter methods for elements, to keep users out of our data structures
-             *  All of these return a copy of the backing structure in the GFAKluge object. 
-             */
-            std::vector<contained_elem> get_contained(std::string seq_name);
-            std::vector<contained_elem> get_contained(sequence_elem seq);
-
-            std::vector<alignment_elem> get_alignments(std::string seq_name);
-            std::vector<alignment_elem> get_alignments(sequence_elem seq);
-
-            std::map<std::string, header_elem> get_header();
-            std::map<std::string, sequence_elem, custom_key> get_name_to_seq();
-            std::map<std::string, std::vector<link_elem> > get_seq_to_link();
-            std::map<std::string, std::vector<contained_elem> > get_seq_to_contained();
-            std::map<std::string, std::vector<alignment_elem> > get_seq_to_alignment();
-            std::map<std::string, path_elem> get_name_to_path();
-
-            // GFA2 getters
-            inline std::map<std::string, std::vector<edge_elem>> get_seq_to_edges(){
-                return seq_to_edges;
-            };
-            inline std::map<std::string, std::vector<fragment_elem>> get_seq_to_fragments(){
-                return seq_to_fragments;
-            }
-            inline std::map<std::string, std::vector<gap_elem>> get_seq_to_gaps(){
-                return seq_to_gaps;
-            }
-            inline std::map<std::string, group_elem> get_groups(){
-                return groups;
-            }
-
-            /** 
-             * Convert between GFA1 and GFA2 representations internally.
-             * paths/groups are conveted to walks and walks to paths,
-             * and edge_elems get their type field set.
-             *   **/
-            void gfa_2_ize(){
-                if (!two_compat){
-                    // Fix S line length field if needed.
-                    for (auto s : name_to_seq){
-                        s.second.length = (s.second.sequence != "*" ? (uint64_t) s.second.sequence.length() : s.second.length);
-                        // Make an edge for each link
-                        for (auto l : seq_to_link[s.first]){
-                            edge_elem e;
-                            e.type = 1;
-                            e.source_name = l.source_name;
-                            e.sink_name = l.sink_name;
-                            e.source_orientation_forward = l.source_orientation_forward;
-                            e.sink_orientation_forward = l.sink_orientation_forward;
-                            e.ends.set(0,1);
-                            e.ends.set(1,1);
-                            e.ends.set(2,0);
-                            e.ends.set(3,0);
-                            e.alignment = l.cigar;
-                            e.tags = l.opt_fields;
-                            seq_to_edges[e.source_name].push_back(e);
-                        }
-                        // Make an edge for each containment
-                        for (auto c : seq_to_contained[s.first]){
-                            edge_elem e;
-                            e.type = 2;
-                            e.source_name = c.source_name;
-                            e.sink_name = c.sink_name;
-                            e.source_orientation_forward = c.source_orientation_forward;
-                            e.sink_orientation_forward = c.sink_orientation_forward;
-                            e.alignment = c.cigar;
-
-                            string overlap = "";
-                            int i = 0;
-                            while (std::isdigit(e.alignment[i])){
-                                overlap += e.alignment[0];
-                                ++i;
-                            }
-                            e.source_end = stoi(overlap) + e.source_begin;
-                            e.sink_end = stoi(overlap);
-
-                            if (e.source_end == s.second.length){
-                                e.ends.set(0,1);
-                                e.ends.set(1,1);
-                            }
-                            if(e.sink_end == name_to_seq[e.sink_name].length){
-                                e.ends.set(2,1);
-                                e.ends.set(3,1);
-                            }
-
-                            e.tags = c.opt_fields;
-                            seq_to_edges[e.source_name].push_back(e);
-                        }
-                    }
-                    // Paths -> ordered groups
-                    //walks_as_paths();
-                    for (auto p : name_to_path){
-                        group_elem g;
-                        g.id = p.first;
-                        g.ordered = true;
-                        g.items = p.second.segment_names;
-                        g.orientations = p.second.orientations;
-
-                        g.tags = p.second.opt_fields;
-                        add_group(g);
-                    }
-                    this->two_compat = true;
-                }
-
-            }
-            void gfa_1_ize(){
-                if (!one_compat){
-
-
-                    /**
-                     * Set base_edge_id to max_seq_id + 1
-                     * Swap edges to links
-                     * Ordered groups -> paths,
-                     * warn about missing sets
-                     * warn about missing fragments (we could output them as seqs)
-                     * warn about missing gaps (we could remove them)
-                     * 
-                     */
-                    string k = name_to_seq.rbegin()->first;
-                    if (string_is_number(k)){
-                        base_edge_id = std::stoul(k) + 1;
-                    }
-                    else{
-                        base_edge_id = name_to_seq.size();
-                    }
-                    groups_as_paths();
-                    for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
-                        if (s->second.sequence != "*"){
-                            s->second.length = s->second.sequence.length();
-                        }
-                        for (auto e = seq_to_edges[s->first].begin(); e != seq_to_edges[s->first].end(); e++){
-                            int t = e->determine_type();
-                            if (e->id == "*"){
-                                e->id = std::to_string(++base_edge_id);
-                            }
-                            if (t == 1){
-                                e->ends.set(0,1);
-                                e->ends.set(1,1);
-                                e->ends.set(2,0);
-                                e->ends.set(3,0);            
-                                e->source_begin = s->second.length;
-                                e->source_end = s->second.length;
-                                e->sink_begin = 0;
-                                e->sink_end = 0;
-                                if (e->id == "*"){
-                                    e->id = std::to_string(++base_edge_id);
-                                }
-                            }
-                            else if (t == 2){
-                                sequence_elem sink = name_to_seq[e->sink_name];
-                                e->ends.set(0,(e->source_begin == s->second.length));
-                                e->ends.set(1,(e->source_end == s->second.length));
-                                e->ends.set(2,(e->sink_begin == sink.length));
-                                e->ends.set(3, (e->sink_end == sink.length));
-                            }
-                            else{
-                                cerr << "Skipping edge not expressable in GFA2: \"" << e->to_string_2() << "\"" << endl;
-                            }
-                        }
-                    }
-                    this->one_compat = true;
-                }
-            };
-            // Wraps both gfa_1_ize() and gfa_2_ize()
-            void compatibilize();
-
-            /**
-             * Output the entire GFAKluge object as a string,
-             * outputting the GFA version set on read or by set_version()
-             */
-            std::string to_string();
-            // Force GFA2 string output
-            std::string to_string_2();
-
-            /**
-             * Output a block_ordered GFA string representing the entire
-             * GFAKluge object.
-             */
-            std::string block_order_string();
-            // Force GFA2 string output in block order.
-            std::string block_order_string_2();
-
-            /**
-             * Write the GFAKluge object as GFA0.1/1.0/2.0 to an ostream (e.g. stdout)
-             */
-            void output_to_stream(std::ostream& os, bool output_block_order = false);
-
-            /** Methods for folks that want streaming output.
-             *  Writes a single element to an ostream, using either
-             *  that element's to_string_1() or to_string_2() function
-             *  depending on the version set in the GFAKluge object.
-             */
-            void write_element(std::ostream& os, const sequence_elem& s);
-            void write_element(std::ostream& os, edge_elem e);
-            void write_element(std::ostream& os, const fragment_elem& f);
-            void write_element(std::ostream& os, const group_elem& g);
-            void write_element(std::ostream& os, const gap_elem& g);
-            void write_element(std::ostream& os, const header_elem& h);
-
-            /** Writes the header to a string. */
-            std::string header_string();
-
-            // ID manipulators
-            /** Return the highest IDs present in this GFAKluge object
-             *  for sequence_elems, edge_elems,
-             *  fragment_elems, gap_elems, and group_elems.
-             */
-            std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
-            /** Return the highest IDs (as above) but as a colon-delimited string rather
-             *  than a tuple.
-             */
-            std::string max_ids_string();
-            /** Bump the IDs of sequence-, edge-, fragment-, gap-, and group_elems to 
-             *  be greater than new_mx. Useful for concatenating graphs.
-             */
-            void re_id(std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>& new_mx);
-            /** Bump the IDs of each type of GFA2 element so that the lowest ID
-             *  for each type is defined by new_mx, which is a colon-delimited string.
-             */
-            void re_id(std::string new_mx_str);
-
-            /** Merge two GFA graphs **/
-            void merge(GFAKluge& gg);
-
-            /** Assembly stats **/
-            double get_N50();
-            double get_N90();
-
-            int get_L50();
-            int get_L90();
-            // uint64_t num_contigs();
-            // double simple_connectivity() // reports avg edges / sequence
-            // double weighted_connectivity() // weight areas of high connectivity higher
-            //      behaves kind of like [(N_edges)^2 / (N_seqs)^2 if N_edges > 2]
-
-            /** Given the name of a FASTA file,
-             *  fill in the sequence field of each sequence_elem with an entry from
-             *  that file with a correspondinmg name. If no entry is present, maintain
-             *  the "*" placeholder that should be present in that element's sequence field.
-             */
-            void fill_sequences(const char* fasta_file);
-
-            /**
-             * Remove any sequence_elems (and any edges connected to them) that have
-             * a sequence shorter than a certain length.
-             * Returns true if the graph is modified.
-             */
-            bool trim_seqs(const int& minlen = 0, const bool& no_ambiguous = false);
-
-
-            private:
-            bool use_walks = false;
-            // Store whether we've already gone walks->paths and paths->walks
-            bool normalized_paths = false;
-            bool normalized_walks = false;
-
-            bool one_compat = false;
-            bool two_compat = false;
-
-            uint64_t next_set_or_path_id = 0;
-            uint64_t base_seq_id = 0;
-            uint64_t base_edge_id = 0;
-            uint64_t base_gap_id = 0;
-            uint64_t base_frag_id = 0;
-            uint64_t base_group_id = 0;
-
-
-            double version = 0.0;
-            std::map<std::string, header_elem> header;
-            std::map<std::string, std::vector<contained_elem> > seq_to_contained;
-            std::map<std::string, std::vector<link_elem> > seq_to_link;
-            //Since we can't compare sequence elements for hashing,
-            // we cheat and use their names (which are only sort of guaranteed to be
-            // unique.
-            std::map<std::string, sequence_elem, custom_key> name_to_seq;
-            bool string_is_number(std::string s);
-            std::string join(const std::vector<std::string>& splits, const std::string& glue);
-            std::map<std::string, std::vector<alignment_elem> > seq_to_alignment;
-            std::string header_string(std::map<std::string, header_elem>& opts);
-            std::string opt_string(std::vector<opt_elem> opts);
-
-            std::map<std::string, path_elem> name_to_path;
-
-            /** GFA 2.0 containers **/
-            std::map<std::string, std::vector<fragment_elem> > seq_to_fragments;
-            std::map<std::string, std::vector<edge_elem> > seq_to_edges;
-            std::map<std::string, std::vector<gap_elem> > seq_to_gaps;
-            std::map<std::string, group_elem> groups;
-
-            double n50 = -1;
-            double l50 = -1;
-            double n90 = -1;
-            double l90 = -1;
-            double simple_connectivity = -1;
-            double weighted_connectivity = -1;
-
-
-
-
-
         };
 
     };

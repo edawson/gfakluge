@@ -7,21 +7,7 @@ using namespace std;
 namespace gfak{
 
 
-    void GFAKluge::add_fragment(const string& seqname, const fragment_elem& f){
-        seq_to_fragments[seqname].push_back(f);
-    }
 
-    void GFAKluge::add_fragment(const sequence_elem& s, const fragment_elem& f){
-        add_fragment(s.name, f);
-    }
-
-    void GFAKluge::add_gap(const gap_elem& g){
-        seq_to_gaps[g.source_name].push_back(g);
-    }
-
-    void GFAKluge::add_group(const group_elem& g){
-        this->groups[g.id] = g;
-    }
 
     void GFAKluge::fill_sequences(const char* fasta_file){
 
@@ -99,59 +85,10 @@ namespace gfak{
     }
 
 
-    void GFAKluge::groups_as_paths(){
-        for (auto g : groups){
-            if (g.second.ordered){
-                path_elem p;
-                p.name = g.first;
-                p.segment_names = g.second.items;
-                if (this->name_to_seq.size() > 0){
-                    p.overlaps.resize(p.segment_names.size());
-                    for (size_t i = 0; i < p.segment_names.size(); ++i){
-                        int len = 0;
-                        if (name_to_seq.find(p.segment_names[i]) != name_to_seq.end()){
-                            std::string s(name_to_seq.at(p.segment_names[i]).sequence);
-                            len = s.length();
-                        }
-                        p.overlaps[i].assign(std::to_string(len) + "M");
-                    }
-                }
-                p.orientations = g.second.orientations;
-                p.opt_fields = g.second.tags;
-                add_path(p.name, p);
-            }
-            else{
-                cerr << "Group " << g.first << " is unordered; skipping adding it to the paths." << endl;
-            }
-        }
-    }
 
     void GFAKluge::compatibilize(){
         gfa_1_ize();
         gfa_2_ize();
-    }
-
-    double GFAKluge::get_version(){
-        return this->version;
-    }
-
-    void GFAKluge::set_version(double v){
-        header_elem verz;
-        verz.key = "VN";
-        verz.type="Z";
-        this->version = v;
-        verz.val = std::to_string((double) this->version).substr(0,3);
-        this->header[verz.key] = verz;
-        //gfa_1_ize();
-        //gfa_2_ize();
-    }
-    void GFAKluge::set_version(){
-        header_elem verz;
-        verz.key = "VN";
-        verz.type="Z";
-        verz.val = std::to_string((double) this->version).substr(0,3);
-
-        this->header[verz.key] = verz;
     }
 
     bool GFAKluge::string_is_number(string s){
@@ -166,60 +103,6 @@ namespace gfak{
         return !(s.empty());
     }
 
-
-    void GFAKluge::add_path(string path_name, path_elem p){
-        name_to_path[path_name] = p;
-    }
-
-    void GFAKluge::add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts){
-        if (name_to_path.find(pathname) == name_to_path.end()){
-            path_elem p;
-            p.name = pathname;
-            add_path(p.name, p);
-        }
-        name_to_path.at(pathname).add_ranked_segment( rank, segname, ori, overlap, opts);
-
-    }
-
-    void GFAKluge::add_link(const sequence_elem& seq, const link_elem& link){
-        edge_elem e(link);
-        seq_to_edges[seq.name].push_back(e);
-    }
-
-    void GFAKluge::add_contained(sequence_elem seq, contained_elem con){
-        edge_elem e(con);
-        seq_to_edges[seq.name].push_back(e);
-    }
-
-    void GFAKluge::add_link(const string& seq_name, const link_elem& link){
-        edge_elem e(link);
-        seq_to_edges[seq_name].push_back(e); 
-    }
-
-    void GFAKluge::add_alignment(string seq_name, alignment_elem a){
-        seq_to_alignment[seq_name].push_back(a);
-    }
-
-    void GFAKluge::add_alignment(sequence_elem seq, alignment_elem a){
-        seq_to_alignment[seq.name].push_back(a);
-    }
-
-    void GFAKluge::add_contained(string seq_name, contained_elem con){
-        seq_to_contained[seq_name].push_back(con);
-    }
-
-    vector<contained_elem> GFAKluge::get_contained(string seq_name){
-        return seq_to_contained[seq_name];
-    }
-
-    vector<contained_elem> GFAKluge::get_contained(sequence_elem seq){
-        string seq_name = seq.name;
-        return seq_to_contained[seq_name];
-    }
-
-    map<string, sequence_elem, custom_key> GFAKluge::get_name_to_seq(){
-        return name_to_seq;
-    }
 
     map<string, vector<link_elem> > GFAKluge::get_seq_to_link(){
         for (auto s : name_to_seq){
@@ -270,9 +153,6 @@ namespace gfak{
         return seq_to_alignment;
     }
 
-    map<string, header_elem> GFAKluge::get_header(){
-        return header;
-    }
 
     string GFAKluge::join(const vector<string>& splits, const string& glue){
         string ret = "";
@@ -302,9 +182,6 @@ namespace gfak{
 
     }
 
-    void GFAKluge::set_walks(bool ws){
-        this->use_walks = ws;
-    }
 
     string GFAKluge::opt_string(vector<opt_elem> opts){
         string ret = "";
