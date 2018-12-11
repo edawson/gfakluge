@@ -22,33 +22,30 @@ namespace gfak{
 
     enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE,PATH_LINE};
 
-    inline int detect_line_type(const string& line){
-        char c = line[0];
-        if (c == 'S'){
+    inline int determine_line_type(char* line){
+        if (line[0] == 'H'){
+            return HEADER_LINE;
+        }
+        else if (line[0] == 'S'){
             return SEGMENT_LINE;
         }
-        else if (c == 'E' || c == 'L' || c == 'C'){
+        else if (line[0] == 'E' || line[0] == 'L' || line[0] == 'C'){
             return EDGE_LINE;
         }
-        else if (c == 'P'){
-            return PATH_LINE;
-        }
-        else if (c == 'F'){
-            return FRAGMENT_LINE;
-        }
-        else if (c == 'G'){
-            return GAP_LINE;
-        }
-        else if (c == 'O' || c == 'U'){
+        else if (line[0] == 'U' || line[0] == 'O' || line[0] == 'P' || line[0] == 'W'){
             return GROUP_LINE;
         }
+        else if (line[0] == 'G'){
+            return GAP_LINE;
+        }
+        else if (line[0] == 'F'){
+            return FRAGMENT_LINE;
+        }
         else{
-            cerr << "Unknown GFA line type: " << line << endl;
             return -1;
         }
-        
     };
-    
+
 
     // Provides the proper sorting behavior,
     // where number-based keys get sorted in numerical order
@@ -81,7 +78,7 @@ namespace gfak{
         uint64_t num_fragments = 0;
         uint64_t num_gaps = 0;
         uint64_t num_paths = 0;
-        
+
         double N50 = 0.0;
         double N90 = 0.0;
     };
@@ -115,9 +112,9 @@ namespace gfak{
 
     /** 
      * Encodes an annotation line.
-    *  These begin with an 'x', and are not part of the official
-    *  community GFA spec, but have appeared in early GFA files.
-    */
+     *  These begin with an 'x', and are not part of the official
+     *  community GFA spec, but have appeared in early GFA files.
+     */
     struct annotation_elem{
         std::string key;
         std::string info;
@@ -198,9 +195,9 @@ namespace gfak{
                 ++rank;
                 st << 'W' << '\t' << this->segment_names[i] << '\t' << 
                     this->name << '\t' << rank << '\t' <<
-                     (this->orientations[i] ? "+" : "-");
+                    (this->orientations[i] ? "+" : "-");
                 if (this->overlaps.size() == this->segment_names.size()){
-                   st << '\t' << overlaps[i];
+                    st << '\t' << overlaps[i];
                 }
                 st << endl;
                 os << st.str();
@@ -321,35 +318,35 @@ namespace gfak{
     struct edge_elem{
 
         edge_elem(){
-            
+
         }
         edge_elem(const link_elem& l){
-           source_name = l.source_name;
-           sink_name = l.sink_name;
-           type = 1;
-           source_orientation_forward = l.source_orientation_forward;
-           sink_orientation_forward = l.source_orientation_forward;
-           alignment = l.cigar;
-           tags = l.opt_fields;
-           ends.set(0,1);
-           ends.set(1,1);
-           ends.set(2,0);
-           ends.set(3,0);
-           id = "*";
+            source_name = l.source_name;
+            sink_name = l.sink_name;
+            type = 1;
+            source_orientation_forward = l.source_orientation_forward;
+            sink_orientation_forward = l.source_orientation_forward;
+            alignment = l.cigar;
+            tags = l.opt_fields;
+            ends.set(0,1);
+            ends.set(1,1);
+            ends.set(2,0);
+            ends.set(3,0);
+            id = "*";
         }
         edge_elem(const contained_elem& c){
-           source_name = c.source_name;
-           sink_name = c.sink_name;
-           type = 2;
-           source_orientation_forward = c.source_orientation_forward;
-           sink_orientation_forward = c.source_orientation_forward;
-           alignment = c.cigar;
-           tags = c.opt_fields;
-           ends.set(0,0);
-           ends.set(1,0);
-           ends.set(2,0);
-           ends.set(3,0);
-           id = "*";
+            source_name = c.source_name;
+            sink_name = c.sink_name;
+            type = 2;
+            source_orientation_forward = c.source_orientation_forward;
+            sink_orientation_forward = c.source_orientation_forward;
+            alignment = c.cigar;
+            tags = c.opt_fields;
+            ends.set(0,0);
+            ends.set(1,0);
+            ends.set(2,0);
+            ends.set(3,0);
+            id = "*";
         }
         std::string id = "*";
         // 0: unset, 1: link, 2: containment, 3: generic edge or both C/L set (which should be impossible)
@@ -529,41 +526,463 @@ namespace gfak{
                 return st.str();
             }
             /** Convert a group (which must be ordered) to a GFA0.1 style walk string. */
-        std::string to_walk_string(){
-            if (!ordered){
-                return "";
+            std::string to_walk_string(){
+                if (!ordered){
+                    return "";
+                }
+                int rank = 0;
+                stringstream st;
+                for (size_t i = 0; i < items.size(); ++i){
+                    st << "W" << items[i] << '\t' << ++rank << '\t' << orientations[i] << "*" << endl;
+                }
+                return st.str();
             }
-            int rank = 0;
-            stringstream st;
-            for (size_t i = 0; i < items.size(); ++i){
-                st << "W" << items[i] << '\t' << ++rank << '\t' << orientations[i] << "*" << endl;
-            }
-            return st.str();
-        }
         };
 
         class GFAKluge{
             friend std::ostream& operator<<(std::ostream& os, GFAKluge& g);
 
             public:
-            GFAKluge();
-            ~GFAKluge();
+            GFAKluge(){
+                map<std::string, header_elem> header;
+                map<std::string, vector<contained_elem>, custom_key > seq_to_contained;
+                map<std::string, vector<link_elem>, custom_key > seq_to_link;
+                map<std::string, vector<alignment_elem> , custom_key> seq_to_alignment;
+                //Since we can't compare sequence elements for hashing,
+                // we cheat and use their names (which are sort of guaranteed to be
+                // unique.
+                map<string, sequence_elem, custom_key> name_to_seq;
+                map<string, path_elem> name_to_path;
+                //cout << fixed << setprecision(2);
+
+
+                /** GFA 2.0 containers **/
+                map<std::string, vector<fragment_elem> > seq_to_fragments;
+                map<std::string, vector<edge_elem> > seq_to_edges;
+                map<std::string, vector<gap_elem> > seq_to_gaps;
+                map<string, group_elem> groups;
+            };
+            ~GFAKluge(){
+
+            };
             /** Parse a GFA file to a GFAKluge object. */
-            bool parse_gfa_file(const std::string &filename);
-            bool parse_gfa_file(std::istream& gfa_stream);
+            bool parse_gfa_file(const std::string &filename) {
+                ifstream gfi;
+                gfi.open(filename.c_str(), std::ifstream::in);
+                if (!gfi.good()){
+                    cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    exit(1);
+                }
+
+                bool ret = parse_gfa_file(gfi);
+                gfi.close();
+                return ret;
+
+            }
+            bool parse_gfa_file(std::istream& instream){
+                string line;
+                vector<string> line_tokens;
+                while (getline(instream, line)){
+                    vector<string> tokens = pliib::split(line, '\t');
+                    if (tokens[0] == "H"){
+                        header_elem h;
+                        line_tokens = pliib::split(tokens[1], ':');
+                        //TODO this is not well implemented
+                        // GFA places no guarantees on header format
+                        h.key = line_tokens[0];
+                        h.type = line_tokens[1];
+                        h.val = line_tokens[2];
+                        if (h.key.compare("VN") == 0){
+                            set_version(stod(h.val));
+                        }
+
+                        header[h.key] = h;
+                    }
+                    else if (tokens[0] ==  "S"){
+                        //TODO: we've got some tokens at the end of the line
+                        //that have not been handled yet.
+                        int tag_index = 3;
+                        sequence_elem s;
+                        s.name = tokens[1];
+
+                        if (this->version >= 2.0 || string_is_number(tokens[2])){
+                            s.length = stoi(tokens[2]); 
+                            s.sequence = tokens[3];
+                            tag_index = 4;
+                        }
+                        else{
+
+                            s.sequence = tokens[2];
+                            if (tokens[2] == "*"){
+                                s.length = UINT64_MAX;
+                            }
+                            else{
+                                s.length = s.sequence.length();
+                            }
+                            tag_index = 3;
+                        }
+
+                        size_t i;
+                        if (tokens.size() > 3){
+                            for (i = tag_index; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                s.opt_fields.push_back(o);
+                                if (o.key == "LN" && s.length == UINT64_MAX){
+                                    s.length = stoul(o.val);
+                                }
+                            }
+                        }
+                        name_to_seq[s.name] = s;
+                    }
+                    else if (tokens[0] == "E"){
+                        edge_elem e;
+
+                        e.id = tokens[1];
+
+                        string x = tokens[2];
+                        e.source_name = x.substr(0, x.length() - 1);
+                        e.source_orientation_forward = (x.back() == '+');
+
+                        x = tokens[3];
+                        e.sink_name = x.substr(0, x.length() - 1);
+                        e.sink_orientation_forward = (x.back() == '+');
+
+                        x = tokens[4];
+                        e.ends.set(0, (x.back() == '$' ? 1 : 0));
+                        e.source_begin = (e.ends.test(0) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        x = tokens[5];
+                        e.ends.set(1, (x.back() == '$' ? 1 : 0));
+                        e.source_end = (e.ends.test(1) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        x = tokens[6];
+                        e.ends.set(2, (x.back() == '$' ? 1 : 0));
+                        e.sink_begin = (e.ends.test(2) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+
+                        x = tokens[7];
+                        e.ends.set(3, (x.back() == '$' ? 1 : 0));
+                        e.sink_end = (e.ends.test(3) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        e.alignment = tokens[8];
+
+                        if (tokens.size() > 9){
+                            for (size_t i = 9; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                e.tags[o.key] = o;
+
+                            }
+                        }
+                        add_edge(e.source_name, e);
+
+                    }
+                    else if (tokens[0] == "G"){
+                        // <- G <gid:opt_id> <sid1:ref> <sid2:ref> <dist:int> (* | <var:int>) <tag>*
+                        gap_elem g;
+                        g.id = tokens[1];
+                        g.source_name = tokens[2];
+                        g.sink_name = tokens[3];
+                        g.distance = stoul(tokens[4]);
+                        add_gap(g);
+
+                    }
+                    else if (tokens[0] == "F"){
+                        fragment_elem f;
+                        f.id = tokens[1];
+                        f.ref = tokens[2].substr(0, tokens[2].length() - 1);
+                        f.ref_orientation = (tokens[2].back() == '+');
+                        f.seg_begin = stoul(tokens[3]);
+                        f.seg_end = stoul(tokens[4]);
+                        f.frag_begin = stoul(tokens[5]);
+                        f.frag_end = stoul(tokens[6]);
+                        f.ends.set(0, (tokens[3].back() == '$' ? 1 : 0));
+                        f.ends.set(1, (tokens[4].back() == '$' ? 1 : 0));
+                        f.ends.set(2, (tokens[5].back() == '$' ? 1 : 0));
+                        f.ends.set(3, (tokens[6].back() == '$' ? 1 : 0));
+                        f.alignment = tokens[7];
+                        if (tokens.size() > 8){
+                            for (size_t i = 9; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                f.tags[o.key] = o;
+
+                            }
+                        }
+                        add_fragment(f.id, f);
+                    }
+                    else if (tokens[0] == "O"){
+                        group_elem g;
+                        g.ordered = true;
+                        g.id = tokens[1];
+                        if (g.id == "*"){
+                            g.id = std::to_string(++base_group_id);
+                        }
+                        vector<string> g_ids = pliib::split(tokens[2], ' ');
+                        for (size_t i = 0 ; i < g_ids.size(); i++){
+                            g.items.push_back(g_ids[i].substr(0, g_ids[i].length() - 1));
+                            g.orientations.push_back(g_ids[i].back() == '+');
+                        }
+                        if (tokens.size() > 8){
+                            for (size_t i = 9; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                g.tags[o.key] = o;
+
+                            }
+                        }
+                        add_group(g);
+                    }
+                    else if (tokens[0] == "U"){
+                        group_elem g;
+                        g.ordered = false;
+                        g.id = tokens[0];
+                        if (g.id == "*"){
+                            g.id = std::to_string(++base_group_id);
+                        }
+                        g.items = pliib::split(tokens[2], ' ');
+                        if (tokens.size() > 8){
+                            for (size_t i = 9; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                g.tags[o.key] = o;
+
+                            }
+                        }
+                        add_group(g);
+                    }
+                    else if (tokens[0] ==  "L"){
+                        // TODO: we need to deal with  where the link is given before
+                        // its corresponding sequence in the file. TODO this is probably
+                        // now fixed by using the string: sequence map.
+                        edge_elem e;
+                        e.type = 1;
+                        e.source_name = tokens[1];
+                        e.sink_name = tokens[3];
+                        //TODO: search the input strings for "-" and "+" and set using ternary operator
+                        e.source_orientation_forward = tokens[2] == "+" ? true : false;
+                        e.ends.set(0, 1);
+                        e.ends.set(1,1);
+                        e.ends.set(2,0);
+                        e.ends.set(3, 0);
+                        e.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                        if (tokens.size() >= 6){
+                            e.alignment = tokens[5];
+                        }
+                        else{
+                            e.alignment = "*";
+                        }
+
+                        if (tokens.size() >= 7){
+                            for (size_t i = 6; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                e.tags[o.key] = o;
+
+                            }
+                        }
+
+                        add_edge(e.source_name, e);
+                    }
+                    else if (tokens[0] == "C"){
+                        //contained_elem c;
+                        edge_elem e;
+                        e.type = 2;
+                        e.source_name = tokens[1];
+                        e.sink_name = tokens[3];
+                        e.source_orientation_forward = tokens[2] == "+" ? true : false;
+                        e.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                        e.sink_begin = 0;
+                        e.source_begin = stoul(tokens[5]);
+                        e.ends.set(3, 1);
+                        if (tokens.size() > 6){
+                            e.alignment = tokens[6];
+                            string overlap = "";
+                            int i = 0;
+                            while (std::isdigit(e.alignment[i])){
+                                overlap += e.alignment[0];
+                                ++i;
+                            }
+                            e.source_end = stoi(overlap) + e.source_begin;
+                            e.sink_end = stoi(overlap);
+                        }
+                        else{
+                            e.alignment = "*";
+                        }
+
+                        if (tokens.size() >= 8){
+                            for (size_t i = 8; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                e.tags[o.key] = o;
+
+                            }
+                        }
+
+
+                        add_edge(e.source_name, e);
+                    }
+                    else if (tokens[0] == "W"){
+                        string pname(tokens[2]);
+                        string wname(tokens[1]);
+                        int rank;
+                        bool ori;
+                        string overlap;
+                        vector<opt_elem> opts;
+
+                        if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
+                            rank = 0;
+                            ori = (tokens[3] == "-" ? false : true);
+                            overlap = tokens[4];
+                        }
+                        else{
+                            rank = atoi(tokens[3].c_str());
+                            ori = (tokens[4] == "-" ? false : true);
+                            overlap = tokens[5];
+                        }
+
+                        add_walk(pname, rank, wname, ori, overlap, opts);
+                    }
+                    else if (tokens[0] == "P"){
+                        if (this->version >= 1.0 && this->version < 2.0){
+                            // Parse a GFA 1.0 path element
+                            path_elem p;
+                            p.name = tokens[1];
+                            vector<string> ids_and_orientations;
+                            pliib::split(tokens[2], ',', ids_and_orientations);
+                            p.segment_names.resize(ids_and_orientations.size());
+                            p.orientations.resize(ids_and_orientations.size());
+                            for (size_t t = 0; t < ids_and_orientations.size(); ++t){
+                                string x = ids_and_orientations[t];
+                                bool orientation = ((x.back()) == '+' || x.front() == '+');
+                                string id = x.substr(0, x.length() - 1);
+                                p.segment_names[t] = id;
+                                p.orientations[t] = orientation;
+                            }
+
+
+                            if (tokens.size() > 3){
+                                vector<string> spltz = pliib::split(tokens[3], ',');
+                                for (auto z : spltz){
+                                    p.overlaps.push_back(z);
+                                }
+                                //p.overlaps.assign( spltz.begin(), spltz.end());
+                            }
+                            else{
+                                //p.overlaps.assign(p.segment_names.size(), "*");
+                                for (auto z : p.segment_names){
+                                    p.overlaps.push_back("*");
+                                }
+                            }
+
+                            name_to_path[p.name] = p;
+                        }
+                        else if (this->version < 1.0){
+                            string pname(tokens[2]);
+                            string wname(tokens[1]);
+                            int rank;
+                            bool ori;
+                            string overlap;
+                            vector<opt_elem> opts;
+
+                            if (tokens[3].compare("+") == 0 || tokens[3].compare("-") == 0){
+                                // TODO: this is a hack
+                                // if no rank is present, insert at the end
+                                rank = 0;
+                                ori = (tokens[3].compare("+") == 0);
+                                overlap = tokens[4];
+                            }
+                            else{
+                                rank = atoi(tokens[3].c_str());
+                                ori = (tokens[4] == "+");
+                                overlap = tokens[5];
+                            }
+                            add_walk(pname, rank, wname, ori, overlap, opts);
+                        }
+                        else{
+                            cerr << "Cannot parse; version of GFA is too new. Version: " << this->version << endl;
+                            exit(-1);
+                        }
+
+                    }
+                    else if (tokens[0] == "x"){
+                        annotation_elem x;
+                        x.key = tokens[1];
+                        x.info = tokens[2];
+                    }
+                    else if (tokens[0] == "a"){
+                        alignment_elem a;
+                        a.source_name = tokens[1];
+                        a.position = atoi(tokens[2].c_str());
+                        a.ref = tokens[3];
+                        a.source_orientation_forward = tokens[4] == "+" ? true : false;
+                        a.length = atoi(tokens[5].c_str());
+                        add_alignment(a.source_name, a);
+                    }
+                    else if (tokens[0] == "#"){
+                        continue;
+                    }
+                    else{
+                        cerr << "Unknown line identifier  encountered: " << tokens[0] <<  " . Exiting." << endl;
+                        exit(1);
+                    }
+
+                }
+                gfa_1_ize();
+                gfa_2_ize();
+
+
+                return true;
+
+            };
 
             // GFAKluge does not, but maybe should, enforce graph structure,
             // i.e.:
             // 1. Throw errors on dangling edges
             // 2. Guarantee contained elements fall in valid sequences
 
-            
+
             /**
              * GFA2.0 handlers
              */
-            void add_sequence(sequence_elem s);
-            void add_edge(const std::string& seqname, const edge_elem& e);
-            void add_edge(const sequence_elem& s, const edge_elem& e);
+            void add_sequence(sequence_elem s){
+                name_to_seq[s.name] = s;
+            }
+            void add_edge(const std::string& seqname, const edge_elem& e){
+                seq_to_edges[seqname].push_back(e);
+            }
+            void add_edge(const sequence_elem& s, const edge_elem& e){
+                add_edge(s.name, e);
+            }
 
             void add_fragment(const std::string& seqname, const fragment_elem& f);
             void add_fragment(const sequence_elem& s, const fragment_elem& f);
@@ -600,7 +1019,7 @@ namespace gfak{
              */
             void add_path(std::string pathname, path_elem path);
             void add_walk(std::string pathname, const int& rank, const string& segname, const bool& ori, const string& overlap, vector<opt_elem> opts);
-            
+
             /**
              *  Add a link_elem to represent a link between two sequence_elems.
              *  These are stored relative to their source sequence_elem.
@@ -635,18 +1054,151 @@ namespace gfak{
             std::map<std::string, path_elem> get_name_to_path();
 
             // GFA2 getters
-            std::map<std::string, std::vector<edge_elem>> get_seq_to_edges();
-            std::map<std::string, std::vector<fragment_elem>> get_seq_to_fragments();
-            std::map<std::string, std::vector<gap_elem>> get_seq_to_gaps();
-            std::map<std::string, group_elem> get_groups();
+            inline std::map<std::string, std::vector<edge_elem>> get_seq_to_edges(){
+                return seq_to_edges;
+            };
+            inline std::map<std::string, std::vector<fragment_elem>> get_seq_to_fragments(){
+                return seq_to_fragments;
+            }
+            inline std::map<std::string, std::vector<gap_elem>> get_seq_to_gaps(){
+                return seq_to_gaps;
+            }
+            inline std::map<std::string, group_elem> get_groups(){
+                return groups;
+            }
 
             /** 
              * Convert between GFA1 and GFA2 representations internally.
              * paths/groups are conveted to walks and walks to paths,
              * and edge_elems get their type field set.
              *   **/
-            void gfa_2_ize();
-            void gfa_1_ize();
+            void gfa_2_ize(){
+                if (!two_compat){
+                    // Fix S line length field if needed.
+                    for (auto s : name_to_seq){
+                        s.second.length = (s.second.sequence != "*" ? (uint64_t) s.second.sequence.length() : s.second.length);
+                        // Make an edge for each link
+                        for (auto l : seq_to_link[s.first]){
+                            edge_elem e;
+                            e.type = 1;
+                            e.source_name = l.source_name;
+                            e.sink_name = l.sink_name;
+                            e.source_orientation_forward = l.source_orientation_forward;
+                            e.sink_orientation_forward = l.sink_orientation_forward;
+                            e.ends.set(0,1);
+                            e.ends.set(1,1);
+                            e.ends.set(2,0);
+                            e.ends.set(3,0);
+                            e.alignment = l.cigar;
+                            e.tags = l.opt_fields;
+                            seq_to_edges[e.source_name].push_back(e);
+                        }
+                        // Make an edge for each containment
+                        for (auto c : seq_to_contained[s.first]){
+                            edge_elem e;
+                            e.type = 2;
+                            e.source_name = c.source_name;
+                            e.sink_name = c.sink_name;
+                            e.source_orientation_forward = c.source_orientation_forward;
+                            e.sink_orientation_forward = c.sink_orientation_forward;
+                            e.alignment = c.cigar;
+
+                            string overlap = "";
+                            int i = 0;
+                            while (std::isdigit(e.alignment[i])){
+                                overlap += e.alignment[0];
+                                ++i;
+                            }
+                            e.source_end = stoi(overlap) + e.source_begin;
+                            e.sink_end = stoi(overlap);
+
+                            if (e.source_end == s.second.length){
+                                e.ends.set(0,1);
+                                e.ends.set(1,1);
+                            }
+                            if(e.sink_end == name_to_seq[e.sink_name].length){
+                                e.ends.set(2,1);
+                                e.ends.set(3,1);
+                            }
+
+                            e.tags = c.opt_fields;
+                            seq_to_edges[e.source_name].push_back(e);
+                        }
+                    }
+                    // Paths -> ordered groups
+                    //walks_as_paths();
+                    for (auto p : name_to_path){
+                        group_elem g;
+                        g.id = p.first;
+                        g.ordered = true;
+                        g.items = p.second.segment_names;
+                        g.orientations = p.second.orientations;
+
+                        g.tags = p.second.opt_fields;
+                        add_group(g);
+                    }
+                    this->two_compat = true;
+                }
+
+            }
+            void gfa_1_ize(){
+                if (!one_compat){
+
+
+                    /**
+                     * Set base_edge_id to max_seq_id + 1
+                     * Swap edges to links
+                     * Ordered groups -> paths,
+                     * warn about missing sets
+                     * warn about missing fragments (we could output them as seqs)
+                     * warn about missing gaps (we could remove them)
+                     * 
+                     */
+                    string k = name_to_seq.rbegin()->first;
+                    if (string_is_number(k)){
+                        base_edge_id = std::stoul(k) + 1;
+                    }
+                    else{
+                        base_edge_id = name_to_seq.size();
+                    }
+                    groups_as_paths();
+                    for (auto s = name_to_seq.begin(); s != name_to_seq.end(); s++){
+                        if (s->second.sequence != "*"){
+                            s->second.length = s->second.sequence.length();
+                        }
+                        for (auto e = seq_to_edges[s->first].begin(); e != seq_to_edges[s->first].end(); e++){
+                            int t = e->determine_type();
+                            if (e->id == "*"){
+                                e->id = std::to_string(++base_edge_id);
+                            }
+                            if (t == 1){
+                                e->ends.set(0,1);
+                                e->ends.set(1,1);
+                                e->ends.set(2,0);
+                                e->ends.set(3,0);            
+                                e->source_begin = s->second.length;
+                                e->source_end = s->second.length;
+                                e->sink_begin = 0;
+                                e->sink_end = 0;
+                                if (e->id == "*"){
+                                    e->id = std::to_string(++base_edge_id);
+                                }
+                            }
+                            else if (t == 2){
+                                sequence_elem sink = name_to_seq[e->sink_name];
+                                e->ends.set(0,(e->source_begin == s->second.length));
+                                e->ends.set(1,(e->source_end == s->second.length));
+                                e->ends.set(2,(e->sink_begin == sink.length));
+                                e->ends.set(3, (e->sink_end == sink.length));
+                            }
+                            else{
+                                cerr << "Skipping edge not expressable in GFA2: \"" << e->to_string_2() << "\"" << endl;
+                            }
+                        }
+                    }
+                    this->one_compat = true;
+                }
+            };
             // Wraps both gfa_1_ize() and gfa_2_ize()
             void compatibilize();
 
@@ -657,7 +1209,7 @@ namespace gfak{
             std::string to_string();
             // Force GFA2 string output
             std::string to_string_2();
-            
+
             /**
              * Output a block_ordered GFA string representing the entire
              * GFAKluge object.
@@ -685,12 +1237,12 @@ namespace gfak{
 
             /** Writes the header to a string. */
             std::string header_string();
-            
+
             // ID manipulators
             /** Return the highest IDs present in this GFAKluge object
              *  for sequence_elems, edge_elems,
              *  fragment_elems, gap_elems, and group_elems.
-              */
+             */
             std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> max_ids();
             /** Return the highest IDs (as above) but as a colon-delimited string rather
              *  than a tuple.
@@ -718,7 +1270,7 @@ namespace gfak{
             // double simple_connectivity() // reports avg edges / sequence
             // double weighted_connectivity() // weight areas of high connectivity higher
             //      behaves kind of like [(N_edges)^2 / (N_seqs)^2 if N_edges > 2]
-            
+
             /** Given the name of a FASTA file,
              *  fill in the sequence field of each sequence_elem with an entry from
              *  that file with a correspondinmg name. If no entry is present, maintain
