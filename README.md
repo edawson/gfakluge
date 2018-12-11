@@ -12,6 +12,14 @@ graph representation. You can also convert between GFA 0.1 <-> 1.0 <-> 2.0
 to glue programs that use different GFA versions together.
 
 
+**Homepage**: https://github.com/edawson/gfakluge  
+**License**: MIT  
+
+## Dependencies
+A C++11 compliant compiler (we recommend GCC or clang)  
+OpenMP (via GCC or clang)  
+**NB**: GFAKluge cannot be compiled with Apple clang, as it does not include OpenMP.
+
 ## Command line utilities
 When `make` is run, the `gfak` binary is built in the top level directory. It offers the following subcommands:  
 + gfak extract : transform the GFA segment lines to a FASTA file.  
@@ -27,12 +35,27 @@ Header -> Segment -> Link/Edge/Containment -> Path order.
 
 For CLI usage, run any of the above (including `gfak` with no subcommand) with no arguments or `-h`. To change specification version, most commands take the `-S` flag and a single `double` argument.  
 
+## Example CLI Usage
+Examples of various commands are included in the `examples.md` file.
+
+## C++ API
+Examples of the C++ API are included in the `interface.md` file.  
+
 ## How do I build it?  
-
-
 The `gfak` utilities are available via homebrew: `brew install brewsci/bio/gfakluge`  
 
-You can build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  
+Building GFAKluge from source requires OpenMP. This should be supported on Linux by default. On Apple Mac OS X, we recommend installing gcc:  
+
+```
+brew install gcc@8
+make CXX=g++-8
+```  
+or  
+```
+sudo port install gcc8
+```
+
+You can then build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  
 To use GFAKluge in your program, you'll need to
 add a few lines to your code. First, add the necessary include line to your C++ code:  
                 #include "gfakluge.hpp"

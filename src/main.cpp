@@ -615,7 +615,7 @@ int convert_main(int argc, char** argv){
 
     if (make_fasta){
         for (auto s : gg.get_name_to_seq()){
-            cout << s.second.as_fasta_record();
+            cout << s.second.as_fasta_record() << endl; 
         }
         exit(0);
     }
@@ -1096,6 +1096,12 @@ int subset_main(int argc, char** argv){
             default:
                 abort();
         }
+    }
+
+    if (argc < 3){
+        cerr << "No GFA file provided" << endl;
+        subset_help(argv);
+        exit(1);
     }
 
     vector<string> gfiles;
