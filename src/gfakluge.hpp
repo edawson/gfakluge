@@ -1287,7 +1287,7 @@ namespace gfak{
             /**
              * Write the GFAKluge object as GFA0.1/1.0/2.0 to an ostream (e.g. stdout)
              */
-            void output_to_stream(std::ostream& os, bool output_block_order = false){
+    void output_to_stream(std::ostream& os, bool output_block_order = false){
         this->gfa_1_ize();
         this->gfa_2_ize();
         if (this->version == 2.0 && output_block_order){
