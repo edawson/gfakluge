@@ -24,7 +24,7 @@ bibliography: paper.bib
 ---
 
 # Summary
-GFAKluge [@GFAKluge] is a set of command line utilities and a C++ library for parsing and
+GFAKluge is a set of command line utilities and a C++ library for parsing and
 manipulating the Graphical Fragment Assembly (GFA) format. 
 Genome assembly algorithms often use graph structures
 to represent relationships between reads during the assembly process. Such information
@@ -38,7 +38,9 @@ visualization. Such programs are often written in high-performance
 programming languages such as C or C++. GFAKluge facilitates interprogram exchange by providing
 a high-level C++ API for developers and a set of command line tools for users. We hope the availability of an open-source,
 easily extensible API will encourage software developers to consider adding support for GFA to their
-bioinformatics programs.
+bioinformatics programs.  
+*Homepage:* https://github.com/edawson/gfakluge
+*License:* MIT
 
 # Command Line Utilities
 GFAKluge also provides a command line interface for working with GFA. This includes support for
@@ -47,10 +49,22 @@ assemblies, reformating files for readability, and converting between legacy GFA
 from a FASTA file and a VCF file is also included. To our knowledge,
 GFAKluge is the only publically-available software package that can consume and produce both GFA1 and GFA2, though many other tools
 exist for manipulating one of the GFA formats [@GFA-SPEC]. By allowing interconversion
-between the compatible subsets of the formats, the gfak convert tool allows programs that usually can't communicate to share data
+between the compatible subsets of the formats, the `gfak convert` tool allows programs that usually can't communicate to share data
 without changes to their code. We have used GFAKluge to convert GFA from TwoPaCo [@TwoPaCo] for visualization in Bandage [@Bandage], to calculate assembly
-statistics from the Falcon assembler [@Falcon], and to extract FASTA from a vg msga assembly [@vg]. We see the command line utilities as being useful
-to the development community in the short term.
+statistics from the Falcon assembler [@Falcon], and to extract FASTA from a `vg msga` assembly [@vg]. We see the command line utilities as being useful
+to the development community in the short term. The full list of `gfak` commands follows:  
+```
+  convert: Convert between GFA 0.1 <-> 1.0 <-> 2.0
+   diff:    Determine whether two GFA files have identical graphs
+   extract: Convert the S lines of a GFA file to FASTA format.
+   fillseq: Add sequences from a FASTA file to S lines.
+   ids:     Coordinate the ID spaces of multiple GFA graphs.
+   concat:  Merge GFA graphs (without ID collisions).
+   sort:    Print a GFA file in HSLP / HSEFGUO order.
+   stats:   Get assembly statistics (e.g. N50) for a GFA file.
+   subset:  Extract the subgraph between two IDs in a graph.
+   trim:    Remove elements from a GFA graph.
+```
 
 # Integrating GFAKluge into an existing program
 As an example of how to use the GFAKluge API, we briefly summarize its use in the variation graph toolkit [vg](https://github.com/vgteam/vg) [@vg].
@@ -58,5 +72,6 @@ vg creates bidirected sequence graphs from assemblies and population variation t
 GFAKluge into vg to support input and output of GFA. Reading in a GFA file requires one line of code and is agnostic to
 the GFA version used. Converting from GFA to vg's internal structures and vice versa requires approximately forty lines of code. Changing output from
 GFA v1.0 to GFA v2.0 requires a single API call. This allows vg to take assemblies in GFA format from TwoPaCo and many other assembly algorithms.
-The gfak command line tools can be used to calculate assembly graph statistics on graphs produced by vg.
+The gfak command line tools can be used to calculate assembly graph statistics on graphs produced by vg. A full description of the developer API is available in
+the `interface.md` file.
 

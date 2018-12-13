@@ -23,7 +23,7 @@ namespace gfak{
 
     enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE,PATH_LINE};
 
-    inline int determine_line_type(char* line){
+    static inline int determine_line_type(char* line){
         if (line[0] == 'H'){
             return HEADER_LINE;
         }

@@ -53,6 +53,7 @@ make CXX=g++-8
 or  
 ```
 sudo port install gcc8
+make
 ```
 
 You can then build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  

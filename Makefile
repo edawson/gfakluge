@@ -1,5 +1,7 @@
 CXX?=g++
 CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -std=c++11 -g -ggdb
+PREFIX=/usr/local
+
 # We want to pass -Wa,-q to GCC use the Clang assembler, but Apple Clang can't take that
 # So we do an environment variable instead
 export AS_INTEGRATED_ASSEMBLER=1
@@ -30,8 +32,12 @@ $(BUILD_DIR):
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
+install: gfak
+	cp src/gfakluge.hpp $(DESTDIR)$(PREFIX)/include/
+	cp gfak $(DESTDIR)$(PREFIX)/bin
 
-.PHONY: clean all
+
+.PHONY: clean all install
 
 
 clean:
