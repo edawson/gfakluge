@@ -5,6 +5,7 @@
 #include <sstream>
 #include <istream>
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <vector>
 #include <sstream>
@@ -21,20 +22,32 @@ namespace gfak{
 
     // ( <header> | <segment> | <fragment> | <edge> | <gap> | <group> )
 
-    enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE,PATH_LINE};
+    enum gfa_line_types {HEADER_LINE,SEGMENT_LINE,FRAGMENT_LINE,EDGE_LINE,GAP_LINE,GROUP_LINE,PATH_LINE,LINK_LINE,CONTAINED_LINE,WALK_LINE};
 
-    static inline int determine_line_type(char* line){
+    static inline int determine_line_type(const char* line){
         if (line[0] == 'H'){
             return HEADER_LINE;
         }
         else if (line[0] == 'S'){
             return SEGMENT_LINE;
         }
-        else if (line[0] == 'E' || line[0] == 'L' || line[0] == 'C'){
+        else if (line[0] == 'E'){
             return EDGE_LINE;
         }
-        else if (line[0] == 'U' || line[0] == 'O' || line[0] == 'P' || line[0] == 'W'){
+        else if (line[0] == 'L'){
+            return LINK_LINE;
+        }
+        else if (line[0] == 'C'){
+            return CONTAINED_LINE;
+        }
+        else if (line[0] == 'U' || line[0] == 'O'){
             return GROUP_LINE;
+        }
+        else if (line[0] == 'P'){
+            return PATH_LINE;
+        }
+        else if (line[0] == 'W'){
+            return WALK_LINE;
         }
         else if (line[0] == 'G'){
             return GAP_LINE;
@@ -542,16 +555,13 @@ namespace gfak{
 
         class GFAKluge{
             friend std::ostream& operator<<(std::ostream& os, GFAKluge& g){
-        g.gfa_1_ize();
-        g.gfa_2_ize();
+                g.gfa_1_ize();
+                g.gfa_2_ize();
 
-        //os << g.to_string();
-        g.output_to_stream(os);
-        return os;
-    }
-
-
-
+                //os << g.to_string();
+                g.output_to_stream(os);
+                return os;
+            }
 
             private:
             bool use_walks = false;
@@ -668,6 +678,255 @@ namespace gfak{
             ~GFAKluge(){
 
             };
+
+            double detect_version_from_file(const char* filename){
+                ifstream gfi;
+                gfi.open(filename, std::ifstream::in);
+                if (!gfi.good()){
+                    cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    exit(1);
+                }
+                string line;
+                while (getline(gfi, line)){
+                    if (determine_line_type(line.c_str()) == HEADER_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        header_elem h;
+                        vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        //TODO this is not well implemented
+                        // GFA places no guarantees on header format
+                        h.key = line_tokens[0];
+                        h.type = line_tokens[1];
+                        h.val = line_tokens[2];
+                        if (h.key.compare("VN") == 0){
+                            set_version(stod(h.val));
+                            break;
+                        }
+                        header[h.key] = h;
+                    } 
+                }
+            };
+
+            void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
+                ifstream gfi;
+                gfi.open(filename, std::ifstream::in);
+                if (!gfi.good()){
+                    cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    exit(1);
+                }
+                string line;
+                while (getline(gfi, line)){
+                    if (determine_line_type(line.c_str()) == SEGMENT_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        sequence_elem s;
+                        int tag_index = 3;
+                        s.name = tokens[1];
+
+                        if (this->version >= 2.0 || string_is_number(tokens[2])){
+                            s.length = stoi(tokens[2]); 
+                            s.sequence = tokens[3];
+                            tag_index = 4;
+                        }
+                        else{
+
+                            s.sequence = tokens[2];
+                            if (tokens[2] == "*"){
+                                s.length = UINT64_MAX;
+                            }
+                            else{
+                                s.length = s.sequence.length();
+                            }
+                            tag_index = 3;
+                        }
+
+                        size_t i;
+                        if (tokens.size() > 3){
+                            for (i = tag_index; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                s.opt_fields.push_back(o);
+                                if (o.key == "LN" && s.length == UINT64_MAX){
+                                    s.length = stoul(o.val);
+                                }
+                            }
+                        }
+                        func(s);
+                    }
+                    else if (determine_line_type(line.c_str()) == HEADER_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        header_elem h;
+                        vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        //TODO this is not well implemented
+                        // GFA places no guarantees on header format
+                        h.key = line_tokens[0];
+                        h.type = line_tokens[1];
+                        h.val = line_tokens[2];
+                        if (h.key.compare("VN") == 0){
+                            set_version(stod(h.val));
+                        }
+                        header[h.key] = h;
+                    } 
+                }
+            };
+
+            void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
+                ifstream gfi;
+                gfi.open(filename, std::ifstream::in);
+                if (!gfi.good()){
+                    cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    exit(1);
+                }
+                string line;
+                while (getline(gfi, line)){
+                    if (determine_line_type(line.c_str()) == EDGE_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        edge_elem e;
+
+                        func(e);
+                    }
+                    else if (determine_line_type(line.c_str()) == LINK_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        link_elem l;
+
+                        edge_elem e(l);
+                        func(e);
+                    }
+                    else if (determine_line_type(line.c_str()) == CONTAINED_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        contained_elem c;
+
+                        edge_elem e(c);
+                        func(e);
+                    }
+                    else if (determine_line_type(line.c_str()) == HEADER_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        header_elem h;
+                        vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        //TODO this is not well implemented
+                        // GFA places no guarantees on header format
+                        h.key = line_tokens[0];
+                        h.type = line_tokens[1];
+                        h.val = line_tokens[2];
+                        if (h.key.compare("VN") == 0){
+                            set_version(stod(h.val));
+                        }
+                        header[h.key] = h;
+                    } 
+                }
+            };
+
+            // Only supports GFA 1.0 style paths
+            void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
+                ifstream gfi;
+                gfi.open(filename, std::ifstream::in);
+                if (!gfi.good()){
+                    cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    exit(1);
+                }
+                string line;
+                while (getline(gfi, line)){
+                    if (determine_line_type(line.c_str()) == PATH_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        path_elem p;
+                        // Parse a GFA 1.0 path element
+                        p.name = tokens[1];
+                        vector<string> ids_and_orientations;
+                        pliib::split(tokens[2], ',', ids_and_orientations);
+                        p.segment_names.resize(ids_and_orientations.size());
+                        p.orientations.resize(ids_and_orientations.size());
+                        for (size_t t = 0; t < ids_and_orientations.size(); ++t){
+                            string x = ids_and_orientations[t];
+                            bool orientation = ((x.back()) == '+' || x.front() == '+');
+                            string id = x.substr(0, x.length() - 1);
+                            p.segment_names[t] = id;
+                            p.orientations[t] = orientation;
+                        }
+                        if (tokens.size() > 3){
+                            vector<string> spltz = pliib::split(tokens[3], ',');
+                            for (auto z : spltz){
+                                p.overlaps.push_back(z);
+                            }
+                            //p.overlaps.assign( spltz.begin(), spltz.end());
+                        }
+                        else{
+                            //p.overlaps.assign(p.segment_names.size(), "*");
+                            for (auto z : p.segment_names){
+                                p.overlaps.push_back("*");
+                            }
+                        }
+                        func(p);
+                    }
+                    else if (determine_line_type(line.c_str()) == HEADER_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        header_elem h;
+                        vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        //TODO this is not well implemented
+                        // GFA places no guarantees on header format
+                        h.key = line_tokens[0];
+                        h.type = line_tokens[1];
+                        h.val = line_tokens[2];
+                        if (h.key.compare("VN") == 0){
+                            set_version(stod(h.val));
+                        }
+                        header[h.key] = h;
+                    } 
+                }
+            };
+
+
+            // Only supports GFA 2.0 style paths (i.e. groups, both ordered and unordered)
+            void for_each_ordered_group_line_in_file(const char* filename, std::function<void(gfak::group_elem)> func){
+                ifstream gfi;
+                gfi.open(filename, std::ifstream::in);
+                if (!gfi.good()){
+                    cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    exit(1);
+                }
+                string line;
+                while (getline(gfi, line)){
+                    if (determine_line_type(line.c_str()) == PATH_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        group_elem g;
+                        g.ordered = false;
+                        g.id = tokens[0];
+                        if (g.id == "*"){
+                            g.id = std::to_string(++base_group_id);
+                        }
+                        g.items = pliib::split(tokens[2], ' ');
+                        if (tokens.size() > 8){
+                            for (size_t i = 9; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                g.tags[o.key] = o;
+
+                            }
+                        }
+                        func(g);
+                    }
+                    else if (determine_line_type(line.c_str()) == HEADER_LINE){
+                        vector<string> tokens = pliib::split(line, '\t');
+                        header_elem h;
+                        vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        //TODO this is not well implemented
+                        // GFA places no guarantees on header format
+                        h.key = line_tokens[0];
+                        h.type = line_tokens[1];
+                        h.val = line_tokens[2];
+                        if (h.key.compare("VN") == 0){
+                            set_version(stod(h.val));
+                        }
+                        header[h.key] = h;
+                    } 
+                }
+            };
+            
 
             // GFAKluge does not, but maybe should, enforce graph structure,
             // i.e.:
