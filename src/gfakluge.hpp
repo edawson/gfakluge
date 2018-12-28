@@ -784,14 +784,83 @@ namespace gfak{
                     if (determine_line_type(line.c_str()) == EDGE_LINE){
                         vector<string> tokens = pliib::split(line, '\t');
                         edge_elem e;
+                        e.id = tokens[1];
+
+                        string x = tokens[2];
+                        e.source_name = x.substr(0, x.length() - 1);
+                        e.source_orientation_forward = (x.back() == '+');
+
+                        x = tokens[3];
+                        e.sink_name = x.substr(0, x.length() - 1);
+                        e.sink_orientation_forward = (x.back() == '+');
+
+                        x = tokens[4];
+                        e.ends.set(0, (x.back() == '$' ? 1 : 0));
+                        e.source_begin = (e.ends.test(0) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        x = tokens[5];
+                        e.ends.set(1, (x.back() == '$' ? 1 : 0));
+                        e.source_end = (e.ends.test(1) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        x = tokens[6];
+                        e.ends.set(2, (x.back() == '$' ? 1 : 0));
+                        e.sink_begin = (e.ends.test(2) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+
+                        x = tokens[7];
+                        e.ends.set(3, (x.back() == '$' ? 1 : 0));
+                        e.sink_end = (e.ends.test(3) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        e.alignment = tokens[8];
+
+                        if (tokens.size() > 9){
+                            for (size_t i = 9; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                e.tags[o.key] = o;
+
+                            }
+                        }
 
                         func(e);
                     }
                     else if (determine_line_type(line.c_str()) == LINK_LINE){
                         vector<string> tokens = pliib::split(line, '\t');
-                        link_elem l;
+                        edge_elem e;
+                        e.type = 1;
+                        e.source_name = tokens[1];
+                        e.sink_name = tokens[3];
+                        //TODO: search the input strings for "-" and "+" and set using ternary operator
+                        e.source_orientation_forward = tokens[2] == "+" ? true : false;
+                        e.ends.set(0, 1);
+                        e.ends.set(1,1);
+                        e.ends.set(2,0);
+                        e.ends.set(3, 0);
+                        e.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                        if (tokens.size() >= 6){
+                            e.alignment = tokens[5];
+                        }
+                        else{
+                            e.alignment = "*";
+                        }
 
-                        edge_elem e(l);
+                        if (tokens.size() >= 7){
+                            for (size_t i = 6; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                e.tags[o.key] = o;
+
+                            }
+                        }
+
                         func(e);
                     }
                     else if (determine_line_type(line.c_str()) == CONTAINED_LINE){
