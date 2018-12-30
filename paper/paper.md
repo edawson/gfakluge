@@ -45,7 +45,7 @@ bioinformatics programs.
 # Command Line Utilities
 GFAKluge also provides a command line interface for working with GFA. This includes support for
 common tasks on assemblies such as calculating assembly N50 or graph statistics. There are also methods for merging
-assemblies, reformating files for readability, and converting between legacy GFA formats. A tool for constructing basic variation graphs
+assemblies, reformating files for readability, and converting between the GFA 1.0 and GFA 2.0 specifications. A tool for constructing basic variation graphs
 from a FASTA file and a VCF file is also included. To our knowledge,
 GFAKluge is the only publically-available software package that can consume and produce both GFA1 and GFA2, though many other tools
 exist for manipulating one of the GFA formats [@GFA-SPEC]. By allowing interconversion
@@ -73,5 +73,5 @@ GFAKluge into vg to support input and output of GFA. Reading in a GFA file requi
 the GFA version used. Converting from GFA to vg's internal structures and vice versa requires approximately forty lines of code. Changing output from
 GFA v1.0 to GFA v2.0 requires a single API call. This allows vg to take assemblies in GFA format from TwoPaCo and many other assembly algorithms.
 The gfak command line tools can be used to calculate assembly graph statistics on graphs produced by vg. A full description of the developer API is available in
-the `interface.md` file.
+the [interface.md file](https://github.com/edawson/gfakluge/blob/master/interface.md) file.
 
