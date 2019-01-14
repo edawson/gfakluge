@@ -172,3 +172,18 @@ valid GFA. This may change as the GFA spec becomes more formal.
 Eric T Dawson   
 github: [edawson](https://github.com/edawson/https://github.com/edawson/GFAKluge)   
 Please post an issue for help.
+
+## Contributing
+GFAKluge is open-source and community contributions are welcome and appreciated! Please keep the following in mind when contributing to the repo:  
+
+1. Please treat others with kindness and professionalism. Everyone is welcome and we will not tolerate harassment for any reason.
+2. Please keep `gfakluge.hpp` header-only and update the build process if a modification alters it.  
+3. Please update the dependency list if one is added.  
+4. Please use semantic versioning. Minor changes bump the third versioning digit (e.g. 1.0.0 -> 1.0.1).  
+Additional features, or changes that may or may not partially break backward compatibility 
+but which do not require significant modifications to code depending on the library bump the second versioning digit (e.g. 1.0.0 -> 1.1.0).  
+Changes which signficantly alter the API require a bump in the major version digit (e.g. 1.0.0 -> 2.0.0).
+5. Please fully specify all namespace items (e.g. `std::stream` in place of just `stream`).  
+6. To incorporate changes, please file a pull request on the Github page.
+7. Bug reports or feature requests should be posted as "issues" on the Github page with the appropriate tag and referenced in any relevant pull requests.
+
