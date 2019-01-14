@@ -36,8 +36,11 @@ install: gfak
 	cp src/gfakluge.hpp $(DESTDIR)$(PREFIX)/include/
 	cp gfak $(DESTDIR)$(PREFIX)/bin
 
+check : gfak
+	prove test/gfa_test.t
 
-.PHONY: clean all install
+
+.PHONY: clean all install check
 
 
 clean:
