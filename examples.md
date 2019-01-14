@@ -177,7 +177,7 @@ TACACGATGCGAGCAATCAAATTTCATAACATCACCATGAGTTTGGTCCGAAGCATGAGTGTTTACAATGTTTGAATACC
 
 
 ```
-./gfak extract data/gfa_2.gfa | sort | md5sum: 43bbe8fee3f67fd90b90ee885ddb15e  
+./gfak extract data/gfa_2.gfa | sort | md5sum: 43bbe8fee3f67fd90b90ee885ddb15e3  
 cat data/no_seqs.fa | sort | md5sum: 43bbe8fee3f67fd90b90ee885ddb15e3
 ```
 
@@ -263,7 +263,7 @@ diff <(./gfak ids -s 9:9:9 data/test.gfa) <(cat data/re_id.gfa)
 
 ### Merging two GFA files
 
-```
+cat data/re_id.gfa```
     ./gfak merge -S 2.0 data/test.gfa data/gfa_2.gfa
 ```
 
