@@ -33,7 +33,9 @@ $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
 install: gfak
+	mkdir -p $(DESTDIR)$(PREFIX)/include
 	cp src/gfakluge.hpp $(DESTDIR)$(PREFIX)/include/
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp gfak $(DESTDIR)$(PREFIX)/bin
 
 check : gfak
