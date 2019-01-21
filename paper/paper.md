@@ -86,5 +86,5 @@ GFAKluge into vg to support input and output of GFA. Reading in a GFA file requi
 the GFA version used. Converting from GFA to vg's internal structures and vice versa requires approximately forty lines of code. Changing output from
 GFA v1.0 to GFA v2.0 requires a single API call. This allows vg to take assemblies in GFA format from TwoPaCo and many other assembly algorithms.
 The gfak command line tools can be used to calculate assembly graph statistics on graphs produced by vg. A full description of the developer API is available in
-the [interface.md file](https://github.com/edawson/gfakluge/blob/master/interface.md) file.
+the [interface.md file](https://github.com/edawson/gfakluge/blob/master/interface.md).
 
