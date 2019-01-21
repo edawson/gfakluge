@@ -79,6 +79,8 @@ The full list of `gfak` commands follows:
    trim:    Remove elements from a GFA graph.
 ```
 
+Examples of most commands are included in the [examples.md file](https://github.com/edawson/gfakluge/blob/master/examples.md).
+
 # Integrating GFAKluge into an existing program
 As an example of how to use the GFAKluge API, we briefly summarize its use in the variation graph toolkit [vg](https://github.com/vgteam/vg) [@vg].
 vg creates bidirected sequence graphs from assemblies and population variation that can then be used for read mapping and variant calling. We incorporated
