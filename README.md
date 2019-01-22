@@ -36,10 +36,10 @@ Header -> Segment -> Link/Edge/Containment -> Path order.
 For CLI usage, run any of the above (including `gfak` with no subcommand) with no arguments or `-h`. To change specification version, most commands take the `-S` flag and a single `double` argument.  
 
 ## Example CLI Usage
-Examples of various commands are included in the `examples.md` file.
+Examples of various commands are included in the [examples.md file](https://github.com/edawson/gfakluge/blob/master/examples.md).
 
 ## C++ API
-Examples of the C++ API are included in the `interface.md` file.  
+Examples of the C++ API are included in the [interface.md file](https://github.com/edawson/gfakluge/blob/master/interface.md).  
 
 ## How do I build it?  
 The `gfak` utilities are available via homebrew: `brew install brewsci/bio/gfakluge`  

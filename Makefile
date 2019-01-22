@@ -34,8 +34,11 @@ $(BIN_DIR):
 
 install: gfak
 	mkdir -p $(DESTDIR)$(PREFIX)/include
+  mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp src/gfakluge.hpp $(DESTDIR)$(PREFIX)/include/
-	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp src/tinyFA/tinyfa.hpp $(DESTDIR)$(PREFIX)/include/
+	cp src/tinyFA/pliib.hpp $(DESTDIR)$(PREFIX)/include/
+
 	cp gfak $(DESTDIR)$(PREFIX)/bin
 
 check : gfak
