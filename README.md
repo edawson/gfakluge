@@ -2,6 +2,7 @@ gfakluge
 --------------------
 
 [![DOI](https://zenodo.org/badge/47132080.svg)](https://zenodo.org/badge/latestdoi/47132080)
+[![status](http://joss.theoj.org/papers/d731f6dfc6b77013caaccfd8333c684a/status.svg)](http://joss.theoj.org/papers/d731f6dfc6b77013caaccfd8333c684a)
 
 ## What is it?  
 GFAKluge is a C++ parser/writer and
