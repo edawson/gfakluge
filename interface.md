@@ -27,15 +27,15 @@ The GFAKluge object has a series of "add\_\*" methods which add a given element 
 ## Retrieving elements from a GFAKluge object
 The raw maps containing elements in a GFAKluge object can be retrieved using the following methods:
 
-- get\_name\_to\_seq() : returns a map from the string name of a sequence element to the element itself.
-- get\_groups() : returns a map from the string name of a group to the group\_elem itself.
-- get\_name\_to\_path() : returns a map from the string name of a path to the corresponding path\_elem.
+- `get\_name\_to\_seq()` : returns a map from the string name of a sequence element to the element itself.
+- `get\_groups() : returns a map from the string name of a group to the group\_elem itself.
+- `get\_name\_to\_path()` : returns a map from the string name of a path to the corresponding path\_elem.
 
 The other get\_\* methods return maps where the key is the string name of a source sequence element.  
-- get\_seq\_to\_edges() : returns a map\<string, vector\<edge_elem\>\>, where all edge\_elems are stored relative to their source sequence element.
-- get\_seq\_to\_fragments() : returns a map from a string identifier for a sequence element to fragments that fall within that element.
-- get\_seq\_to\_gaps() : returns a map from a string identifier for a sequence element to gaps that fall within that element.
-- get\_alignments(sequence\_elem s) : returns the alignments (GFA0.1) to a sequence element s.
+- `get\_seq\_to\_edges()` : returns a map\<string, vector\<edge_elem\>\>, where all edge\_elems are stored relative to their source sequence element.
+- `get\_seq\_to\_fragments()` : returns a map from a string identifier for a sequence element to fragments that fall within that element.
+- `get\_seq\_to\_gaps()` : returns a map from a string identifier for a sequence element to gaps that fall within that element.
+- `get\_alignments(sequence\_elem s)` : returns the alignments (GFA0.1) to a sequence element s.
 
 
 We would encourage developers to look at the `std::string to_string_2();` and `std::string block_order_string();` methods in the `gfakluge.cpp` file for an example of how to iterate over elements in these maps.

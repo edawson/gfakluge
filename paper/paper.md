@@ -45,16 +45,29 @@ bioinformatics programs.
 # Command Line Utilities
 GFAKluge also provides a command line interface for working with GFA. This includes support for
 common tasks on assemblies such as calculating assembly N50 or graph statistics. There are also methods for merging
-assemblies, reformating files for readability, and converting between legacy GFA formats. A tool for constructing basic variation graphs
-from a FASTA file and a VCF file is also included. To our knowledge,
-GFAKluge is the only publically-available software package that can consume and produce both GFA1 and GFA2, though many other tools
-exist for manipulating one of the GFA formats [@GFA-SPEC]. By allowing interconversion
+assemblies, reformating files for readability, and converting between the GFA 1.0 and GFA 2.0 specifications. A tool for constructing basic variation graphs
+from a FASTA file and a VCF file is also included.
+Many other tools exist for manipulating the GFA formats [@GFA-SPEC], though only RGFA [@RGFA], GfaPy [@GfaPy] and ABySS2.0 [@ABySS2.0] are known to produce and consume both versions.
+By allowing interconversion
 between the compatible subsets of the formats, the `gfak convert` tool allows programs that usually can't communicate to share data
 without changes to their code. We have used GFAKluge to convert GFA from TwoPaCo [@TwoPaCo] for visualization in Bandage [@Bandage], to calculate assembly
-statistics from the Falcon assembler [@Falcon], and to extract FASTA from a `vg msga` assembly [@vg]. We see the command line utilities as being useful
-to the development community in the short term. The full list of `gfak` commands follows:  
+statistics from the Falcon assembler [@Falcon], and to extract FASTA from a `vg msga` assembly [@vg].
+
 ```
-  convert: Convert between GFA 0.1 <-> 1.0 <-> 2.0
+   # Convert GFA 2.0 from TwoPaCo to GFA 1.0 for ingestion by Bandage.  
+   gfak convert -S 1.0 data/gfa_2.gfa  
+
+   # Calculate assembly statistics  
+   gfak stats -a data/gfa_2.gfa  
+
+   # Extract FASTA entries from a GFA file  
+   gfak extract data/gfa_2.gfa  
+
+```
+
+The full list of `gfak` commands follows:  
+```
+   convert: Convert between GFA 0.1 <-> 1.0 <-> 2.0
    diff:    Determine whether two GFA files have identical graphs
    extract: Convert the S lines of a GFA file to FASTA format.
    fillseq: Add sequences from a FASTA file to S lines.
@@ -66,6 +79,8 @@ to the development community in the short term. The full list of `gfak` commands
    trim:    Remove elements from a GFA graph.
 ```
 
+Examples of most commands are included in the [examples.md file](https://github.com/edawson/gfakluge/blob/master/examples.md).
+
 # Integrating GFAKluge into an existing program
 As an example of how to use the GFAKluge API, we briefly summarize its use in the variation graph toolkit [vg](https://github.com/vgteam/vg) [@vg].
 vg creates bidirected sequence graphs from assemblies and population variation that can then be used for read mapping and variant calling. We incorporated
@@ -73,5 +88,5 @@ GFAKluge into vg to support input and output of GFA. Reading in a GFA file requi
 the GFA version used. Converting from GFA to vg's internal structures and vice versa requires approximately forty lines of code. Changing output from
 GFA v1.0 to GFA v2.0 requires a single API call. This allows vg to take assemblies in GFA format from TwoPaCo and many other assembly algorithms.
 The gfak command line tools can be used to calculate assembly graph statistics on graphs produced by vg. A full description of the developer API is available in
-the `interface.md` file.
+the [interface.md file](https://github.com/edawson/gfakluge/blob/master/interface.md).
 

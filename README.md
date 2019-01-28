@@ -1,7 +1,8 @@
 gfakluge
 --------------------
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1434136.svg)](https://doi.org/10.5281/zenodo.1434136)
+[![DOI](https://zenodo.org/badge/47132080.svg)](https://zenodo.org/badge/latestdoi/47132080)
+[![status](http://joss.theoj.org/papers/d731f6dfc6b77013caaccfd8333c684a/status.svg)](http://joss.theoj.org/papers/d731f6dfc6b77013caaccfd8333c684a)
 
 ## What is it?  
 GFAKluge is a C++ parser/writer and
@@ -36,10 +37,10 @@ Header -> Segment -> Link/Edge/Containment -> Path order.
 For CLI usage, run any of the above (including `gfak` with no subcommand) with no arguments or `-h`. To change specification version, most commands take the `-S` flag and a single `double` argument.  
 
 ## Example CLI Usage
-Examples of various commands are included in the `examples.md` file.
+Examples of various commands are included in the [examples.md file](https://github.com/edawson/gfakluge/blob/master/examples.md).
 
 ## C++ API
-Examples of the C++ API are included in the `interface.md` file.  
+Examples of the C++ API are included in the [interface.md file](https://github.com/edawson/gfakluge/blob/master/interface.md).  
 
 ## How do I build it?  
 The `gfak` utilities are available via homebrew: `brew install brewsci/bio/gfakluge`  
@@ -172,3 +173,18 @@ valid GFA. This may change as the GFA spec becomes more formal.
 Eric T Dawson   
 github: [edawson](https://github.com/edawson/https://github.com/edawson/GFAKluge)   
 Please post an issue for help.
+
+## Contributing
+GFAKluge is open-source and community contributions are welcome and appreciated! Please keep the following in mind when contributing to the repo:  
+
+1. Please treat others with kindness and professionalism. Everyone is welcome and we will not tolerate harassment for any reason.
+2. Please keep `gfakluge.hpp` header-only and update the build process if a modification alters it.  
+3. Please update the dependency list if one is added.  
+4. Please use semantic versioning. Minor changes bump the third versioning digit (e.g. 1.0.0 -> 1.0.1).  
+Additional features, or changes that may or may not partially break backward compatibility 
+but which do not require significant modifications to code depending on the library bump the second versioning digit (e.g. 1.0.0 -> 1.1.0).  
+Changes which signficantly alter the API require a bump in the major version digit (e.g. 1.0.0 -> 2.0.0).
+5. Please fully specify all namespace items (e.g. `std::stream` in place of just `stream`).  
+6. To incorporate changes, please file a pull request on the Github page.
+7. Bug reports or feature requests should be posted as "issues" on the Github page with the appropriate tag and referenced in any relevant pull requests.
+

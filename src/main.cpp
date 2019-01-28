@@ -7,7 +7,7 @@ using namespace std;
 using namespace gfak;
 
 void print_version_help(){
-    cerr << "gfak (GFAKluge library) 1.0.0" << endl
+    cerr << "gfak (GFAKluge library) 1.1.1" << endl
         << "Copyright (C) 2015 Eric T. Dawson" << endl
         << "Licensed under the MIT License (https://opensource.org/licenses/MIT)" << endl
         << "This is free, open-source software: you are free to modify and redistribute it." << endl

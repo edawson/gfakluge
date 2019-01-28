@@ -241,11 +241,11 @@ namespace gfak{
      *  in a graph across all GFA versions.
      */
     struct sequence_elem{
+        uint64_t id = 0;
         std::string sequence = "*";
         std::string name = "*";
         uint64_t length = UINT64_MAX;
         std::vector<opt_elem> opt_fields;
-        uint32_t id = 0;
         std::string to_string_2() const{
             std::ostringstream st;
 
