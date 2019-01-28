@@ -14,6 +14,13 @@
 #include <bitset>
 #include <unordered_set>
 #include <sys/stat.h>
+#include <cstdio>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <cassert>
+
 
 #include "tinyfa.hpp"
 #include "pliib.hpp"
@@ -553,6 +560,43 @@ namespace gfak{
             }
         };
 
+        size_t mmap_open(const std::string& filename, char*& buf, int& fd) {
+            fd = -1;
+            assert(!filename.empty());
+            // open in binary mode as we are reading from this interface
+            fd = open(filename.c_str(), O_RDWR);
+            if (fd == -1) {
+                assert(false);
+            }
+            struct stat stats;
+            if (-1 == fstat(fd, &stats)) {
+                assert(false);
+            }
+            size_t fsize = stats.st_size;
+            if (!(buf =
+                  (char*) mmap(NULL,
+                               fsize,
+                               PROT_READ | PROT_WRITE,
+                               MAP_SHARED,
+                               fd,
+                               0))) {
+                assert(false);
+            }
+            madvise((void*)buf, fsize, POSIX_MADV_WILLNEED | POSIX_MADV_SEQUENTIAL);
+            return fsize;
+        }
+
+        void mmap_close(char*& buf, int& fd, size_t fsize) {
+            if (buf) {
+                munmap(buf, fsize);
+                buf = 0;
+            }
+            if (fd) {
+                close(fd);
+                fd = 0;
+            }
+        }
+
         class GFAKluge{
             friend std::ostream& operator<<(std::ostream& os, GFAKluge& g){
                 g.gfa_1_ize();
@@ -784,14 +828,83 @@ namespace gfak{
                     if (determine_line_type(line.c_str()) == EDGE_LINE){
                         vector<string> tokens = pliib::split(line, '\t');
                         edge_elem e;
+                        e.id = tokens[1];
+
+                        string x = tokens[2];
+                        e.source_name = x.substr(0, x.length() - 1);
+                        e.source_orientation_forward = (x.back() == '+');
+
+                        x = tokens[3];
+                        e.sink_name = x.substr(0, x.length() - 1);
+                        e.sink_orientation_forward = (x.back() == '+');
+
+                        x = tokens[4];
+                        e.ends.set(0, (x.back() == '$' ? 1 : 0));
+                        e.source_begin = (e.ends.test(0) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        x = tokens[5];
+                        e.ends.set(1, (x.back() == '$' ? 1 : 0));
+                        e.source_end = (e.ends.test(1) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        x = tokens[6];
+                        e.ends.set(2, (x.back() == '$' ? 1 : 0));
+                        e.sink_begin = (e.ends.test(2) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+
+                        x = tokens[7];
+                        e.ends.set(3, (x.back() == '$' ? 1 : 0));
+                        e.sink_end = (e.ends.test(3) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+
+                        e.alignment = tokens[8];
+
+                        if (tokens.size() > 9){
+                            for (size_t i = 9; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                e.tags[o.key] = o;
+
+                            }
+                        }
 
                         func(e);
                     }
                     else if (determine_line_type(line.c_str()) == LINK_LINE){
                         vector<string> tokens = pliib::split(line, '\t');
-                        link_elem l;
+                        edge_elem e;
+                        e.type = 1;
+                        e.source_name = tokens[1];
+                        e.sink_name = tokens[3];
+                        //TODO: search the input strings for "-" and "+" and set using ternary operator
+                        e.source_orientation_forward = tokens[2] == "+" ? true : false;
+                        e.ends.set(0, 1);
+                        e.ends.set(1,1);
+                        e.ends.set(2,0);
+                        e.ends.set(3, 0);
+                        e.sink_orientation_forward = tokens[4] == "+" ? true : false;
+                        if (tokens.size() >= 6){
+                            e.alignment = tokens[5];
+                        }
+                        else{
+                            e.alignment = "*";
+                        }
 
-                        edge_elem e(l);
+                        if (tokens.size() >= 7){
+                            for (size_t i = 6; i < tokens.size(); i++){
+                                //opt fields are in key:type:val format
+                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                opt_elem o;
+                                o.key = opt_field[0];
+                                o.type = opt_field[1];
+                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                e.tags[o.key] = o;
+
+                            }
+                        }
+
                         func(e);
                     }
                     else if (determine_line_type(line.c_str()) == CONTAINED_LINE){
@@ -816,6 +929,58 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
+            };
+
+            // Per-element parsing of paths, only supports GFA 1.0
+            void for_each_path_element_in_file(const char* filename, std::function<void(const string&, const string&, bool, const string&)> func){
+                int gfa_fd = -1;
+                char* gfa_buf = nullptr;
+                size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
+                if (gfa_fd == -1) {
+                    cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    exit(1);
+                }
+                string line;
+                size_t i = 0;
+                bool seen_newline = true;
+                while (i < gfa_filesize) {
+                    string path_name;
+                    // scan forward
+                    if (i > 0 && gfa_buf[i-1] == '\n' && gfa_buf[i] == 'P') {
+                        // path line
+                        // scan forward to find name
+                        i += 2;
+                        while (gfa_buf[i] != '\t') {
+                            path_name.push_back(gfa_buf[i++]);
+                        }
+                        ++i; // get to path id/orientation description
+                        size_t j = i;
+                        while (gfa_buf[++j] != '\t');
+                        ++j; // skip over delimiter
+                        // now j points to the overlaps
+                        while (gfa_buf[i] != '\t' && gfa_buf[j] != '\n' && j+1 != gfa_filesize) {
+                            string id;
+                            char c = gfa_buf[i];
+                            while (c != ',' && c != '\t' && c != '+' && c != '-') {
+                                id.push_back(c);
+                                c = gfa_buf[++i];
+                            }
+                            bool is_rev = gfa_buf[i++]=='-';
+                            ++i; // skip over delimiter
+                            c = gfa_buf[j];
+                            string overlap;
+                            while (c != ',' && c != '\t' && c != '\n') {
+                                overlap.push_back(c);
+                                if (j+1 == gfa_filesize) break;
+                                c = gfa_buf[++j];
+                            }
+                            ++j; // skip over delimiter
+                            func(path_name, id, is_rev, overlap);
+                        }
+                    }
+                    ++i;
+                }
+                mmap_close(gfa_buf, gfa_fd, gfa_filesize);
             };
 
             // Only supports GFA 1.0 style paths
@@ -875,7 +1040,6 @@ namespace gfak{
                     } 
                 }
             };
-
 
             // Only supports GFA 2.0 style paths (i.e. groups, both ordered and unordered)
             void for_each_ordered_group_line_in_file(const char* filename, std::function<void(gfak::group_elem)> func){
