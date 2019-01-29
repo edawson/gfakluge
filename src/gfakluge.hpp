@@ -983,23 +983,24 @@ namespace gfak{
                         while (gfa_buf[++j] != '\t');
                         ++j; // skip over delimiter
                         // now j points to the overlaps
-                        while (gfa_buf[i] != '\t' && gfa_buf[j] != '\n' && gfa_buf[j] != ' ' && j+1 != gfa_filesize) {
+                        char b = gfa_buf[i], c = gfa_buf[j];
+                        while (b != '\t' && c != '\n' && c != ' ' && c != '\t' && j+1 != gfa_filesize) {
                             string id;
-                            char c = gfa_buf[i];
-                            while (c != ',' && c != '\t' && c != '+' && c != '-') {
-                                id.push_back(c);
-                                c = gfa_buf[++i];
+                            if (b == ',') b = gfa_buf[++i];
+                            while (b != ',' && b != '\t' && b != '+' && b != '-') {
+                                id.push_back(b);
+                                b = gfa_buf[++i];
                             }
-                            bool is_rev = gfa_buf[i++]=='-';
-                            ++i; // skip over delimiter
-                            c = gfa_buf[j];
+                            bool is_rev = b=='-';
+                            b = gfa_buf[++i];
                             string overlap;
-                            while (c != ',' && c != '\t' && c != '\n' && c != ' ') {
+                            if (c == ',') c = gfa_buf[++j];
+                            while (c != ',' && c != '\t' && c != '\n' && c != ' ' && c != '\t' && j+1 != gfa_filesize) {
                                 overlap.push_back(c);
                                 if (j+1 == gfa_filesize) break;
                                 c = gfa_buf[++j];
                             }
-                            if (c == ',') ++j;
+                            if (j+1 != gfa_filesize) c = gfa_buf[++j];
                             func(path_name, id, is_rev, overlap);
                         }
                     }
