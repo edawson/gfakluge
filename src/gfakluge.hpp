@@ -751,16 +751,30 @@ namespace gfak{
             };
 
             void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
-                ifstream gfi;
-                gfi.open(filename, std::ifstream::in);
-                if (!gfi.good()){
+                int gfa_fd = -1;
+                char* gfa_buf = nullptr;
+                size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
+                if (gfa_fd == -1) {
                     cerr << "Couldn't open GFA file " << filename << "." << endl;
                     exit(1);
                 }
                 string line;
-                while (getline(gfi, line)){
-                    if (determine_line_type(line.c_str()) == SEGMENT_LINE){
-                        vector<string> tokens = pliib::split(line, '\t');
+                size_t i = 0;
+                bool seen_newline = true;
+                while (i < gfa_filesize) {
+                    // are we on a sequence line?
+                    if (i > 0 && gfa_buf[i-1] == '\n' && gfa_buf[i] == 'S') {
+                        // accumulate the tokens
+                        vector<string> tokens; // = pliib::split(line, '\t');
+                        string tok; char c;
+                        while (i < gfa_filesize) {
+                            while (i < gfa_filesize && c = gfa_buf[++i] && c != '\t' && c != '\n') {
+                                tok.push_back(c);
+                            }
+                            tokens.push_back(tok);
+                            tok.clear();
+                            if (c == '\n') break;
+                        }
                         sequence_elem s;
                         int tag_index = 3;
                         s.name = tokens[1];
@@ -782,11 +796,10 @@ namespace gfak{
                             tag_index = 3;
                         }
 
-                        size_t i;
                         if (tokens.size() > 3){
-                            for (i = tag_index; i < tokens.size(); i++){
+                            for (size_t j = tag_index; j < tokens.size(); j++){
                                 //opt fields are in key:type:val format
-                                vector<string> opt_field = pliib::split(tokens[i], ':');
+                                vector<string> opt_field = pliib::split(tokens[j], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
@@ -799,21 +812,9 @@ namespace gfak{
                         }
                         func(s);
                     }
-                    else if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        vector<string> tokens = pliib::split(line, '\t');
-                        header_elem h;
-                        vector<string> line_tokens = pliib::split(tokens[1], ':');
-                        //TODO this is not well implemented
-                        // GFA places no guarantees on header format
-                        h.key = line_tokens[0];
-                        h.type = line_tokens[1];
-                        h.val = line_tokens[2];
-                        if (h.key.compare("VN") == 0){
-                            set_version(stod(h.val));
-                        }
-                        header[h.key] = h;
-                    } 
+                    ++i;
                 }
+                mmap_close(gfa_buf, gfa_fd, gfa_filesize);
             };
 
             void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
