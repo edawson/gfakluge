@@ -576,7 +576,7 @@ namespace gfak{
             if (!(buf =
                   (char*) mmap(NULL,
                                fsize,
-                               PROT_READ | PROT_WRITE,
+                               PROT_READ,
                                MAP_SHARED,
                                fd,
                                0))) {
@@ -766,14 +766,16 @@ namespace gfak{
                     if (i > 0 && gfa_buf[i-1] == '\n' && gfa_buf[i] == 'S') {
                         // accumulate the tokens
                         vector<string> tokens; // = pliib::split(line, '\t');
-                        string tok; char c;
+                        tokens.emplace_back();
+                        string* tok = &tokens.back();
+                        char c;
                         while (i < gfa_filesize) {
-                            while (i < gfa_filesize && (c = gfa_buf[++i]) && c != '\t' && c != '\n') {
-                                tok.push_back(c);
+                            while (i < gfa_filesize && (c = gfa_buf[++i]) && c != '\t' && c != ' ' && c != '\n') {
+                                tok->push_back(c);
                             }
-                            tokens.push_back(tok);
-                            tok.clear();
                             if (c == '\n') break;
+                            tokens.emplace_back();
+                            tok = &tokens.back();
                         }
                         sequence_elem s;
                         int tag_index = 3;
@@ -829,15 +831,18 @@ namespace gfak{
                 size_t i = 0;
                 bool seen_newline = true;
                 auto build_tokens = [&](vector<string>& tokens) {
-                    string tok; char c;
+                    //vector<string> tokens; // = pliib::split(line, '\t');
                     tokens.clear();
+                    tokens.emplace_back();
+                    string* tok = &tokens.back();
+                    char c;
                     while (i < gfa_filesize) {
-                        while (i < gfa_filesize && (c = gfa_buf[++i]) && c != '\t' && c != '\n') {
-                            tok.push_back(c);
+                        while (i < gfa_filesize && (c = gfa_buf[++i]) && c != '\t' && c != ' ' && c != '\n') {
+                            tok->push_back(c);
                         }
-                        tokens.push_back(tok);
-                        tok.clear();
                         if (c == '\n') break;
+                        tokens.emplace_back();
+                        tok = &tokens.back();
                     }
                 };
                 while (i < gfa_filesize) {
