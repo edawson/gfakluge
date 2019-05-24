@@ -750,7 +750,7 @@ namespace gfak{
                 }
             };
 
-            void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
+            void for_each_sequence_line_in_file(const char* filename, std::function<void(const gfak::sequence_elem&)> func){
                 int gfa_fd = -1;
                 char* gfa_buf = nullptr;
                 size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
@@ -819,7 +819,7 @@ namespace gfak{
                 mmap_close(gfa_buf, gfa_fd, gfa_filesize);
             };
 
-            void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
+            void for_each_edge_line_in_file(char* filename, std::function<void(const gfak::edge_elem&)> func){
                 int gfa_fd = -1;
                 char* gfa_buf = nullptr;
                 size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
@@ -1015,7 +1015,7 @@ namespace gfak{
             };
 
             // Only supports GFA 1.0 style paths
-            void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
+            void for_each_path_line_in_file(const char* filename, std::function<void(const gfak::path_elem&)> func){
                 ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
