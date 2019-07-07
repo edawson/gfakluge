@@ -22,7 +22,7 @@
 #include <cassert>
 
 
-#include "tinyfa.hpp"
+#include "tinyFA.hpp"
 #include "pliib.hpp"
 
 namespace gfak{
