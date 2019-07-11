@@ -664,7 +664,7 @@ namespace gfak{
                     ret += "\t";
                     header_elem h = it->second;
                     std::string t[] = {h.key, h.type, h.val};
-                    std::vector<std::string> temp = std::vector<string> (t, t + sizeof(t) / sizeof(string));
+                    std::vector<std::string> temp = std::vector<std::string> (t, t + sizeof(t) / sizeof(string));
                     ret += join(temp, ":");
                 }
                 return ret;
@@ -678,7 +678,7 @@ namespace gfak{
                         ret += "\t";
                     }
                     std::string t [] = {o.key, o.type, o.val};
-                    std::vector<string> temp = std::vector<string> (t, t + sizeof(t) / sizeof(string));
+                    std::vector<std::string> temp = std::vector<std::string> (t, t + sizeof(t) / sizeof(string));
                     ret += join(temp, ":");
                 }
                 return ret;
@@ -733,9 +733,9 @@ namespace gfak{
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         header_elem h;
-                        std::vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        std::vector<std::string> line_tokens = pliib::split(tokens[1], ':');
                         //TODO this is not well implemented
                         // GFA places no guarantees on header format
                         h.key = line_tokens[0];
@@ -760,7 +760,7 @@ namespace gfak{
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == SEGMENT_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         sequence_elem s;
                         int tag_index = 3;
                         s.name = tokens[1];
@@ -786,11 +786,11 @@ namespace gfak{
                         if (tokens.size() > 3){
                             for (i = tag_index; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 s.opt_fields.push_back(o);
                                 if (o.key == "LN" && s.length == UINT64_MAX){
                                     s.length = stoul(o.val);
@@ -800,9 +800,9 @@ namespace gfak{
                         func(s);
                     }
                     else if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         header_elem h;
-                        std::vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        std::vector<std::string> line_tokens = pliib::split(tokens[1], ':');
                         //TODO this is not well implemented
                         // GFA places no guarantees on header format
                         h.key = line_tokens[0];
@@ -826,7 +826,7 @@ namespace gfak{
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == EDGE_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         edge_elem e;
                         e.id = tokens[1];
 
@@ -860,11 +860,11 @@ namespace gfak{
                         if (tokens.size() > 9){
                             for (size_t i = 9; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 e.tags[o.key] = o;
 
                             }
@@ -873,7 +873,7 @@ namespace gfak{
                         func(e);
                     }
                     else if (determine_line_type(line.c_str()) == LINK_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         edge_elem e;
                         e.type = 1;
                         e.source_name = tokens[1];
@@ -895,11 +895,11 @@ namespace gfak{
                         if (tokens.size() >= 7){
                             for (size_t i = 6; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 e.tags[o.key] = o;
 
                             }
@@ -908,16 +908,16 @@ namespace gfak{
                         func(e);
                     }
                     else if (determine_line_type(line.c_str()) == CONTAINED_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         contained_elem c;
 
                         edge_elem e(c);
                         func(e);
                     }
                     else if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         header_elem h;
-                        std::vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        std::vector<std::string> line_tokens = pliib::split(tokens[1], ':');
                         //TODO this is not well implemented
                         // GFA places no guarantees on header format
                         h.key = line_tokens[0];
@@ -994,11 +994,11 @@ namespace gfak{
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == PATH_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         path_elem p;
                         // Parse a GFA 1.0 path element
                         p.name = tokens[1];
-                        std::vector<string> ids_and_orientations;
+                        std::vector<std::string> ids_and_orientations;
                         pliib::split(tokens[2], ',', ids_and_orientations);
                         p.segment_names.resize(ids_and_orientations.size());
                         p.orientations.resize(ids_and_orientations.size());
@@ -1010,7 +1010,7 @@ namespace gfak{
                             p.orientations[t] = orientation;
                         }
                         if (tokens.size() > 3){
-                            std::vector<string> spltz = pliib::split(tokens[3], ',');
+                            std::vector<std::string> spltz = pliib::split(tokens[3], ',');
                             for (auto z : spltz){
                                 p.overlaps.push_back(z);
                             }
@@ -1025,9 +1025,9 @@ namespace gfak{
                         func(p);
                     }
                     else if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         header_elem h;
-                        std::vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        std::vector<std::string> line_tokens = pliib::split(tokens[1], ':');
                         //TODO this is not well implemented
                         // GFA places no guarantees on header format
                         h.key = line_tokens[0];
@@ -1052,7 +1052,7 @@ namespace gfak{
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == PATH_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         group_elem g;
                         g.ordered = false;
                         g.id = tokens[0];
@@ -1063,11 +1063,11 @@ namespace gfak{
                         if (tokens.size() > 8){
                             for (size_t i = 9; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 g.tags[o.key] = o;
 
                             }
@@ -1075,9 +1075,9 @@ namespace gfak{
                         func(g);
                     }
                     else if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        std::vector<string> tokens = pliib::split(line, '\t');
+                        std::vector<std::string> tokens = pliib::split(line, '\t');
                         header_elem h;
-                        std::vector<string> line_tokens = pliib::split(tokens[1], ':');
+                        std::vector<std::string> line_tokens = pliib::split(tokens[1], ':');
                         //TODO this is not well implemented
                         // GFA places no guarantees on header format
                         h.key = line_tokens[0];
@@ -1537,7 +1537,7 @@ namespace gfak{
                         std::stringstream pat;
                         pat << "P" << "\t";
                         pat << pt->second.name << "\t";
-                        std::vector<string> ovec;
+                        std::vector<std::string> ovec;
                         for (size_t seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
                             std::stringstream o_str;
                             o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "+" : "-");
@@ -1644,7 +1644,7 @@ namespace gfak{
                     for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                         std::stringstream pat;
                         pat << "P\t" << pt->second.name << "\t";
-                        std::vector<string> ovec;
+                        std::vector<std::string> ovec;
                         for (size_t oi = 0; oi < pt->second.segment_names.size(); oi++){
                             std::stringstream o_str;
                             o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "+" : "-");
@@ -1800,7 +1800,7 @@ namespace gfak{
                         for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                             std::stringstream pat;
                             pat << "P\t" << pt->second.name << "\t";
-                            std::vector<string> ovec;
+                            std::vector<std::string> ovec;
                             for (size_t oi = 0; oi < pt->second.segment_names.size(); oi++){
                                 std::stringstream o_str;
                                 o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "+" : "-");
@@ -1835,7 +1835,7 @@ namespace gfak{
                             std::stringstream pat;
                             pat << "P" << "\t";
                             pat << pt->second.name << "\t";
-                            std::vector<string> ovec;
+                            std::vector<std::string> ovec;
                             for (size_t seg_ind = 0; seg_ind < pt->second.segment_names.size(); seg_ind++){
                                 std::stringstream o_str;
                                 o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "+" : "-");
@@ -1895,7 +1895,7 @@ namespace gfak{
              */
             std::string max_ids_string(){
                 tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> x = max_ids();
-                std::vector<string> max_str(5);
+                std::vector<std::string> max_str(5);
                 max_str[0] = std::to_string(std::get<0>(x));
                 max_str[1] = std::to_string(std::get<1>(x));
                 max_str[2] = std::to_string(std::get<2>(x));
@@ -1989,7 +1989,7 @@ namespace gfak{
              */
             void re_id(std::string new_mx_str){
                 std::vector<uint64_t> starts(5);
-                std::vector<string> starts_strs = pliib::split(new_mx_str, ':');
+                std::vector<std::string> starts_strs = pliib::split(new_mx_str, ':');
                 for (int i = 0; i < starts_strs.size(); ++i){
                     starts[i] = stoul(starts_strs[i]);
                 }
@@ -2003,7 +2003,7 @@ namespace gfak{
             // TODO check incompatible version numbers
             // TODO Check colliding groups, headers
             void merge(GFAKluge& gg){
-                std::unordered_set<string> seg_ids;
+                std::unordered_set<std::string> seg_ids;
                 // Merge headers
                 for (auto h : gg.get_header()){
                     header[h.first] = h.second;
@@ -2176,7 +2176,7 @@ namespace gfak{
             bool trim_seqs(const int& minlen = 0, const bool& no_ambiguous = false){
                 bool graph_modified = false;
 
-                unordered_set<string> dropped_seqs;
+                unordered_set<std::string> dropped_seqs;
                 map<string, sequence_elem, custom_key>::iterator n_to_s;
                 for (n_to_s = name_to_seq.begin(); n_to_s != name_to_seq.end(); n_to_s++){
                     auto& s = n_to_s->second;
@@ -2242,9 +2242,9 @@ namespace gfak{
             }
             bool parse_gfa_file(std::istream& instream){
                 std::string line;
-                std::vector<string> line_tokens;
+                std::vector<std::string> line_tokens;
                 while (getline(instream, line)){
-                    std::vector<string> tokens = pliib::split(line, '\t');
+                    std::vector<std::string> tokens = pliib::split(line, '\t');
                     if (tokens[0] == "H"){
                         header_elem h;
                         line_tokens = pliib::split(tokens[1], ':');
@@ -2287,11 +2287,11 @@ namespace gfak{
                         if (tokens.size() > 3){
                             for (i = tag_index; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 s.opt_fields.push_back(o);
                                 if (o.key == "LN" && s.length == UINT64_MAX){
                                     s.length = stoul(o.val);
@@ -2335,7 +2335,7 @@ namespace gfak{
                         if (tokens.size() > 9){
                             for (size_t i = 9; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
@@ -2374,7 +2374,7 @@ namespace gfak{
                         if (tokens.size() > 8){
                             for (size_t i = 9; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
@@ -2400,11 +2400,11 @@ namespace gfak{
                         if (tokens.size() > 8){
                             for (std::size_t i = 9; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 g.tags[o.key] = o;
 
                             }
@@ -2458,7 +2458,7 @@ namespace gfak{
                         if (tokens.size() >= 7){
                             for (size_t i = 6; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
@@ -2499,11 +2499,11 @@ namespace gfak{
                         if (tokens.size() >= 8){
                             for (size_t i = 8; i < tokens.size(); i++){
                                 //opt fields are in key:type:val format
-                                std::vector<string> opt_field = pliib::split(tokens[i], ':');
+                                std::vector<std::string> opt_field = pliib::split(tokens[i], ':');
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = pliib::join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = pliib::join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 e.tags[o.key] = o;
 
                             }
@@ -2538,7 +2538,7 @@ namespace gfak{
                             // Parse a GFA 1.0 path element
                             path_elem p;
                             p.name = tokens[1];
-                            std::vector<string> ids_and_orientations;
+                            std::vector<std::string> ids_and_orientations;
                             pliib::split(tokens[2], ',', ids_and_orientations);
                             p.segment_names.resize(ids_and_orientations.size());
                             p.orientations.resize(ids_and_orientations.size());
@@ -2552,7 +2552,7 @@ namespace gfak{
 
 
                             if (tokens.size() > 3){
-                                std::vector<string> spltz = pliib::split(tokens[3], ',');
+                                std::vector<std::string> spltz = pliib::split(tokens[3], ',');
                                 for (auto z : spltz){
                                     p.overlaps.push_back(z);
                                 }
