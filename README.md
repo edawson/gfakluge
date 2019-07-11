@@ -4,6 +4,9 @@ gfakluge
 [![DOI](https://zenodo.org/badge/47132080.svg)](https://zenodo.org/badge/latestdoi/47132080)
 [![status](http://joss.theoj.org/papers/d731f6dfc6b77013caaccfd8333c684a/status.svg)](http://joss.theoj.org/papers/d731f6dfc6b77013caaccfd8333c684a)
 
+[![Build Status](https://dev.azure.com/ericco92/ericco92/_apis/build/status/edawson.gfakluge?branchName=master)](https://dev.azure.com/ericco92/ericco92/_build/latest?definitionId=3&branchName=master)  
+
+
 ## What is it?  
 GFAKluge is a C++ parser/writer and
 a set of command line utilities for manipulating [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format).
