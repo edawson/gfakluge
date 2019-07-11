@@ -94,11 +94,11 @@ namespace gfak{
 
     // Contains basic stats about a GFA graph.
     struct gfak_stats_t{
-        uint64_t num_nodes = 0;
-        uint64_t num_edges = 0;
-        uint64_t num_fragments = 0;
-        uint64_t num_gaps = 0;
-        uint64_t num_paths = 0;
+        std::uint64_t num_nodes = 0;
+        std::uint64_t num_edges = 0;
+        std::uint64_t num_fragments = 0;
+        std::uint64_t num_gaps = 0;
+        std::uint64_t num_paths = 0;
 
         double N50 = 0.0;
         double N90 = 0.0;
@@ -220,7 +220,7 @@ namespace gfak{
                 if (this->overlaps.size() == this->segment_names.size()){
                     st << '\t' << overlaps[i];
                 }
-                st << endl;
+                st << std::endl;
                 os << st.str();
                 st.str("");
             }
@@ -280,7 +280,7 @@ namespace gfak{
          */
         std::string as_fasta_record() const{
             std::ostringstream st;
-            st << '>' << ' ' << name << endl
+            st << '>' << ' ' << name << std::endl
                 << sequence;
             return st.str();
         };
@@ -323,7 +323,7 @@ namespace gfak{
         std::string sink_name;
         bool source_orientation_forward;
         bool sink_orientation_forward;
-        uint64_t pos;
+        std::uint64_t pos;
         std::string cigar;
         std::map<std::string, opt_elem> opt_fields;
     };
@@ -377,10 +377,10 @@ namespace gfak{
         bool source_orientation_forward;
         bool sink_orientation_forward;
         std::bitset<4> ends;
-        uint64_t source_begin = 0;
-        uint64_t source_end = 0;
-        uint64_t sink_begin = 0;
-        uint64_t sink_end = 0;
+        std::uint64_t source_begin = 0;
+        std::uint64_t source_end = 0;
+        std::uint64_t sink_begin = 0;
+        std::uint64_t sink_end = 0;
         std::string alignment;
         std::map<std::string, opt_elem> tags;
         int determine_type(){
@@ -455,7 +455,7 @@ namespace gfak{
             std::string id;
             std::string source_name;
             std::string sink_name;
-            int32_t distance;
+            std::int32_t distance;
             std::map<std::string, opt_elem> tags;
             std::string to_string_2() const {
                 std::stringstream st;
@@ -480,10 +480,10 @@ namespace gfak{
             std::string id;
             std::string ref;
             bool ref_orientation = true;
-            uint32_t seg_begin;
-            uint32_t seg_end;
-            uint32_t frag_begin;
-            uint32_t frag_end;
+            std::uint32_t seg_begin;
+            std::uint32_t seg_end;
+            std::uint32_t frag_begin;
+            std::uint32_t frag_end;
             std::bitset<4> ends;
             std::string alignment;
             std::map<std::string, opt_elem> tags;
@@ -554,7 +554,7 @@ namespace gfak{
                 int rank = 0;
                 std::stringstream st;
                 for (size_t i = 0; i < items.size(); ++i){
-                    st << "W" << items[i] << '\t' << ++rank << '\t' << orientations[i] << "*" << endl;
+                    st << "W" << items[i] << '\t' << ++rank << '\t' << orientations[i] << "*" << std::endl;
                 }
                 return st.str();
             }
@@ -616,18 +616,20 @@ namespace gfak{
             bool one_compat = false;
             bool two_compat = false;
 
-            uint64_t next_set_or_path_id = 0;
-            uint64_t base_seq_id = 0;
-            uint64_t base_edge_id = 0;
-            uint64_t base_gap_id = 0;
-            uint64_t base_frag_id = 0;
-            uint64_t base_group_id = 0;
+            std::uint64_t next_set_or_path_id = 0;
+            std::uint64_t base_seq_id = 0;
+            std::uint64_t base_edge_id = 0;
+            std::uint64_t base_gap_id = 0;
+            std::uint64_t base_frag_id = 0;
+            std::uint64_t base_group_id = 0;
 
 
             double version = 0.0;
             std::map<std::string, header_elem> header;
             std::map<std::string, std::vector<contained_elem> > seq_to_contained;
             std::map<std::string, std::vector<link_elem> > seq_to_link;
+            std::map<std::string, std::vector<alignment_elem> > seq_to_alignment;
+            std::map<std::string, path_elem> name_to_path;
             //Since we can't compare sequence elements for hashing,
             // we cheat and use their names (which are only sort of guaranteed to be
             // unique.
@@ -656,15 +658,15 @@ namespace gfak{
 
                 return ret;
             }
-            std::map<std::string, std::vector<alignment_elem> > seq_to_alignment;
+
             std::string header_string(std::map<std::string, header_elem>& headers){
                 std::string ret = "H";
-                std::map<string, header_elem>::iterator it;
+                std::map<std::string, header_elem>::iterator it;
                 for (it = headers.begin(); it != headers.end(); it++){
                     ret += "\t";
                     header_elem h = it->second;
                     std::string t[] = {h.key, h.type, h.val};
-                    std::vector<std::string> temp = std::vector<std::string> (t, t + sizeof(t) / sizeof(string));
+                    std::vector<std::string> temp = std::vector<std::string> (t, t + sizeof(t) / sizeof(std::string));
                     ret += join(temp, ":");
                 }
                 return ret;
@@ -678,13 +680,13 @@ namespace gfak{
                         ret += "\t";
                     }
                     std::string t [] = {o.key, o.type, o.val};
-                    std::vector<std::string> temp = std::vector<std::string> (t, t + sizeof(t) / sizeof(string));
+                    std::vector<std::string> temp = std::vector<std::string> (t, t + sizeof(t) / sizeof(std::string));
                     ret += join(temp, ":");
                 }
                 return ret;
             }
 
-            std::map<std::string, path_elem> name_to_path;
+
 
             /** GFA 2.0 containers **/
             std::map<std::string, std::vector<fragment_elem> > seq_to_fragments;
@@ -708,8 +710,8 @@ namespace gfak{
                 //Since we can't compare sequence elements for hashing,
                 // we cheat and use their names (which are sort of guaranteed to be
                 // unique.
-                std::map<string, sequence_elem, custom_key> name_to_seq;
-                std::map<string, path_elem> name_to_path;
+                std::map<std::string, sequence_elem, custom_key> name_to_seq;
+                std::map<std::string, path_elem> name_to_path;
                 //cout << fixed << setprecision(2);
 
 
@@ -717,17 +719,17 @@ namespace gfak{
                 std::map<std::string, std::vector<fragment_elem> > seq_to_fragments;
                 std::map<std::string, std::vector<edge_elem> > seq_to_edges;
                 std::map<std::string, std::vector<gap_elem> > seq_to_gaps;
-                std::map<string, group_elem> groups;
+                std::map<std::string, group_elem> groups;
             };
             ~GFAKluge(){
 
             };
 
             double detect_version_from_file(const char* filename){
-                ifstream gfi;
+                std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
-                    std::cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
                 std::string line;
@@ -751,10 +753,10 @@ namespace gfak{
             };
 
             void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
-                ifstream gfi;
+                std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
-                    std::cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
                 std::string line;
@@ -790,7 +792,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 s.opt_fields.push_back(o);
                                 if (o.key == "LN" && s.length == UINT64_MAX){
                                     s.length = stoul(o.val);
@@ -817,10 +819,10 @@ namespace gfak{
             };
 
             void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
-                ifstream gfi;
+                std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
-                    std::cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
                 std::string line;
@@ -864,7 +866,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 e.tags[o.key] = o;
 
                             }
@@ -899,7 +901,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 e.tags[o.key] = o;
 
                             }
@@ -937,7 +939,7 @@ namespace gfak{
                 char* gfa_buf = nullptr;
                 size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
                 if (gfa_fd == -1) {
-                    std::cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
                 std::string line;
@@ -985,10 +987,10 @@ namespace gfak{
 
             // Only supports GFA 1.0 style paths
             void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
-                ifstream gfi;
+                std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
-                    std::cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
                 std::string line;
@@ -1043,10 +1045,10 @@ namespace gfak{
 
             // Only supports GFA 2.0 style paths (i.e. groups, both ordered and unordered)
             void for_each_ordered_group_line_in_file(const char* filename, std::function<void(gfak::group_elem)> func){
-                ifstream gfi;
+                std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
-                    std::cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
                 std::string line;
@@ -1067,7 +1069,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 g.tags[o.key] = o;
 
                             }
@@ -1150,7 +1152,7 @@ namespace gfak{
                         add_path(p.name, p);
                     }
                     else{
-                        std::cerr << "Group " << g.first << " is unordered; skipping adding it to the paths." << endl;
+                        std::cerr << "Group " << g.first << " is unordered; skipping adding it to the paths." << std::endl;
                     }
                 }
             }
@@ -1500,7 +1502,7 @@ namespace gfak{
                                 e->ends.set(3, (e->sink_end == sink.length));
                             }
                             else{
-                                std::cerr << "Skipping edge not expressable in GFA2: \"" << e->to_string_2() << "\"" << endl;
+                                std::cerr << "Skipping edge not expressable in GFA2: \"" << e->to_string_2() << "\"" << std::endl;
                             }
                         }
                     }
@@ -1532,7 +1534,7 @@ namespace gfak{
                 }
 
                 if (name_to_path.size() > 0 && this->version >= 1.0){
-                    std::map<string, path_elem>::iterator pt;
+                    std::map<std::string, path_elem>::iterator pt;
                     for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                         std::stringstream pat;
                         pat << "P" << "\t";
@@ -1552,9 +1554,9 @@ namespace gfak{
                     }
                 }
                 for (auto s : name_to_seq){
-                    ret << s.second.to_string_1() << endl;
+                    ret << s.second.to_string_1() << std::endl;
                     for (auto e : seq_to_edges[s.first]){
-                        ret << e.to_string_1() << endl;;
+                        ret << e.to_string_1() << std::endl;;
                     }
                     /**
                      *  NB: There are no Fragments in GFA1, so we don't output them.
@@ -1575,21 +1577,21 @@ namespace gfak{
                 std::stringstream ret;
                 // Header
                 if (header.size() > 0){
-                    ret << header_string(header) << endl;
+                    ret << header_string(header) << std::endl;
                 }
                 for (auto p : groups){
-                    ret << p.second.to_string_2() << endl;
+                    ret << p.second.to_string_2() << std::endl;
                 }
                 for (auto s : name_to_seq){
-                    ret << s.second.to_string_2() << endl;
+                    ret << s.second.to_string_2() << std::endl;
                     for (auto f : seq_to_fragments[s.first]){
-                        ret << f.to_string_2() << endl;
+                        ret << f.to_string_2() << std::endl;
                     }
                     for (auto e : seq_to_edges[s.first]){
-                        ret << e.to_string_2() << endl;
+                        ret << e.to_string_2() << std::endl;
                     }
                     for (auto g : seq_to_gaps[s.first]){
-                        ret << g.to_string_2() << endl;
+                        ret << g.to_string_2() << std::endl;
                     }
                 }
                 return ret.str();
@@ -1617,7 +1619,7 @@ namespace gfak{
                 std::map<std::string, sequence_elem>::iterator st;
 
                 for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-                    ret << st->second.to_string_1() << endl;
+                    ret << st->second.to_string_1() << std::endl;
                 }
 
 
@@ -1625,7 +1627,7 @@ namespace gfak{
                 for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                     for (auto e : seq_to_edges[st->first]){
                         if (e.type == 1){
-                            ret << e.to_string_1() << endl;
+                            ret << e.to_string_1() << std::endl;
                         }
 
                     }
@@ -1633,14 +1635,14 @@ namespace gfak{
                 for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                     for (auto e : seq_to_edges[st->first]){
                         if (e.type == 2){
-                            ret << e.to_string_1() << endl;
+                            ret << e.to_string_1() << std::endl;
                         }
 
                     }
                 }
 
                 if (name_to_path.size() > 0 && this->version == 1.0){
-                    std::map<string, path_elem>::iterator pt;
+                    std::map<std::string, path_elem>::iterator pt;
                     for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                         std::stringstream pat;
                         pat << "P\t" << pt->second.name << "\t";
@@ -1750,21 +1752,21 @@ namespace gfak{
                 }
                 else if (this->version == 2.0){
                     if (header.size() > 0){
-                        os << header_string(header) << endl;
+                        os << header_string(header) << std::endl;
                     }
                     for (auto p : groups){
-                        os << p.second.to_string_2() << endl;
+                        os << p.second.to_string_2() << std::endl;
                     }
                     for (auto s : name_to_seq){
-                        os << s.second.to_string_2() << endl;
+                        os << s.second.to_string_2() << std::endl;
                         for (auto f : seq_to_fragments[s.first]){
-                            os << f.to_string_2() << endl;
+                            os << f.to_string_2() << std::endl;
                         }
                         for (auto e : seq_to_edges[s.first]){
-                            os << e.to_string_2() << endl;
+                            os << e.to_string_2() << std::endl;
                         }
                         for (auto g : seq_to_gaps[s.first]){
-                            os << g.to_string_2() << endl;
+                            os << g.to_string_2() << std::endl;
                         }
                     }
                 }
@@ -1775,13 +1777,13 @@ namespace gfak{
                     }
                     std::map<std::string, sequence_elem>::iterator st;
                     for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
-                        os << st->second.to_string_1() << endl;
+                        os << st->second.to_string_1() << std::endl;
                     }
 
                     for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                         for (auto e : seq_to_edges[st->first]){
                             if (e.type == 1){
-                                os << e.to_string_1() << endl;
+                                os << e.to_string_1() << std::endl;
                             }
 
                         }
@@ -1789,14 +1791,14 @@ namespace gfak{
                     for (st = name_to_seq.begin(); st != name_to_seq.end(); st++){
                         for (auto e : seq_to_edges[st->first]){
                             if (e.type == 2){
-                                os << e.to_string_1() << endl;
+                                os << e.to_string_1() << std::endl;
                             }
 
                         }
                     }
 
                     if (name_to_path.size() > 0 && this->version >= 1.0){
-                        std::map<string, path_elem>::iterator pt;
+                        std::map<std::string, path_elem>::iterator pt;
                         for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                             std::stringstream pat;
                             pat << "P\t" << pt->second.name << "\t";
@@ -1815,7 +1817,7 @@ namespace gfak{
                         }
                     }
                     else if (this->version < 1.0 && name_to_path.size() > 0){
-                        std::map<string, path_elem>::iterator pt;
+                        std::map<std::string, path_elem>::iterator pt;
                         for (pt = name_to_path.begin(); pt != name_to_path.end(); pt++){
                             pt->second.write_as_walks(os);
                         }
@@ -1830,7 +1832,7 @@ namespace gfak{
                     }
 
                     if (name_to_path.size() > 0 && this->version >= 1.0){
-                        std::map<string, path_elem>::iterator pt;
+                        std::map<std::string, path_elem>::iterator pt;
                         for (pt = name_to_path.begin(); pt != name_to_path.end(); ++pt){
                             std::stringstream pat;
                             pat << "P" << "\t";
@@ -1850,16 +1852,16 @@ namespace gfak{
                         }
                     }
                     else if (this->version < 1.0 && name_to_path.size() > 0){
-                        std::map<string, path_elem>::iterator pt;
+                        std::map<std::string, path_elem>::iterator pt;
                         for (pt = name_to_path.begin(); pt != name_to_path.end(); pt++){
                             pt->second.write_as_walks(os);
                         }
                     }
 
                     for (auto s : name_to_seq){
-                        os << s.second.to_string_1() << endl;
+                        os << s.second.to_string_1() << std::endl;
                         for (auto e : seq_to_edges[s.first]){
-                            os << e.to_string_1() << endl;;
+                            os << e.to_string_1() << std::endl;;
                         }
                         /**
                          *  NB: There are no Fragments in GFA1, so we don't output them.
@@ -1874,7 +1876,7 @@ namespace gfak{
                 }
 
                 else{
-                    std::cerr << "Invalid version " << this->version << endl;
+                    std::cerr << "Invalid version " << this->version << std::endl;
                     exit(9);
 
                 }
@@ -1894,7 +1896,7 @@ namespace gfak{
              *  than a tuple.
              */
             std::string max_ids_string(){
-                tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> x = max_ids();
+                std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> x = max_ids();
                 std::vector<std::string> max_str(5);
                 max_str[0] = std::to_string(std::get<0>(x));
                 max_str[1] = std::to_string(std::get<1>(x));
@@ -1913,18 +1915,18 @@ namespace gfak{
                 base_frag_id = std::get<2>(new_mx);
                 base_gap_id = std::get<3>(new_mx);
                 base_group_id = std::get<4>(new_mx);
-                uint64_t seg_diff = base_seq_id;
+                std::uint64_t seg_diff = base_seq_id;
                 // Segments
                 int num_segs = name_to_seq.size();
 
                 // locally cache name_to_seq,
                 // seq_to_edges, seq_to_fragments, groups,
                 // and seq_to_gaps before clearing them.
-                std::map<string, sequence_elem, custom_key> n_s;
-                std::map<string, std::vector<edge_elem>> s_e;
-                std::map<string, std::vector<fragment_elem>> s_f;
-                std::map<string, std::vector<gap_elem>> s_g;
-                std::map<string, group_elem> g_g;
+                std::map<std::string, sequence_elem, custom_key> n_s;
+                std::map<std::string, std::vector<edge_elem>> s_e;
+                std::map<std::string, std::vector<fragment_elem>> s_f;
+                std::map<std::string, std::vector<gap_elem>> s_g;
+                std::map<std::string, group_elem> g_g;
 
                 for (auto ns : name_to_seq){
                     std::string old_name = ns.second.name;
@@ -1993,7 +1995,7 @@ namespace gfak{
                 for (int i = 0; i < starts_strs.size(); ++i){
                     starts[i] = stoul(starts_strs[i]);
                 }
-                tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t> n_ids = std::make_tuple(starts[0], starts[1],
+                std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> n_ids = std::make_tuple(starts[0], starts[1],
                         starts[2], starts[3], starts[4]);
                 re_id(n_ids);
 
@@ -2012,10 +2014,10 @@ namespace gfak{
                     seg_ids.insert(s.first);
                 }
 
-                std::map<string, sequence_elem, custom_key> ss = gg.get_name_to_seq();
-                std::map<string, std::vector<fragment_elem>> sf = gg.get_seq_to_fragments();
-                std::map<string, std::vector<gap_elem>> sg = gg.get_seq_to_gaps();
-                std::map<string, std::vector<edge_elem>> se = gg.get_seq_to_edges();
+                std::map<std::string, sequence_elem, custom_key> ss = gg.get_name_to_seq();
+                std::map<std::string, std::vector<fragment_elem>> sf = gg.get_seq_to_fragments();
+                std::map<std::string, std::vector<gap_elem>> sg = gg.get_seq_to_gaps();
+                std::map<std::string, std::vector<edge_elem>> se = gg.get_seq_to_edges();
 
                 if (this->two_compat){
                     for (auto s : ss){
@@ -2033,8 +2035,8 @@ namespace gfak{
                             }
                         }
                         else{
-                            std::cerr << "WARNING: DUPLICATE IDS " << s.second.name << endl <<
-                                " will be lost." << endl;
+                            std::cerr << "WARNING: DUPLICATE IDS " << s.second.name << std::endl <<
+                                " will be lost." << std::endl;
                         }
                         for (auto g : gg.get_groups()){
                             this->add_group(g.second);
@@ -2149,14 +2151,14 @@ namespace gfak{
                     TFA::parseFAIndex(fasta_file, tf);
                 }
                 else{
-                    std::cerr << "Creating index for " << fasta_file << "." << endl;
+                    std::cerr << "Creating index for " << fasta_file << "." << std::endl;
                     TFA::createFAIndex(fasta_file, tf);
-                    std::cerr << "Created index." << endl;
+                    std::cerr << "Created index." << std::endl;
                     TFA::writeFAIndex(fasta_file, tf);
-                    std::cerr << "Wrote index to file." << endl;
+                    std::cerr << "Wrote index to file." << std::endl;
                 }
 
-                for (std::map<string, sequence_elem, custom_key>::iterator it = name_to_seq.begin(); it != name_to_seq.end(); it++){
+                for (std::map<std::string, sequence_elem, custom_key>::iterator it = name_to_seq.begin(); it != name_to_seq.end(); it++){
                     if (tf.hasSeqID(it->second.name.c_str())){
                         char* s;
                         TFA::getSequence(tf, it->second.name.c_str(), s);
@@ -2176,12 +2178,12 @@ namespace gfak{
             bool trim_seqs(const int& minlen = 0, const bool& no_ambiguous = false){
                 bool graph_modified = false;
 
-                unordered_set<std::string> dropped_seqs;
-                std::map<string, sequence_elem, custom_key>::iterator n_to_s;
+                std::unordered_set<std::string> dropped_seqs;
+                std::map<std::string, sequence_elem, custom_key>::iterator n_to_s;
                 for (n_to_s = name_to_seq.begin(); n_to_s != name_to_seq.end(); n_to_s++){
                     auto& s = n_to_s->second;
                     if (s.length == UINT64_MAX){
-                        std::cerr << "Length unset for sequence " << s.name << "; removing from graph." << endl;
+                        std::cerr << "Length unset for sequence " << s.name << "; removing from graph." << std::endl;
                         dropped_seqs.insert(s.name);
                         name_to_seq.erase(n_to_s);
                         graph_modified = true;
@@ -2199,7 +2201,7 @@ namespace gfak{
                     }
                 }
 
-                std::map<string, std::vector<edge_elem>>::iterator s_to_e;
+                std::map<std::string, std::vector<edge_elem>>::iterator s_to_e;
                 for (s_to_e = seq_to_edges.begin(); s_to_e != seq_to_edges.end(); s_to_e++){
                     // Remove all edges that have dropped sequences as their source.
                     if (dropped_seqs.find(s_to_e->first) != dropped_seqs.end()){
@@ -2228,10 +2230,10 @@ namespace gfak{
 
             /** Parse a GFA file to a GFAKluge object. */
             bool parse_gfa_file(const std::string &filename) {
-                ifstream gfi;
+                std::ifstream gfi;
                 gfi.open(filename.c_str(), std::ifstream::in);
                 if (!gfi.good()){
-                    std::cerr << "Couldn't open GFA file " << filename << "." << endl;
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
 
@@ -2291,7 +2293,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = pliib::join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 s.opt_fields.push_back(o);
                                 if (o.key == "LN" && s.length == UINT64_MAX){
                                     s.length = stoul(o.val);
@@ -2404,7 +2406,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = pliib::join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 g.tags[o.key] = o;
 
                             }
@@ -2503,7 +2505,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = pliib::join(vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = pliib::join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 e.tags[o.key] = o;
 
                             }
@@ -2590,7 +2592,7 @@ namespace gfak{
                             add_walk(pname, rank, wname, ori, overlap, opts);
                         }
                         else{
-                            std::cerr << "Cannot parse; version of GFA is too new. Version: " << this->version << endl;
+                            std::cerr << "Cannot parse; version of GFA is too new. Version: " << this->version << std::endl;
                             exit(-1);
                         }
 
@@ -2613,7 +2615,7 @@ namespace gfak{
                         continue;
                     }
                     else{
-                        std::cerr << "Unknown line identifier  encountered: " << tokens[0] <<  " . Exiting." << endl;
+                        std::cerr << "Unknown line identifier  encountered: " << tokens[0] <<  " . Exiting." << std::endl;
                         exit(1);
                     }
 
