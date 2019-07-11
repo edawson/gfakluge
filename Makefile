@@ -20,10 +20,10 @@ BUILD_DIR:=build
 LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./src/tinyFA/pliib -I./$(BUILD_DIR)
 
-gfak: $(BUILD_DIR)/main.o src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyfa.hpp | $(BUILD_DIR) $(BIN_DIR)
+gfak: $(BUILD_DIR)/main.o src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
 	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
-$(BUILD_DIR)/main.o: src/main.cpp src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyfa.hpp | $(BUILD_DIR) $(BIN_DIR)
+$(BUILD_DIR)/main.o: src/main.cpp src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
 	+$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
 $(BUILD_DIR):
