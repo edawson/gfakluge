@@ -598,7 +598,7 @@ namespace gfak{
         }
 
         class GFAKluge{
-            friend std::ostream& operator<<(std::ostream& os, GFAKluge& g){
+            inline friend std::ostream& operator<<(std::ostream& os, GFAKluge& g){
                 g.gfa_1_ize();
                 g.gfa_2_ize();
 
@@ -635,7 +635,7 @@ namespace gfak{
             // unique.
             std::map<std::string, sequence_elem, custom_key> name_to_seq;
 
-            bool string_is_number(std::string s){
+            inline bool string_is_number(std::string s){
                 bool ret = true;
                 std::string::iterator it;
                 for (it = s.begin(); it != s.end(); it++){
@@ -647,19 +647,7 @@ namespace gfak{
                 return !(s.empty());
             }
 
-            std::string join(const std::vector<std::string>& splits, const std::string& glue){
-                std::string ret = "";
-                for (size_t i = 0; i < splits.size(); i++){
-                    if (i != 0){
-                        ret += glue;
-                    }
-                    ret += splits[i];
-                }
-
-                return ret;
-            }
-
-            std::string header_string(std::map<std::string, header_elem>& headers){
+            inline std::string header_string(std::map<std::string, header_elem>& headers){
                 std::string ret = "H";
                 std::map<std::string, header_elem>::iterator it;
                 for (it = headers.begin(); it != headers.end(); it++){
@@ -667,12 +655,12 @@ namespace gfak{
                     header_elem h = it->second;
                     std::string t[] = {h.key, h.type, h.val};
                     std::vector<std::string> temp = std::vector<std::string> (t, t + sizeof(t) / sizeof(std::string));
-                    ret += join(temp, ":");
+                    ret += pliib::join(temp, ":");
                 }
                 return ret;
 
             }
-            std::string opt_string(std::vector<opt_elem> opts){
+            inline std::string opt_string(std::vector<opt_elem> opts){
                 std::string ret = "";
                 for (size_t i = 0; i < opts.size(); i++){
                     opt_elem o = opts[i];
@@ -681,7 +669,7 @@ namespace gfak{
                     }
                     std::string t [] = {o.key, o.type, o.val};
                     std::vector<std::string> temp = std::vector<std::string> (t, t + sizeof(t) / sizeof(std::string));
-                    ret += join(temp, ":");
+                    ret += pliib::join(temp, ":");
                 }
                 return ret;
             }
@@ -725,7 +713,7 @@ namespace gfak{
 
             };
 
-            double detect_version_from_file(const char* filename){
+            inline double detect_version_from_file(const char* filename){
                 std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
@@ -752,7 +740,7 @@ namespace gfak{
                 }
             };
 
-            void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
+            inline void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
                 std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
@@ -792,7 +780,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = pliib::join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 s.opt_fields.push_back(o);
                                 if (o.key == "LN" && s.length == UINT64_MAX){
                                     s.length = stoul(o.val);
@@ -818,7 +806,7 @@ namespace gfak{
                 }
             };
 
-            void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
+            inline void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
                 std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
@@ -866,7 +854,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = pliib::join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 e.tags[o.key] = o;
 
                             }
@@ -901,7 +889,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = pliib::join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 e.tags[o.key] = o;
 
                             }
@@ -1069,7 +1057,7 @@ namespace gfak{
                                 opt_elem o;
                                 o.key = opt_field[0];
                                 o.type = opt_field[1];
-                                o.val = join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                o.val = pliib::join(std::vector<std::string> (opt_field.begin() + 2, opt_field.end()), ":");
                                 g.tags[o.key] = o;
 
                             }
@@ -1545,9 +1533,9 @@ namespace gfak{
                             o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "+" : "-");
                             ovec.push_back(o_str.str());
                         }
-                        pat << join(ovec, ",");
+                        pat << pliib::join(ovec, ",");
                         if (pt->second.overlaps.size() > 0){
-                            pat << "\t" << join(pt->second.overlaps, ",");
+                            pat << "\t" << pliib::join(pt->second.overlaps, ",");
                         }
                         pat << "\n";
                         ret << pat.str();
@@ -1652,9 +1640,9 @@ namespace gfak{
                             o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "+" : "-");
                             ovec.push_back(o_str.str());
                         }
-                        pat << join(ovec, ",");
+                        pat << pliib::join(ovec, ",");
                         if (pt->second.overlaps.size() > 0){
-                            pat << "\t" << join(pt->second.overlaps, ",");
+                            pat << "\t" << pliib::join(pt->second.overlaps, ",");
                         }
                         pat << "\n";
                         ret << pat.str();
@@ -1808,9 +1796,9 @@ namespace gfak{
                                 o_str << pt->second.segment_names[oi] << (pt->second.orientations[oi] ? "+" : "-");
                                 ovec.push_back(o_str.str());
                             }
-                            pat << join(ovec, ",");
+                            pat << pliib::join(ovec, ",");
                             if (pt->second.overlaps.size() > 0){
-                                pat << "\t" << join(pt->second.overlaps, ",");
+                                pat << "\t" << pliib::join(pt->second.overlaps, ",");
                             }
                             pat << "\n";
                             os << pat.str();
@@ -1843,9 +1831,9 @@ namespace gfak{
                                 o_str << pt->second.segment_names[seg_ind] << (pt->second.orientations[seg_ind] ? "+" : "-");
                                 ovec.push_back(o_str.str());
                             }
-                            pat << join(ovec, ",");
+                            pat << pliib::join(ovec, ",");
                             if (pt->second.overlaps.size() > 0){
-                                pat << "\t" << join(pt->second.overlaps, ",");
+                                pat << "\t" << pliib::join(pt->second.overlaps, ",");
                             }
                             pat << "\n";
                             os << pat.str();
@@ -1903,7 +1891,7 @@ namespace gfak{
                 max_str[2] = std::to_string(std::get<2>(x));
                 max_str[3] = std::to_string(std::get<3>(x));
                 max_str[4] = std::to_string(std::get<4>(x));
-                return join(max_str, ":");
+                return pliib::join(max_str, ":");
             }
             /** Bump the IDs of sequence-, edge-, fragment-, gap-, and group_elems to 
              *  be greater than new_mx. Useful for concatenating graphs.
