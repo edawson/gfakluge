@@ -11,7 +11,7 @@
 #include <zlib.h>
 #include <ostream>
 #include "gfakluge.hpp"
-#include "tinyfa.hpp"
+#include "tinyFA.hpp"
 #include "pliib.hpp"
 
 
