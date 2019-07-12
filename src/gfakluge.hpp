@@ -197,7 +197,7 @@ namespace gfak{
          *  which is identical to the output format for an ordered group
          */
         std::string to_string_2() const{
-            std::stringstream st;
+            std::ostringstream st;
             std::vector<std::string> p_segs;
             for (int i = 0; i < segment_names.size(); ++i){
                 p_segs.push_back(segment_names[i] + (orientations[i] ? "+" : "-") );
@@ -210,7 +210,7 @@ namespace gfak{
          *  Writes a path as GFA0.1-style walks to an outstream
          */
         void write_as_walks(std::ostream& os){
-            std::stringstream st;
+            std::ostringstream st;
             int32_t rank = 0;
             for (size_t i = 0; i < this->segment_names.size(); ++i){
                 ++rank;
@@ -404,7 +404,7 @@ namespace gfak{
 
         }
         std::string to_string_2() const{
-            std::stringstream st;
+            std::ostringstream st;
             st << "E" << "\t" << id << "\t" <<
                 source_name << (source_orientation_forward ? "+" : "-") <<
                 "\t" << sink_name << (sink_orientation_forward ? "+" : "-") << "\t" <<
@@ -437,7 +437,7 @@ namespace gfak{
                 std::cerr << "warning: unexpressable edge \"" << to_string_2()  << "\"" << std::endl
                     << "will not appear in stdout." << std::endl;
             }
-            std::stringstream st;
+            std::ostringstream st;
             st << (t == 1 ? "L" : "C") << "\t" << source_name << "\t" << 
                 (source_orientation_forward ? "+" : "-") << "\t" <<
                 sink_name << "\t" << (sink_orientation_forward ? "+" : "-") <<
@@ -458,7 +458,7 @@ namespace gfak{
             std::int32_t distance;
             std::map<std::string, opt_elem> tags;
             std::string to_string_2() const {
-                std::stringstream st;
+                std::ostringstream st;
                 st << "G" << "\t" << id << "\t" <<
                     source_name << "\t" << sink_name << "\t" <<
                     distance;
@@ -488,7 +488,7 @@ namespace gfak{
             std::string alignment;
             std::map<std::string, opt_elem> tags;
             std::string to_string_2() const{
-                std::stringstream st;
+                std::ostringstream st;
                 st << "F" << "\t" << id << "\t" <<
                     ref << (ref_orientation ? "+" : "-") << "\t" <<
                     seg_begin << (ends[0] ? "$" : "") << "\t" <<
@@ -535,7 +535,7 @@ namespace gfak{
                 return st.str();
             }
             std::string to_string_2() const{
-                std::stringstream st;
+                std::ostringstream st;
                 st << (ordered ? "O" : "U") << "\t" << id << "\t";
                 st << items[0] << (ordered ? (orientations[0] ? "+" : "-") : "" );
                 for (size_t i = 1; i < items.size(); ++i){
@@ -552,7 +552,7 @@ namespace gfak{
                     return "";
                 }
                 int rank = 0;
-                std::stringstream st;
+                std::ostringstream st;
                 for (size_t i = 0; i < items.size(); ++i){
                     st << "W" << items[i] << '\t' << ++rank << '\t' << orientations[i] << "*" << std::endl;
                 }
