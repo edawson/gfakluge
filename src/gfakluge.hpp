@@ -962,7 +962,7 @@ namespace gfak{
             };
 
             // Per-element parsing of paths, only supports GFA 1.0
-            inline void for_each_path_element_in_file(const char* filename, std::function<void(const string&, const string&, bool, const string&)> func){
+            inline void for_each_path_element_in_file(const char* filename, std::function<void(const string&, const string&, bool, const string&, bool)> func){
                 int gfa_fd = -1;
                 char* gfa_buf = nullptr;
                 size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
@@ -989,6 +989,7 @@ namespace gfak{
                         ++j; // skip over delimiter
                         // now j points to the overlaps
                         char b = gfa_buf[i], c = gfa_buf[j];
+                        bool is_empty = true;
                         while (b != '\t' && c != '\n' && c != ' ' && c != '\t' && j+1 != gfa_filesize) {
                             string id;
                             if (b == ',') b = gfa_buf[++i];
@@ -1006,7 +1007,11 @@ namespace gfak{
                                 c = gfa_buf[++j];
                             }
                             if (j+1 != gfa_filesize) c = gfa_buf[++j];
-                            func(path_name, id, is_rev, overlap);
+                            func(path_name, id, is_rev, overlap, false);
+                            is_empty = false;
+                        }
+                        if (is_empty) {
+                            func(path_name, 0, false, "", true);
                         }
                     }
                     ++i;
