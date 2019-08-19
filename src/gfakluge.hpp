@@ -962,7 +962,7 @@ namespace gfak{
             };
 
             // Per-element parsing of paths, only supports GFA 1.0
-            inline void for_each_path_element_in_file(const char* filename, std::function<void(const string&, const string&, bool, const string&, bool)> func){
+            inline void for_each_path_element_in_file(const char* filename, std::function<void(const string&, const string&, bool, const string&, bool, bool)> func){
                 int gfa_fd = -1;
                 char* gfa_buf = nullptr;
                 size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
@@ -1007,11 +1007,11 @@ namespace gfak{
                                 c = gfa_buf[++j];
                             }
                             if (j+1 != gfa_filesize) c = gfa_buf[++j];
-                            func(path_name, id, is_rev, overlap, false);
+                            func(path_name, id, is_rev, overlap, false, false);
                             is_empty = false;
                         }
                         if (is_empty) {
-                            func(path_name, 0, false, "", true);
+                            func(path_name, 0, false, "", true, false);
                         }
                     }
                     ++i;
