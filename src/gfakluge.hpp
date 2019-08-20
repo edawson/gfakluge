@@ -959,6 +959,7 @@ namespace gfak{
                     }
                     ++i;
                 }
+                mmap_close(gfa_buf, gfa_fd, gfa_filesize);
             };
 
             // Per-element parsing of paths, only supports GFA 1.0
