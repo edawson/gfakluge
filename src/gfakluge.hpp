@@ -986,12 +986,11 @@ namespace gfak{
                         }
                         ++i; // get to path id/orientation description
                         size_t j = i;
-                        while (gfa_buf[++j] != '\t');
-                        ++j; // skip over delimiter
+                        while (gfa_buf[j++] != '\t');
                         // now j points to the overlaps
                         char b = gfa_buf[i], c = gfa_buf[j];
                         bool is_empty = true;
-                        while (b != '\t' && c != '\n' && c != ' ' && c != '\t' && j+1 != gfa_filesize) {
+                        while (b != '\t' && j != gfa_filesize) {
                             string id;
                             if (b == ',') b = gfa_buf[++i];
                             while (b != ',' && b != '\t' && b != '+' && b != '-') {
@@ -1002,12 +1001,10 @@ namespace gfak{
                             b = gfa_buf[++i];
                             string overlap;
                             if (c == ',') c = gfa_buf[++j];
-                            while (c != ',' && c != '\t' && c != '\n' && c != ' ' && c != '\t' && j+1 != gfa_filesize) {
+                            while (c != ',' && c != '\t' && c != '\n' && c != ' ' && j != gfa_filesize) {
                                 overlap.push_back(c);
-                                if (j+1 == gfa_filesize) break;
                                 c = gfa_buf[++j];
                             }
-                            if (j+1 != gfa_filesize) c = gfa_buf[++j];
                             func(path_name, id, is_rev, overlap, false, false);
                             is_empty = false;
                         }
