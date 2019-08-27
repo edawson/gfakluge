@@ -65,7 +65,7 @@ namespace gfak{
         else{
             return -1;
         }
-    };
+    }
 
 
     // Provides the proper sorting behavior,
@@ -159,7 +159,7 @@ namespace gfak{
             std::vector<bool> orientations;
             std::vector<std::string> overlaps;
             std::map<std::string, opt_elem> opt_fields;
-        };
+        }
 
         /**
          *  Adds a GFA 0.1-style path_element (a "Walk") to a
@@ -173,7 +173,7 @@ namespace gfak{
             segment_names.insert( segment_names.begin() + corrected_rank - 1, seg_name);
             orientations.insert( orientations.begin() + corrected_rank - 1, ori);
             overlaps.insert( overlaps.begin() + corrected_rank - 1, overlap);
-        };
+        }
         /**
          *  Writes a path to a std::string in GFA1 format.
          */
@@ -283,7 +283,7 @@ namespace gfak{
             st << '>' << ' ' << name << std::endl
                 << sequence;
             return st.str();
-        };
+        }
     };
 
     /** Represents a link (a non-contained edge) between two sequence_elems
@@ -448,7 +448,7 @@ namespace gfak{
             }
             return st.str();
         }
-        };
+    };
 
         /** Represents a GAP type line ('G'), which is specific to GFA2 */
         struct gap_elem{
@@ -708,10 +708,10 @@ namespace gfak{
                 std::map<std::string, std::vector<edge_elem> > seq_to_edges;
                 std::map<std::string, std::vector<gap_elem> > seq_to_gaps;
                 std::map<std::string, group_elem> groups;
-            };
+            }
             ~GFAKluge(){
 
-            };
+            }
 
             inline double detect_version_from_file(const char* filename){
                 std::ifstream gfi;
@@ -738,7 +738,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
             inline void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
                 std::ifstream gfi;
@@ -804,7 +804,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
             inline void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
                 std::ifstream gfi;
@@ -919,7 +919,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
             // Per-element parsing of paths, only supports GFA 1.0
             inline void for_each_path_element_in_file(const char* filename, std::function<void(const std::string&, const std::string&, bool, const std::string&)> func){
@@ -971,7 +971,7 @@ namespace gfak{
                     ++i;
                 }
                 mmap_close(gfa_buf, gfa_fd, gfa_filesize);
-            };
+            }
 
             // Only supports GFA 1.0 style paths
             inline void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
@@ -1029,7 +1029,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
             // Only supports GFA 2.0 style paths (i.e. groups, both ordered and unordered)
             inline void for_each_ordered_group_line_in_file(const char* filename, std::function<void(gfak::group_elem)> func){
@@ -1079,7 +1079,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
 
             // GFAKluge does not, but maybe should, enforce graph structure,
@@ -1354,7 +1354,7 @@ namespace gfak{
             // GFA2 getters
             inline std::map<std::string, std::vector<edge_elem>> get_seq_to_edges(){
                 return seq_to_edges;
-            };
+            }
             inline std::map<std::string, std::vector<fragment_elem>> get_seq_to_fragments(){
                 return seq_to_fragments;
             }
@@ -1496,7 +1496,7 @@ namespace gfak{
                     }
                     this->one_compat = true;
                 }
-            };
+            }
             // Wraps both gfa_1_ize() and gfa_2_ize()
             inline void compatibilize(){
                 gfa_1_ize();
@@ -2614,8 +2614,8 @@ namespace gfak{
 
                 return true;
 
-            };
+            }
         };
 
-    };
+    }
 #endif
