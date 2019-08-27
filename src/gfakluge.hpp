@@ -199,7 +199,7 @@ namespace gfak{
         std::string to_string_2() const{
             std::ostringstream st;
             std::vector<std::string> p_segs;
-            for (int i = 0; i < segment_names.size(); ++i){
+            for (size_t i = 0; i < segment_names.size(); ++i){
                 p_segs.push_back(segment_names[i] + (orientations[i] ? "+" : "-") );
             }
             st << "O" << '\t' << name << '\t' << pliib::join(p_segs, ",");
@@ -1980,7 +1980,7 @@ namespace gfak{
             inline void re_id(std::string new_mx_str){
                 std::vector<uint64_t> starts(5);
                 std::vector<std::string> starts_strs = pliib::split(new_mx_str, ':');
-                for (int i = 0; i < starts_strs.size(); ++i){
+                for (size_t i = 0; i < starts_strs.size(); ++i){
                     starts[i] = stoul(starts_strs[i]);
                 }
                 std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> n_ids = std::make_tuple(starts[0], starts[1],
@@ -2176,7 +2176,7 @@ namespace gfak{
                         name_to_seq.erase(n_to_s);
                         graph_modified = true;
                     }
-                    else if (minlen > 0 && s.length < minlen){
+                    else if (minlen > 0 && s.length < (size_t)minlen){
                         dropped_seqs.insert(s.name);
                         name_to_seq.erase(n_to_s);
                         graph_modified = true;
