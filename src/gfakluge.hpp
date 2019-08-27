@@ -932,7 +932,7 @@ namespace gfak{
                 }
                 std::string line;
                 size_t i = 0;
-                bool seen_newline = true;
+                //bool seen_newline = true;
                 while (i < gfa_filesize) {
                     std::string path_name;
                     // scan forward
@@ -1905,7 +1905,7 @@ namespace gfak{
                 base_group_id = std::get<4>(new_mx);
                 std::uint64_t seg_diff = base_seq_id;
                 // Segments
-                int num_segs = name_to_seq.size();
+                //int num_segs = name_to_seq.size();
 
                 // locally cache name_to_seq,
                 // seq_to_edges, seq_to_fragments, groups,
@@ -1926,7 +1926,7 @@ namespace gfak{
 
 
 
-                    uint64_t edge_count = 0;
+                    //uint64_t edge_count = 0;
                     // Edges
                     for (auto e : seq_to_edges[old_name]){
                         e.source_name = ns.second.name;
