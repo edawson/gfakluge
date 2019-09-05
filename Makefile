@@ -41,6 +41,15 @@ install: gfak
 
 	cp gfak $(DESTDIR)$(PREFIX)/bin
 
+install-local: gfak
+	mkdir -p $(DESTDIR)/include
+	mkdir -p $(DESTDIR)/bin
+	cp src/gfakluge.hpp $(DESTDIR)/include/
+	cp src/tinyFA/tinyfa.hpp $(DESTDIR)/include/
+	cp src/tinyFA/pliib.hpp $(DESTDIR)/include/
+
+	cp gfak $(DESTDIR)/bin
+
 check : gfak
 	prove test/gfa_test.t
 
