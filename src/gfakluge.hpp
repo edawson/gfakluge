@@ -739,14 +739,18 @@ namespace gfak{
                     } 
                 }
             };
-
             inline void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
-                std::ifstream gfi;
+	        std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
                     std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
+		for_each_sequence_line_in_file(gfi, func);
+ 	
+	    };
+
+            inline void for_each_sequence_line_in_file(std::istream& gfi, std::function<void(gfak::sequence_elem)> func){
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == SEGMENT_LINE){
@@ -806,6 +810,7 @@ namespace gfak{
                 }
             };
 
+
             inline void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
                 std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
@@ -813,6 +818,12 @@ namespace gfak{
                     std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
+
+		for_each_edge_line_in_file(gfi, func);
+	    };
+
+            inline void for_each_edge_line_in_file(std::istream& gfi, std::function<void(gfak::edge_elem)> func){
+
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == EDGE_LINE){
@@ -921,6 +932,8 @@ namespace gfak{
                 }
             };
 
+
+
             // Per-element parsing of paths, only supports GFA 1.0
             inline void for_each_path_element_in_file(const char* filename, std::function<void(const std::string&, const std::string&, bool, const std::string&)> func){
                 int gfa_fd = -1;
@@ -973,14 +986,20 @@ namespace gfak{
                 mmap_close(gfa_buf, gfa_fd, gfa_filesize);
             };
 
-            // Only supports GFA 1.0 style paths
+	    
             inline void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
-                std::ifstream gfi;
+	        std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
                     std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
+		for_each_path_line_in_file(gfi, func);	
+	    };
+
+            // Only supports GFA 1.0 style paths
+            inline void for_each_path_line_in_file(std::istream& gfi, std::function<void(gfak::path_elem)> func){
+
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == PATH_LINE){
