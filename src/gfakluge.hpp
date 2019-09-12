@@ -560,7 +560,7 @@ namespace gfak{
             }
         };
 
-        size_t mmap_open(const std::string& filename, char*& buf, int& fd) {
+        inline size_t mmap_open(const std::string& filename, char*& buf, int& fd) {
             fd = -1;
             assert(!filename.empty());
             // open in binary mode as we are reading from this interface
@@ -586,7 +586,7 @@ namespace gfak{
             return fsize;
         }
 
-        void mmap_close(char*& buf, int& fd, size_t fsize) {
+        inline void mmap_close(char*& buf, int& fd, size_t fsize) {
             if (buf) {
                 munmap(buf, fsize);
                 buf = 0;
@@ -935,7 +935,8 @@ namespace gfak{
 
 
             // Per-element parsing of paths, only supports GFA 1.0
-            inline void for_each_path_element_in_file(const char* filename, std::function<void(const std::string&, const std::string&, bool, const std::string&)> func){
+            //inline void for_each_path_element_in_file(const char* filename, std::function<void(const std::string&, const std::string&, bool, const std::string&)> func){
+	inline void for_each_path_element_in_file(const char* filename, std::function<void(const string&, const string&, bool, const string&, bool, bool)> func){
                 int gfa_fd = -1;
                 char* gfa_buf = nullptr;
                 size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
@@ -978,7 +979,7 @@ namespace gfak{
                                 c = gfa_buf[++j];
                             }
                             ++j; // skip over delimiter
-                            func(path_name, id, is_rev, overlap);
+                            func(path_name, id, is_rev, overlap, false, false);
                         }
                     }
                     ++i;
@@ -986,6 +987,61 @@ namespace gfak{
                 mmap_close(gfa_buf, gfa_fd, gfa_filesize);
             };
 
+	   /** 
+            inline void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
+                int gfa_fd = -1;
+                char* gfa_buf = nullptr;
+                size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
+                if (gfa_fd == -1) {
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
+                    exit(1);
+                }
+                std::string line;
+                size_t i = 0;
+                bool seen_newline = true;
+                while (i < gfa_filesize) {
+                    std::string path_name;
+                    // scan forward
+                    if (i > 0 && gfa_buf[i-1] == '\n' && gfa_buf[i] == 'P') {
+                        // path line
+                        // scan forward to find name
+                        i += 2;
+                        while (gfa_buf[i] != '\t') {
+                            path_name.push_back(gfa_buf[i++]);
+                        }
+                        ++i; // get to path id/orientation description
+                        size_t j = i;
+                        while (gfa_buf[j++] != '\t');
+                        // now j points to the overlaps
+ 			char b = gfa_buf[i], c = gfa_buf[j];
+                        bool is_empty = true;
+                        while (b != '\t' && j != gfa_filesize) {
+                            string id;
+                            if (b == ',') b = gfa_buf[++i];
+                            while (b != ',' && b != '\t' && b != '+' && b != '-') {
+                                id.push_back(b);
+                                b = gfa_buf[++i];
+                            }
+                            bool is_rev = b=='-';
+                            b = gfa_buf[++i];
+                            string overlap;
+                            if (c == ',') c = gfa_buf[++j];
+                            while (c != ',' && c != '\t' && c != '\n' && c != ' ' && j != gfa_filesize) {
+				        overlap.push_back(c);
+                                c = gfa_buf[++j];
+                            }
+                            func(path_name, id, is_rev, overlap, false, false);
+                            is_empty = false;
+                        }
+                        if (is_empty) {
+                            func(path_name, 0, false, "", true, false);
+                        }
+                    }
+                    ++i;
+                }
+                mmap_close(gfa_buf, gfa_fd, gfa_filesize);
+            };
+**/
 	    
             inline void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
 	        std::ifstream gfi;
