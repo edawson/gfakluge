@@ -748,6 +748,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
+                return this->version;
             };
 
             inline void for_each_sequence_line_in_file(const char* filename, std::function<void(const gfak::sequence_elem&)> func){
