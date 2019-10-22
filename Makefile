@@ -17,8 +17,8 @@ endif
 BIN_DIR:=bin
 BUILD_DIR:=build
 
-LD_LIB_FLAGS=-L./src/ -L./
-LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./src/tinyFA/pliib -I./$(BUILD_DIR)
+LD_LIB_FLAGS=-L./src/ -L./ -L$(CONDA_PREFIX)/lib/
+LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./src/tinyFA/pliib -I./$(BUILD_DIR) -I$(CONDA_PREFIX)/include
 
 gfak: $(BUILD_DIR)/main.o src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
 	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
