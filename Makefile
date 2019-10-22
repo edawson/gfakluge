@@ -17,8 +17,14 @@ endif
 BIN_DIR:=bin
 BUILD_DIR:=build
 
-LD_LIB_FLAGS=-L./src/ -L./ -L$(CONDA_PREFIX)/lib/
-LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./src/tinyFA/pliib -I./$(BUILD_DIR) -I$(CONDA_PREFIX)/include
+LD_LIB_FLAGS=-L./src/ -L./
+LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./src/tinyFA/pliib -I./$(BUILD_DIR)
+
+ifneq ($(CONDA_PREFIX),)
+	LD_LIB_FLAGS += -L$(CONDA_PREFIX)/lib/
+	LD_INC_FLAGS += -I$(CONDA_PREFIX)/include
+	PREFIX = $(CONDA_PREFIX)
+endif
 
 gfak: $(BUILD_DIR)/main.o src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
 	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
@@ -36,8 +42,8 @@ install: gfak
 	mkdir -p $(DESTDIR)$(PREFIX)/include
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp src/gfakluge.hpp $(DESTDIR)$(PREFIX)/include/
-	cp src/tinyFA/tinyfa.hpp $(DESTDIR)$(PREFIX)/include/
-	cp src/tinyFA/pliib.hpp $(DESTDIR)$(PREFIX)/include/
+	cp src/tinyFA/tinyFA.hpp $(DESTDIR)$(PREFIX)/include/
+	cp src/tinyFA/pliib/pliib.hpp $(DESTDIR)$(PREFIX)/include/
 
 	cp gfak $(DESTDIR)$(PREFIX)/bin
 
