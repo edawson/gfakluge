@@ -1,18 +1,33 @@
 gfakluge
 --------------------
 
+[![DOI](https://zenodo.org/badge/47132080.svg)](https://zenodo.org/badge/latestdoi/47132080)
+[![status](http://joss.theoj.org/papers/d731f6dfc6b77013caaccfd8333c684a/status.svg)](http://joss.theoj.org/papers/d731f6dfc6b77013caaccfd8333c684a)
+
+[![Build Status](https://dev.azure.com/ericco92/ericco92/_apis/build/status/edawson.gfakluge?branchName=master)](https://dev.azure.com/ericco92/ericco92/_build/latest?definitionId=3&branchName=master)  
+
+
 ## What is it?  
 GFAKluge is a C++ parser/writer and
-a set of command line utilities for manipulating [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format/).
+a set of command line utilities for manipulating [GFA files](http://lh3.github.io/2014/07/19/a-proposal-of-the-grapical-fragment-assembly-format).
 It parses GFA to a set of data structures that represent the encoded graph.
 You can use these components and their fields/members to build up your own
 graph representation. You can also convert between GFA 0.1 <-> 1.0 <-> 2.0
 to glue programs that use different GFA versions together.
 
 
+**Homepage**: https://github.com/edawson/gfakluge  
+**License**: MIT  
+
+## Dependencies
+A C++11 compliant compiler (we recommend GCC or clang)  
+OpenMP (via GCC or clang)  
+**NB**: GFAKluge cannot be compiled with Apple clang, as it does not include OpenMP.
+
 ## Command line utilities
 When `make` is run, the `gfak` binary is built in the top level directory. It offers the following subcommands:  
 + gfak extract : transform the GFA segment lines to a FASTA file.  
++ gfak fillseq : fill in the sequence field of S lines with placeholders using sequences from a FASTA file.
 + gfak diff : check if two GFA files are different (not very sophisticated at the moment)  
 + gfak sort : change the line order of a GFA file so that lines proceed in
 Header -> Segment -> Link/Edge/Containment -> Path order.  
@@ -24,12 +39,28 @@ Header -> Segment -> Link/Edge/Containment -> Path order.
 
 For CLI usage, run any of the above (including `gfak` with no subcommand) with no arguments or `-h`. To change specification version, most commands take the `-S` flag and a single `double` argument.  
 
+## Example CLI Usage
+Examples of various commands are included in the [examples.md file](https://github.com/edawson/gfakluge/blob/master/examples.md).
+
+## C++ API
+Examples of the C++ API are included in the [interface.md file](https://github.com/edawson/gfakluge/blob/master/interface.md).  
+
 ## How do I build it?  
-
-
 The `gfak` utilities are available via homebrew: `brew install brewsci/bio/gfakluge`  
 
-You can build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  
+Building GFAKluge from source requires OpenMP. This should be supported on Linux by default. On Apple Mac OS X, we recommend installing gcc:  
+
+```
+brew install gcc@8
+make CXX=g++-8
+```  
+or  
+```
+sudo port install gcc8
+make
+```
+
+You can then build libgfakluge and the command line `gfak` utilities by typing ``make`` in the repo.  
 To use GFAKluge in your program, you'll need to
 add a few lines to your code. First, add the necessary include line to your C++ code:  
                 #include "gfakluge.hpp"
@@ -145,3 +176,18 @@ valid GFA. This may change as the GFA spec becomes more formal.
 Eric T Dawson   
 github: [edawson](https://github.com/edawson/https://github.com/edawson/GFAKluge)   
 Please post an issue for help.
+
+## Contributing
+GFAKluge is open-source and community contributions are welcome and appreciated! Please keep the following in mind when contributing to the repo:  
+
+1. Please treat others with kindness and professionalism. Everyone is welcome and we will not tolerate harassment for any reason.
+2. Please keep `gfakluge.hpp` header-only and update the build process if a modification alters it.  
+3. Please update the dependency list if one is added.  
+4. Please use semantic versioning. Minor changes bump the third versioning digit (e.g. 1.0.0 -> 1.0.1).  
+Additional features, or changes that may or may not partially break backward compatibility 
+but which do not require significant modifications to code depending on the library bump the second versioning digit (e.g. 1.0.0 -> 1.1.0).  
+Changes which signficantly alter the API require a bump in the major version digit (e.g. 1.0.0 -> 2.0.0).
+5. Please fully specify all namespace items (e.g. `std::stream` in place of just `stream`).  
+6. To incorporate changes, please file a pull request on the Github page.
+7. Bug reports or feature requests should be posted as "issues" on the Github page with the appropriate tag and referenced in any relevant pull requests.
+

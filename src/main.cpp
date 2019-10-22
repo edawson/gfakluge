@@ -1,12 +1,13 @@
 #include <getopt.h>
 #include <cstring>
 #include "gfakluge.hpp"
+#include "gfa_builder.hpp"
 
 using namespace std;
 using namespace gfak;
 
 void print_version_help(){
-    cerr << "gfak (GFAKluge library) 0.2.1" << endl
+    cerr << "gfak (GFAKluge library) 1.1.1" << endl
         << "Copyright (C) 2015 Eric T. Dawson" << endl
         << "Licensed under the MIT License (https://opensource.org/licenses/MIT)" << endl
         << "This is free, open-source software: you are free to modify and redistribute it." << endl
@@ -22,21 +23,43 @@ int gfakluge_package_help(char** argv){
         "   convert: Convert between GFA 0.1 <-> 1.0 <-> 2.0" << endl <<
         "   diff:    Determine whether two GFA files have identical graphs" << endl <<
         "   extract: Convert the S lines of a GFA file to FASTA format." << endl <<
+        "   fillseq: Add sequences from a FASTA file to S lines." << endl <<
         "   ids:     Coordinate the ID spaces of multiple GFA graphs."  << endl <<
         "   concat:  Merge GFA graphs (without ID collisions)." << endl <<
         "   sort:    Print a GFA file in HSLP / HSEFGUO order." << endl <<
         "   stats:   Get assembly statistics (e.g. N50) for a GFA file." << endl <<
         "   subset:  Extract the subgraph between two IDs in a graph." << endl <<
+        "   trim:    Remove elements from a GFA graph." << endl <<
         endl;
     return 1;
 
 }
 
+void trim_help(char** argv){
+    cerr << argv[0] <<  " trim: remove elements from a GFA graph." << endl
+        << "Usage: " << argv[0] << " trim [OPTIONS] <GFA_FILE> " << endl
+            << " -l / --length  <INT>  Remove segments (and their edges) if their sequence length is less than <INT>." << endl
+            << " -n / --no-ambiguous   Remove segments which have ambiguous bases (i.e. non-ATGC) in their sequence." << endl
+            << " -v / --version        print GFAK version and exit." << endl
+        << endl;
+}
+
+
 void extract_help(char** argv){
     cerr << argv[0] <<  " extract: extract a FASTA file from GFA" << endl
-        << "Usage: " << argv[0] << "extract [ -p ] <GFA_FILE> > file.fa " << endl
+        << "Usage: " << argv[0] << " extract [ -p ] <GFA_FILE> > file.fa " << endl
             << " -p / --include-paths  include paths in output" << endl
             << " -v / --version        print GFAK version and exit." << endl
+        << endl;
+}
+
+void fillseq_help(char** argv){
+    cerr << argv[0] << " fillseq: fill in S(equence) line sequences from a FASTA file." << endl
+        << "Usage: " << argv[0] << " fillseq [options] -f <fasta.fa> <GFA_FILE> >> gfa_filled.gfa." << endl
+        << "Options:" << endl
+        << " -f / --fasta <f.fa>   {REQUIRED} a FASTA file containing sequences, with the GFA IDs as FASTA IDs." << endl
+        << "                      Multiple FASTA files may be passed." << endl
+        << " -S / --spec <SPEC>   Output in GFA version <SPEC>" << endl
         << endl;
 }
 
@@ -83,9 +106,19 @@ void merge_help(char** argv){
         << endl; 
 }
 
+void build_help(char** argv){
+    cerr << argv[0] << " build: generate a GFA variation graph from a FASTA reference and a VCF." << endl
+    << "Usage: " << argv[0] << " build [options] -r <FASTA> -v <VCF>" << endl
+    << "Options: " << endl
+    << "  -m / --max-node-length <Int>  Maximum size for a node in basepairs (default: 1000)." << endl
+    << "  -f / --fasta  <FASTA>     A fasta file to use for constructing the graph backbone." << endl
+    << "  -v / --vcf <VCF>              A VCF file containing variants to put in the graph." << endl 
+    << endl;
+}
+
 void sort_help(char** argv){
     cerr << argv[0] << " sort: sort a GFA file." << endl
-        << "Usage: " << argv[0] << " stats [options] <GFA_File>" << endl
+        << "Usage: " << argv[0] << " sort [options] <GFA_File>" << endl
         << "Options:" << endl
         << "  -S / --spec <SPEC> [one of 0.1, 1.0, 2.0]   Convert the input GFA file to specification [0.1, 1.0, or 2.0]." << endl
         << "  -v / --version        print GFAK version and exit." << endl
@@ -119,6 +152,77 @@ void subset_help(char** argv){
 }
 
 /**
+ * Trim segments (and their edges) from a graph
+ */
+int trim_main(int argc, char** argv){
+    string gfa_file;
+
+    int minlen = 0;
+    bool no_amb = false;
+    bool trim_paths = false;
+
+    if (argc < 3){
+        cerr << "No GFA file given as input." << endl << endl;
+        trim_help(argv);
+        exit(1);
+    }
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"trim-paths", no_argument, 0, 'p'},
+            {"length", required_argument, 0, 'l'},
+            {"no-ambiguous", no_argument, 0, 'N'},
+            {"version", no_argument, 0, 'v'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hvnpl:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case '?':
+            case 'h':
+                trim_help(argv);
+                exit(0);
+            case 'v':
+                print_version_help();
+                exit(0);
+            case 'l':
+                minlen = atoi(optarg);
+                break;
+            case 'n':
+                no_amb = true;
+                break;
+            case 'p':
+                trim_paths = true;
+                cerr << "Path trimming is not yet implemented" << endl;
+                exit(1);
+            default:
+                abort();
+        }
+    }
+
+    if (optind > argc){
+        cerr << "Error: no GFA file provided." << endl;
+        exit(1);
+    }
+    gfa_file = argv[optind];
+    
+    GFAKluge gg;
+    gg.parse_gfa_file(gfa_file);
+    gg.trim_seqs(minlen, no_amb);
+    cout << gg;
+
+    return 0;
+}
+
+/**
  * Output a fasta file from input GFA
  */
 int extract_main(int argc, char** argv){
@@ -128,7 +232,7 @@ int extract_main(int argc, char** argv){
     if (argc < 3){
         cerr << "No GFA file given as input." << endl << endl; 
         extract_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -155,7 +259,7 @@ int extract_main(int argc, char** argv){
                 exit(0);
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'p':
                 include_paths= true;
                 break;
@@ -172,8 +276,7 @@ int extract_main(int argc, char** argv){
 
     for (auto name_seq : seqs){
         cout << ">" << name_seq.second.name << endl
-            << name_seq.second.sequence << endl
-            << endl;
+            << name_seq.second.sequence << endl;
     }
     // Do the same for groups/walks/paths, as the concated
     // sequences of the oriented seq_elems create a path (e.g. a chromosome or contig)
@@ -198,6 +301,170 @@ int extract_main(int argc, char** argv){
 	return 0;
 }
 
+int build_main(int argc, char** argv){
+
+    if (argc < 3){
+        build_help(argv);
+        exit(1);
+    }
+    
+    std::string fasta_file;
+    std::string vcf_file;
+    char* insertion_fasta = NULL;
+    int max_node_size = 128;
+
+    double spec_version = 2.0;
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"fasta", required_argument, 0, 'f'},
+            {"spec", required_argument, 0, 'S'},
+            {"vcf", required_argument, 0, 'v'},
+            {"max-node-size", required_argument, 0, 'm'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hm:i:f:S:v:", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case '?':
+            case 'h':
+                build_help(argv);
+                exit(0);
+            case 'v':
+                vcf_file = string(optarg);
+                break;
+            case 'i':
+                insertion_fasta = optarg;
+                break;
+            case 'S':
+                spec_version = stod(optarg);
+                break;
+            case 'f':
+                fasta_file = string(optarg);
+                break;
+            case 'm':
+                max_node_size = atoi(optarg);
+                break;
+            default:
+                abort();
+        }
+    }
+    gfak::GFAKluge gg;
+    gg.set_version(spec_version);
+
+    construct_gfa( (char*) fasta_file.c_str(), (char*) vcf_file.c_str(), (char*) insertion_fasta, gg, max_node_size);
+
+    return 0;
+}
+
+int fillseq_main(int argc, char** argv){
+    
+    if (argc < 3){
+        cerr << "fillseq requires a GFA file." << endl << endl;
+        fillseq_help(argv);
+        exit(1);
+    }
+
+    string fasta_file;
+    string gfa_file;
+
+    double spec_version = 0.0;
+    bool block_order = false;
+
+    int c;
+    optind = 2;
+    while (true){
+        static struct option long_options[] =
+        {
+            {"help", no_argument, 0, 'h'},
+            {"fasta", required_argument, 0, 'f'},
+            {"spec", required_argument, 0, 'S'},
+            {"block-order", no_argument, 0, 'b'},
+            {"version", no_argument, 0, 'v'},
+            {0,0,0,0}
+        };
+    
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hbf:S:v", long_options, &option_index);
+        if (c == -1){
+            break;
+        }
+
+        switch (c){
+            case '?':
+            case 'h':
+                extract_help(argv);
+                exit(0);
+            case 'b':
+                block_order = true;
+                break;
+            case 'v':
+                print_version_help();
+                exit(0);
+            case 'S':
+                spec_version = stod(optarg);
+                break;
+            case 'f':
+                fasta_file = string(optarg);
+                break;
+            default:
+                abort();
+        }
+    }
+
+    if (optind >= argc){
+        cerr << "Error: no GFA file provided." << endl;
+        exit(1);
+    }
+    
+    gfa_file = argv[optind];
+    if (fasta_file.empty()){
+        cerr << "Error: no FASTA file provided." << endl;
+        exit(1);
+    }
+    GFAKluge gg;
+    gg.parse_gfa_file(gfa_file);
+    gg.fill_sequences(fasta_file.c_str());
+
+
+    if (spec_version == 0.1){
+        gg.set_version(0.1);
+    }
+    else if (spec_version == 1.0){
+        gg.set_version(1.0);
+    }
+    else if (spec_version == 2.0){
+        gg.set_version(2.0);
+    }
+    else if (spec_version != 0.0){
+        cerr << "Invalid specification number: " << spec_version << endl
+        << "Please provide one of [0.1, 1.0, 2.0]." << endl;
+        exit(1);
+    }
+    
+
+    if (block_order){
+        cout << gg.block_order_string();
+    }
+    else{
+        cout << gg.to_string();
+    }
+
+
+
+
+return 0;
+
+}
+
 /**
  * Return whether two GFA files are identical
  * in "structure" (number of links, segments, etC)
@@ -206,7 +473,7 @@ int diff_main(int argc, char** argv){
     if (argc < 4){
         cerr << "diff requires two GFA files as input." << endl << endl;
         diff_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -232,7 +499,7 @@ int diff_main(int argc, char** argv){
                 exit(0);
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             default:
                 abort();
         }
@@ -286,7 +553,7 @@ int convert_main(int argc, char** argv){
     if (argc < 3){
         cerr << "No GFA file provided. Please provide a GFA file to convert" << endl;
         convert_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -314,7 +581,7 @@ int convert_main(int argc, char** argv){
             case '?':
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'h':
                 convert_help(argv);
                 exit(0);
@@ -348,7 +615,7 @@ int convert_main(int argc, char** argv){
 
     if (make_fasta){
         for (auto s : gg.get_name_to_seq()){
-            cout << s.second.as_fasta_record();
+            cout << s.second.as_fasta_record() << endl; 
         }
         exit(0);
     }
@@ -365,7 +632,7 @@ int convert_main(int argc, char** argv){
     else if (spec_version != 0.0){
         cerr << "Invalid specification number: " << spec_version << endl
         << "Please provide one of [0.1, 1.0, 2.0]." << endl;
-        exit(22);
+        exit(1);
     }
 
     
@@ -388,7 +655,7 @@ int ids_main(int argc, char** argv){
 
     if (argc == 1){
         cerr << "gfa_ids -s S_ID:E_ID:F_ID:GA_ID:GR_ID [options] <gfa1> <gfa2> ... [gfaN]" << endl;
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -413,7 +680,7 @@ int ids_main(int argc, char** argv){
         switch (c){
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
 
             case '?':
             case 'h':
@@ -466,6 +733,8 @@ int ids_main(int argc, char** argv){
     }
     cerr << "Done." << endl;
 
+    return 0;
+
 }
 
 int merge_main(int argc, char** argv){
@@ -504,7 +773,7 @@ int merge_main(int argc, char** argv){
                 break;
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'S':
                 spec = stod(optarg);
                 break;
@@ -554,7 +823,7 @@ int sort_main(int argc, char** argv){
 
     if (argc <= 2){
         sort_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -579,11 +848,12 @@ int sort_main(int argc, char** argv){
             case '?':
             case 'h':
                 sort_help(argv);
-                exit(1);
+                exit(0);
                 break;
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
+                break;
 
             case 'S':
                 spec_version = stod(optarg);
@@ -610,11 +880,11 @@ int sort_main(int argc, char** argv){
     else if (spec_version != 0.0){
         cerr << "Invalid specification number: " << spec_version << endl
         << "Please provide one of [0.1, 1.0, 2.0]." << endl;
-        exit(22);
+        exit(1);
     }
 
     //cout << gg.block_order_string();
-    gg.output_to_stream(cout, true);
+    gg.output_to_stream(cout, block_order);
     
     return 0;
 }
@@ -623,8 +893,6 @@ int stats_main(int argc, char** argv){
     string gfa_file = "";
     bool show_nodes = false;
     bool show_edges = false;
-    bool show_containments = false;
-    bool show_alignments = false;
     bool show_length = false;
     bool assembly_stats = false;
     bool show_paths = false;
@@ -664,10 +932,10 @@ int stats_main(int argc, char** argv){
             case 'h':
                 // nodes, edges, all stats, edges, paths
                 stats_help(argv);
-                exit(3);
+                exit(0);
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
             case 'a':
                 assembly_stats = true;
                 all = false;
@@ -686,6 +954,10 @@ int stats_main(int argc, char** argv){
                 break;
             case 'A':
                 all = true;
+                break;
+            case 'p':
+                show_paths = true;
+                all = false;
                 break;
 
             default:
@@ -776,7 +1048,7 @@ int subset_main(int argc, char** argv){
 
     if (argc == 1){
         subset_help(argv);
-        exit(0);
+        exit(1);
     }
 
     int c;
@@ -819,11 +1091,17 @@ int subset_main(int argc, char** argv){
                 break;
             case 'v':
                 print_version_help();
-                exit(1);
+                exit(0);
 
             default:
                 abort();
         }
+    }
+
+    if (argc < 3){
+        cerr << "No GFA file provided" << endl;
+        subset_help(argv);
+        exit(1);
     }
 
     vector<string> gfiles;
@@ -870,7 +1148,9 @@ int subset_main(int argc, char** argv){
             outg.set_version(spec);
         }
         cout << outg.to_string() << endl;
+
     }
+    return 0;
 }
 
 
@@ -910,6 +1190,15 @@ int main(int argc, char** argv){
     }
     else if (strcmp(argv[1], "--help") == 0){
         gfakluge_package_help(argv);
+    }
+    else if (strcmp(argv[1], "fillseq") == 0){
+        return fillseq_main(argc, argv);
+    }
+    else if (strcmp(argv[1], "build") == 0){
+        return build_main(argc, argv);
+    }
+    else if (strcmp(argv[1], "trim") == 0){
+        return trim_main(argc, argv);
     }
     else {
         cerr << "No command " << '"' << argv[1] << '"' << endl;

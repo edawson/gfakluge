@@ -1,41 +1,61 @@
 CXX?=g++
-CXXFLAGS:=-O3 -std=c++11 -g -fPIC
+CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -std=c++11 
+PREFIX=/usr/local
+
+# We want to pass -Wa,-q to GCC use the Clang assembler, but Apple Clang can't take that
+# So we do an environment variable instead
+export AS_INTEGRATED_ASSEMBLER=1
+
+ifeq ($(shell if [ -d /opt/local/include/libomp ];then echo 1;else echo 0;fi), 1)
+    # On OS X with Apple Clang, <omp.h>, which our tinyFA dependency needs, isn't always on the include path
+    # Pick it up from Macports if it is there.
+    # Homebrew ought to put it where the compiler can find it.
+    CXXFLAGS += -I/opt/local/include/libomp
+endif
+>>>>>>> 818bd6834e6cb671fdd68469c2009c997becca32
 
 
 BIN_DIR:=bin
 BUILD_DIR:=build
 
 LD_LIB_FLAGS=-L./src/ -L./
-LD_INC_FLAGS=-I./src/ -I./ -I./$(BUILD_DIR) -I./src/subcommand/
+LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./src/tinyFA/pliib -I./$(BUILD_DIR)
 
-gfak: $(BUILD_DIR)/main.o libgfakluge.a .GFAK_pre-build src/pliib.hpp 
-	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+gfak: $(BUILD_DIR)/main.o src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
+	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
-$(BUILD_DIR)/main.o: src/main.cpp .GFAK_pre-build src/gfakluge.hpp src/pliib.hpp
-	+$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS) -lgfakluge
+$(BUILD_DIR)/main.o: src/main.cpp src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
+	+$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
-libgfakluge.a: $(BUILD_DIR)/gfakluge.o src/pliib.hpp .GFAK_pre-build
-	ar -rs $@ $<
-
-$(BUILD_DIR)/gfakluge.o: src/gfakluge.cpp src/gfakluge.hpp .GFAK_pre-build src/pliib.hpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
-
-.PHONY: clean all
-
-
-.GFAK_pre-build: 
-	mkdir -p $(BIN_DIR)
+$(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
-	touch .GFAK_pre-build
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+install: gfak
+	mkdir -p $(DESTDIR)$(PREFIX)/include
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp src/gfakluge.hpp $(DESTDIR)$(PREFIX)/include/
+	cp src/tinyFA/tinyfa.hpp $(DESTDIR)$(PREFIX)/include/
+	cp src/tinyFA/pliib.hpp $(DESTDIR)$(PREFIX)/include/
+
+	cp gfak $(DESTDIR)$(PREFIX)/bin
+
+check : gfak
+	prove test/gfa_test.t
+
+
+.PHONY: clean all install check
+
+
 clean:
 	$(RM) gfak
 	$(RM) src/*.o
 	$(RM) *.a
-	$(RM) test
 	$(RM) x.sort
 	$(RM) y.sort
 	rm -rf $(BIN_DIR)
 	rm -rf $(BUILD_DIR)
-	$(RM) .GFAK_pre-build
 	$(RM) test_test.gfa
 	$(RM) q_test.gfa

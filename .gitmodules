@@ -3,4 +3,10 @@
 	url = https://github.com/GFA-spec/GFA-spec
 [submodule "pliib"]
 	path = pliib
-	url = https://github.com/edawson/pliib
+    url = https://github.com/edawson/pliib
+[submodule "tinyFA"]
+    path = src/tinyFA
+    url = https://github.com/edawson/tinyFA
+[submodule "bash-tap"]
+	path = bash-tap
+	url = https://github.com/illusori/bash-tap.git
