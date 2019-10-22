@@ -12,7 +12,6 @@ ifeq ($(shell if [ -d /opt/local/include/libomp ];then echo 1;else echo 0;fi), 1
     # Homebrew ought to put it where the compiler can find it.
     CXXFLAGS += -I/opt/local/include/libomp
 endif
->>>>>>> 818bd6834e6cb671fdd68469c2009c997becca32
 
 
 BIN_DIR:=bin
