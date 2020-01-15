@@ -740,6 +740,79 @@ namespace gfak{
                 }
             };
 
+            /**
+             * Enables inheritance across lightweight graph representations
+             * TODO: still needs:
+             * - a copy constructor
+             * - a move constructor
+             * - a destructor / delete overloader
+             */
+            struct gfak2_elem{
+            
+            };
+
+            struct gfak2_seq_elem : gfak2_elem{
+
+            };
+
+            struct gfak2_edge_elem : gfak2_elem{
+
+            };
+
+            struct gfak2_group_elem : gfak2_elem{
+
+            };
+
+            static inline bool defaultfunc(gfak::gfak2_elem){
+                return true;
+            };
+
+            inline gfak::sequence_elem parse_sequence_line(char* line){
+                
+            };
+
+            inline gfak::edge_elem parse_edge_line(char* line){
+                
+            };
+
+            inline gfak::group_elem parse_group_line(char* line){
+                
+            };
+
+
+
+
+            inline bool for_each_gfa_line(const char* filename,
+                                         std::function<bool(gfak::sequence_elem&)> seq_func,
+                                         std::function<bool(gfak::edge_elem&)> edge_func,
+                                         std::function<bool(gfak::group_elem&)> group_func,
+                                         bool store_structures = false
+                                         ){
+
+                bool ret = true;
+                bool s_ret = true;
+                bool e_ret = true;
+                bool g_ret = true;
+
+                std::ifstream gfi;
+                gfi.open(filename, std::ifstream::in);
+                if (!gfi.good()){
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
+                    exit(1);
+                }
+
+                std::string line;
+                while (std::getline(gfi, line)){
+                   int gfa_line_type = determine_line_type(line.c_str());
+                   s_ret = (gfa_line_type == SEGMENT_LINE ? seq_func(parse_sequence_line(line)) : true);
+                   e_ret = (gfa_line_type == EDGE_LINE ? edge_func(parse_edge_line(line)) : true);
+                   g_ret = (gfa_line_type == GROUP_LINE ? group_func(parse_group_line(line)) : true);
+                   ret = ret & s_ret & e_ret & g_ret;
+                }
+
+                return ret;
+            };
+
             inline void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
                 std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
