@@ -1,5 +1,6 @@
 CXX?=g++
-CXXFLAGS+=-O3 -pipe -fPIC -march=native -mtune=native -std=c++11 -g -ggdb
+CXXFLAGS+=-O3 -pipe -fPIC -march=native -mtune=native -std=c++11
+
 PREFIX=/usr/local
 
 # We want to pass -Wa,-q to GCC use the Clang assembler, but Apple Clang can't take that
@@ -19,6 +20,12 @@ BUILD_DIR:=build
 
 LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./src/tinyFA/pliib -I./$(BUILD_DIR)
+
+ifneq ($(CONDA_PREFIX),)
+	LD_LIB_FLAGS += -L$(CONDA_PREFIX)/lib/
+	LD_INC_FLAGS += -I$(CONDA_PREFIX)/include
+	PREFIX = $(CONDA_PREFIX)
+endif
 
 gfak: $(BUILD_DIR)/main.o src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
 	+$(CXX) $(LDFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
