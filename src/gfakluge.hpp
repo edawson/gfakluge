@@ -65,7 +65,7 @@ namespace gfak{
         else{
             return -1;
         }
-    };
+    }
 
 
     // Provides the proper sorting behavior,
@@ -159,7 +159,7 @@ namespace gfak{
             std::vector<bool> orientations;
             std::vector<std::string> overlaps;
             std::map<std::string, opt_elem> opt_fields;
-        };
+        }
 
         /**
          *  Adds a GFA 0.1-style path_element (a "Walk") to a
@@ -173,7 +173,7 @@ namespace gfak{
             segment_names.insert( segment_names.begin() + corrected_rank - 1, seg_name);
             orientations.insert( orientations.begin() + corrected_rank - 1, ori);
             overlaps.insert( overlaps.begin() + corrected_rank - 1, overlap);
-        };
+        }
         /**
          *  Writes a path to a std::string in GFA1 format.
          */
@@ -199,7 +199,7 @@ namespace gfak{
         std::string to_string_2() const{
             std::ostringstream st;
             std::vector<std::string> p_segs;
-            for (int i = 0; i < segment_names.size(); ++i){
+            for (size_t i = 0; i < segment_names.size(); ++i){
                 p_segs.push_back(segment_names[i] + (orientations[i] ? "+" : "-") );
             }
             st << "O" << '\t' << name << '\t' << pliib::join(p_segs, ",");
@@ -283,7 +283,7 @@ namespace gfak{
             st << '>' << ' ' << name << std::endl
                 << sequence;
             return st.str();
-        };
+        }
     };
 
     /** Represents a link (a non-contained edge) between two sequence_elems
@@ -448,7 +448,7 @@ namespace gfak{
             }
             return st.str();
         }
-        };
+    };
 
         /** Represents a GAP type line ('G'), which is specific to GFA2 */
         struct gap_elem{
@@ -708,10 +708,10 @@ namespace gfak{
                 std::map<std::string, std::vector<edge_elem> > seq_to_edges;
                 std::map<std::string, std::vector<gap_elem> > seq_to_gaps;
                 std::map<std::string, group_elem> groups;
-            };
+            }
             ~GFAKluge(){
 
-            };
+            }
 
             inline double detect_version_from_file(const char* filename){
                 std::ifstream gfi;
@@ -738,7 +738,8 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
+
             inline void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
 	        std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
@@ -808,7 +809,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
 
             inline void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
@@ -930,7 +931,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
 
 
@@ -946,7 +947,7 @@ namespace gfak{
                 }
                 std::string line;
                 size_t i = 0;
-                bool seen_newline = true;
+                //bool seen_newline = true;
                 while (i < gfa_filesize) {
                     std::string path_name;
                     // scan forward
@@ -985,7 +986,7 @@ namespace gfak{
                     ++i;
                 }
                 mmap_close(gfa_buf, gfa_fd, gfa_filesize);
-            };
+            }
 
 	   /** 
             inline void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
@@ -1104,7 +1105,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
             // Only supports GFA 2.0 style paths (i.e. groups, both ordered and unordered)
             inline void for_each_ordered_group_line_in_file(const char* filename, std::function<void(gfak::group_elem)> func){
@@ -1154,7 +1155,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
 
             // GFAKluge does not, but maybe should, enforce graph structure,
@@ -1429,7 +1430,7 @@ namespace gfak{
             // GFA2 getters
             inline std::map<std::string, std::vector<edge_elem>> get_seq_to_edges(){
                 return seq_to_edges;
-            };
+            }
             inline std::map<std::string, std::vector<fragment_elem>> get_seq_to_fragments(){
                 return seq_to_fragments;
             }
@@ -1571,7 +1572,7 @@ namespace gfak{
                     }
                     this->one_compat = true;
                 }
-            };
+            }
             // Wraps both gfa_1_ize() and gfa_2_ize()
             inline void compatibilize(){
                 gfa_1_ize();
@@ -1980,7 +1981,7 @@ namespace gfak{
                 base_group_id = std::get<4>(new_mx);
                 std::uint64_t seg_diff = base_seq_id;
                 // Segments
-                int num_segs = name_to_seq.size();
+                //int num_segs = name_to_seq.size();
 
                 // locally cache name_to_seq,
                 // seq_to_edges, seq_to_fragments, groups,
@@ -2001,7 +2002,7 @@ namespace gfak{
 
 
 
-                    uint64_t edge_count = 0;
+                    //uint64_t edge_count = 0;
                     // Edges
                     for (auto e : seq_to_edges[old_name]){
                         e.source_name = ns.second.name;
@@ -2055,7 +2056,7 @@ namespace gfak{
             inline void re_id(std::string new_mx_str){
                 std::vector<uint64_t> starts(5);
                 std::vector<std::string> starts_strs = pliib::split(new_mx_str, ':');
-                for (int i = 0; i < starts_strs.size(); ++i){
+                for (size_t i = 0; i < starts_strs.size(); ++i){
                     starts[i] = stoul(starts_strs[i]);
                 }
                 std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> n_ids = std::make_tuple(starts[0], starts[1],
@@ -2251,7 +2252,7 @@ namespace gfak{
                         name_to_seq.erase(n_to_s);
                         graph_modified = true;
                     }
-                    else if (minlen > 0 && s.length < minlen){
+                    else if (minlen > 0 && s.length < (size_t)minlen){
                         dropped_seqs.insert(s.name);
                         name_to_seq.erase(n_to_s);
                         graph_modified = true;
@@ -2689,8 +2690,8 @@ namespace gfak{
 
                 return true;
 
-            };
+            }
         };
 
-    };
+    }
 #endif
