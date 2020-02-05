@@ -1,6 +1,6 @@
 name: C/C++ CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -9,6 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+      with:
+          args: git submodule update --init --recursive
     - name: make
       run: make
     - name: make check
