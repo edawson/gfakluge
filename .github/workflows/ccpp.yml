@@ -1,0 +1,17 @@
+name: C/C++ CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+      with:
+          args: git submodule update --init --recursive
+    - name: make
+      run: make
+    - name: make check
+      run: make check
