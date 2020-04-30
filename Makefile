@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -std=c++11 -g -ggdb
+CXXFLAGS += -O3 -pipe -fPIC -Wall -std=c++11 -ggdb
 PREFIX=/usr/local
 
 # We want to pass -Wa,-q to GCC use the Clang assembler, but Apple Clang can't take that
@@ -21,10 +21,10 @@ LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./$(BUILD_DIR)
 
 gfak: $(BUILD_DIR)/main.o src/gfakluge.hpp src/tinyFA/pliib.hpp src/tinyFA/tinyfa.hpp | $(BUILD_DIR) $(BIN_DIR)
-	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
+	+$(CXX) $(LDFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
 $(BUILD_DIR)/main.o: src/main.cpp src/gfakluge.hpp src/tinyFA/pliib.hpp src/tinyFA/tinyfa.hpp | $(BUILD_DIR) $(BIN_DIR)
-	+$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
+	+$(CXX) $(LDFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
