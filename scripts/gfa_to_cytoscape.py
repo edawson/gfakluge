@@ -15,7 +15,7 @@ if __name__ == "__main__":
                 name_to_seq[tokens[1]] = tokens[3]
             elif line.startswith("E"):
                 tokens = line.split("\t")
-                print tokens[2][0:-1], tokens[3][0:-1]
+                print(tokens[2][0:-1], tokens[3][0:-1])
 
     with open(node_file_name, "w") as ofi:
         for i in name_to_seq:
