@@ -764,7 +764,7 @@ namespace gfak{
                 bool seen_newline = true;
                 while (i < gfa_filesize) {
                     // are we on a sequence line?
-                    if (i > 0 && gfa_buf[i-1] == '\n' && gfa_buf[i] == 'S') {
+                    if (gfa_buf[i] == 'S' && (i == 0 || gfa_buf[i-1] == '\n')) {
                         // accumulate the tokens
                         vector<string> tokens; // = pliib::split(line, '\t');
                         tokens.emplace_back();
@@ -849,7 +849,7 @@ namespace gfak{
                 while (i < gfa_filesize) {
                     // are we on a sequence line?
                     //if (determine_line_type(line.c_str()) == EDGE_LINE){
-                    if (i > 0 && gfa_buf[i-1] == '\n') {
+                    if (i == 0 || gfa_buf[i-1] == '\n') {
                         vector<string> tokens;
                         char t = gfa_buf[i];
                         int line_type = determine_line_type(&t);
@@ -978,7 +978,7 @@ namespace gfak{
                 while (i < gfa_filesize) {
                     string path_name;
                     // scan forward
-                    if (i > 0 && gfa_buf[i-1] == '\n' && gfa_buf[i] == 'P') {
+                    if (gfa_buf[i] == 'P' && (i == 0 || gfa_buf[i-1] == '\n')) {
                         // path line
                         // scan forward to find name
                         i += 2;
