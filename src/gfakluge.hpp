@@ -721,6 +721,7 @@ namespace gfak{
                     exit(1);
                 }
                 std::string line;
+                char line[1000000];
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == HEADER_LINE){
                         std::vector<std::string> tokens = pliib::split(line, '\t');
@@ -751,7 +752,7 @@ namespace gfak{
             
             };
 
-            struct gfak2_seq_elem : gfak2_elem{
+            struct gfak2_sequence_elem : gfak2_elem{
 
             };
 
@@ -763,30 +764,46 @@ namespace gfak{
 
             };
 
-            static inline bool defaultfunc(gfak::gfak2_elem){
+            inline bool defaultfunc(gfak2_sequence_elem& elem){
+                return true;
+            };
+            inline bool defaultfunc(gfak2_edge_elem& elem){
+                return true;
+            };
+            inline static bool defaultfunc(gfak2_group_elem& elem){
                 return true;
             };
 
-            inline gfak::sequence_elem parse_sequence_line(char* line){
+
+            inline gfak2_sequence_elem parse_sequence_line(char* line){
                 
             };
 
-            inline gfak::edge_elem parse_edge_line(char* line){
+            inline void parse_sequence_line(char*& line, gfak2_sequence_elem& s){
+
+            };
+
+            inline edge_elem parse_edge_line(char*& line){
                 
             };
 
-            inline gfak::group_elem parse_group_line(char* line){
+            inline void parse_edge_line(char*& line, gfak2_edge_elem& e){
+            
+            };
+
+            inline group_elem parse_group_line(char*& line){
                 
             };
 
-
-
+            inline void parse_group_line(char*& line, gfak2_group_elem g){
+            };
 
             inline bool for_each_gfa_line(const char* filename,
                                          std::function<bool(gfak::sequence_elem&)> seq_func,
                                          std::function<bool(gfak::edge_elem&)> edge_func,
                                          std::function<bool(gfak::group_elem&)> group_func,
-                                         bool store_structures = false
+                                         bool store_structures = false,
+                                         bool permit_failures = false
                                          ){
 
                 bool ret = true;
@@ -802,12 +819,13 @@ namespace gfak{
                 }
 
                 std::string line;
+                gfak2_sequence_elem s;
                 while (std::getline(gfi, line)){
                    int gfa_line_type = determine_line_type(line.c_str());
-                   s_ret = (gfa_line_type == SEGMENT_LINE ? seq_func(parse_sequence_line(line)) : true);
-                   e_ret = (gfa_line_type == EDGE_LINE ? edge_func(parse_edge_line(line)) : true);
-                   g_ret = (gfa_line_type == GROUP_LINE ? group_func(parse_group_line(line)) : true);
-                   ret = ret & s_ret & e_ret & g_ret;
+                   s_ret = (gfa_line_type == SEGMENT_LINE ? seq_func(parse_sequence_line(line.c_str())) : true);
+                   //e_ret = (gfa_line_type == EDGE_LINE ? edge_func(parse_edge_line(line)) : true);
+                   //g_ret = (gfa_line_type == GROUP_LINE ? group_func(parse_group_line(line)) : true);
+                   //ret = (permit_failures ? true : ret & s_ret & e_ret & g_ret);
                 }
 
                 return ret;
