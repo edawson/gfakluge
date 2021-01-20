@@ -189,7 +189,9 @@ namespace gfak{
             for (auto op : opt_fields){
                 opt_strs[count++] = op.second.to_string(); 
             }
-            st << '\t' << pliib::join(opt_strs, "\t");
+            if (!opt_strs.empty()) {
+                st << '\t' << pliib::join(opt_strs, "\t");
+            }
             return st.str();
         }
         /**
