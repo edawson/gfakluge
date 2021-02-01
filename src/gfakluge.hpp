@@ -153,13 +153,6 @@ namespace gfak{
         std::vector<bool> orientations;
         std::vector<std::string> overlaps;
         std::map<std::string, opt_elem> opt_fields;
-        path_elem(){
-            std::string name = "";
-            std::vector<std::string> segment_names;
-            std::vector<bool> orientations;
-            std::vector<std::string> overlaps;
-            std::map<std::string, opt_elem> opt_fields;
-        }
 
         /**
          *  Adds a GFA 0.1-style path_element (a "Walk") to a
