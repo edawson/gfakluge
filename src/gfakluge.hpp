@@ -1006,6 +1006,10 @@ namespace gfak{
                             if (c == ',') c = gfa_buf[++j];
                             while (c != ',' && c != '\t' && c != '\n' && c != ' ' && j != gfa_filesize) {
                                 overlap.push_back(c);
+                                // don't scan overlap list if it's just a *
+                                if (c == '*' && (j == gfa_filesize - 1 || gfa_buf[c+1] == '\n')) {
+                                    break;
+                                }
                                 c = gfa_buf[++j];
                             }
                             func(path_name, id, is_rev, overlap, false, false);
