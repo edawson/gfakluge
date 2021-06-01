@@ -2294,14 +2294,19 @@ namespace gfak{
 
             /** Parse a GFA file to a GFAKluge object. */
             inline bool parse_gfa_file(const std::string &filename) {
+                std::istream ist(nullptr);
                 std::ifstream gfi;
-                gfi.open(filename.c_str(), std::ifstream::in);
-                if (!gfi.good()){
-                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
-                    exit(1);
+                if (filename == "-") ist.rdbuf(std::cin.rdbuf());
+                else {
+                    gfi.open(filename.c_str(), std::ifstream::in);
+                    if (!gfi.good()){
+                        std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
+                        exit(1);
+                    }
+                    ist.rdbuf(gfi.rdbuf());
                 }
 
-                bool ret = parse_gfa_file(gfi);
+                bool ret = parse_gfa_file(ist);
                 gfi.close();
                 return ret;
 
