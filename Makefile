@@ -1,5 +1,6 @@
 CXX?=g++
-CXXFLAGS:=-O3 -pipe -fPIC -march=native -mtune=native -std=c++11 -g -ggdb
+CXXFLAGS+=-O3 -pipe -fPIC -march=native -mtune=native -std=c++11
+
 PREFIX=/usr/local
 
 # We want to pass -Wa,-q to GCC use the Clang assembler, but Apple Clang can't take that
@@ -20,11 +21,17 @@ BUILD_DIR:=build
 LD_LIB_FLAGS=-L./src/ -L./
 LD_INC_FLAGS=-I./src/ -I./ -I./src/tinyFA -I./src/tinyFA/pliib -I./$(BUILD_DIR)
 
+ifneq ($(CONDA_PREFIX),)
+	LD_LIB_FLAGS += -L$(CONDA_PREFIX)/lib/
+	LD_INC_FLAGS += -I$(CONDA_PREFIX)/include
+	PREFIX = $(CONDA_PREFIX)
+endif
+
 gfak: $(BUILD_DIR)/main.o src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
-	+$(CXX) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
+	+$(CXX) $(LDFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
 $(BUILD_DIR)/main.o: src/main.cpp src/gfakluge.hpp src/tinyFA/pliib/pliib.hpp src/tinyFA/tinyFA.hpp | $(BUILD_DIR) $(BIN_DIR)
-	+$(CXX) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
+	+$(CXX) $(LDFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< $(LD_LIB_FLAGS) $(LD_INC_FLAGS)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -36,8 +43,8 @@ install: gfak
 	mkdir -p $(DESTDIR)$(PREFIX)/include
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	cp src/gfakluge.hpp $(DESTDIR)$(PREFIX)/include/
-	cp src/tinyFA/tinyfa.hpp $(DESTDIR)$(PREFIX)/include/
-	cp src/tinyFA/pliib.hpp $(DESTDIR)$(PREFIX)/include/
+	cp src/tinyFA/tinyFA.hpp $(DESTDIR)$(PREFIX)/include/
+	cp src/tinyFA/pliib/pliib.hpp $(DESTDIR)$(PREFIX)/include/
 
 	cp gfak $(DESTDIR)$(PREFIX)/bin
 

@@ -65,7 +65,7 @@ namespace gfak{
         else{
             return -1;
         }
-    };
+    }
 
 
     // Provides the proper sorting behavior,
@@ -153,13 +153,6 @@ namespace gfak{
         std::vector<bool> orientations;
         std::vector<std::string> overlaps;
         std::map<std::string, opt_elem> opt_fields;
-        path_elem(){
-            std::string name = "";
-            std::vector<std::string> segment_names;
-            std::vector<bool> orientations;
-            std::vector<std::string> overlaps;
-            std::map<std::string, opt_elem> opt_fields;
-        };
 
         /**
          *  Adds a GFA 0.1-style path_element (a "Walk") to a
@@ -173,7 +166,7 @@ namespace gfak{
             segment_names.insert( segment_names.begin() + corrected_rank - 1, seg_name);
             orientations.insert( orientations.begin() + corrected_rank - 1, ori);
             overlaps.insert( overlaps.begin() + corrected_rank - 1, overlap);
-        };
+        }
         /**
          *  Writes a path to a std::string in GFA1 format.
          */
@@ -199,7 +192,7 @@ namespace gfak{
         std::string to_string_2() const{
             std::ostringstream st;
             std::vector<std::string> p_segs;
-            for (int i = 0; i < segment_names.size(); ++i){
+            for (size_t i = 0; i < segment_names.size(); ++i){
                 p_segs.push_back(segment_names[i] + (orientations[i] ? "+" : "-") );
             }
             st << "O" << '\t' << name << '\t' << pliib::join(p_segs, ",");
@@ -283,7 +276,7 @@ namespace gfak{
             st << '>' << ' ' << name << std::endl
                 << sequence;
             return st.str();
-        };
+        }
     };
 
     /** Represents a link (a non-contained edge) between two sequence_elems
@@ -448,7 +441,7 @@ namespace gfak{
             }
             return st.str();
         }
-        };
+    };
 
         /** Represents a GAP type line ('G'), which is specific to GFA2 */
         struct gap_elem{
@@ -560,7 +553,7 @@ namespace gfak{
             }
         };
 
-        size_t mmap_open(const std::string& filename, char*& buf, int& fd) {
+        inline size_t mmap_open(const std::string& filename, char*& buf, int& fd) {
             fd = -1;
             assert(!filename.empty());
             // open in binary mode as we are reading from this interface
@@ -586,7 +579,7 @@ namespace gfak{
             return fsize;
         }
 
-        void mmap_close(char*& buf, int& fd, size_t fsize) {
+        inline void mmap_close(char*& buf, int& fd, size_t fsize) {
             if (buf) {
                 munmap(buf, fsize);
                 buf = 0;
@@ -708,10 +701,10 @@ namespace gfak{
                 std::map<std::string, std::vector<edge_elem> > seq_to_edges;
                 std::map<std::string, std::vector<gap_elem> > seq_to_gaps;
                 std::map<std::string, group_elem> groups;
-            };
+            }
             ~GFAKluge(){
 
-            };
+            }
 
             inline double detect_version_from_file(const char* filename){
                 std::ifstream gfi;
@@ -739,7 +732,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
             /**
              * Enables inheritance across lightweight graph representations
@@ -832,12 +825,17 @@ namespace gfak{
             };
 
             inline void for_each_sequence_line_in_file(const char* filename, std::function<void(gfak::sequence_elem)> func){
-                std::ifstream gfi;
+	        std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
                     std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
+		for_each_sequence_line_in_file(gfi, func);
+ 	
+	    };
+
+            inline void for_each_sequence_line_in_file(std::istream& gfi, std::function<void(gfak::sequence_elem)> func){
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == SEGMENT_LINE){
@@ -895,7 +893,8 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
+
 
             inline void for_each_edge_line_in_file(char* filename, std::function<void(gfak::edge_elem)> func){
                 std::ifstream gfi;
@@ -904,6 +903,12 @@ namespace gfak{
                     std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
+
+		for_each_edge_line_in_file(gfi, func);
+	    };
+
+            inline void for_each_edge_line_in_file(std::istream& gfi, std::function<void(gfak::edge_elem)> func){
+
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == EDGE_LINE){
@@ -1010,10 +1015,13 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
+
+
 
             // Per-element parsing of paths, only supports GFA 1.0
-            inline void for_each_path_element_in_file(const char* filename, std::function<void(const std::string&, const std::string&, bool, const std::string&)> func){
+            //inline void for_each_path_element_in_file(const char* filename, std::function<void(const std::string&, const std::string&, bool, const std::string&)> func){
+	inline void for_each_path_element_in_file(const char* filename, std::function<void(const std::string&, const std::string&, bool, const std::string&, bool, bool)> func){
                 int gfa_fd = -1;
                 char* gfa_buf = nullptr;
                 size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
@@ -1023,7 +1031,7 @@ namespace gfak{
                 }
                 std::string line;
                 size_t i = 0;
-                bool seen_newline = true;
+                //bool seen_newline = true;
                 while (i < gfa_filesize) {
                     std::string path_name;
                     // scan forward
@@ -1056,22 +1064,83 @@ namespace gfak{
                                 c = gfa_buf[++j];
                             }
                             ++j; // skip over delimiter
-                            func(path_name, id, is_rev, overlap);
+                            func(path_name, id, is_rev, overlap, false, false);
+                        }
+                    }
+                    ++i;
+                }
+                mmap_close(gfa_buf, gfa_fd, gfa_filesize);
+            }
+
+	   /** 
+            inline void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
+                int gfa_fd = -1;
+                char* gfa_buf = nullptr;
+                size_t gfa_filesize = mmap_open(filename, gfa_buf, gfa_fd);
+                if (gfa_fd == -1) {
+                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
+                    exit(1);
+                }
+                std::string line;
+                size_t i = 0;
+                bool seen_newline = true;
+                while (i < gfa_filesize) {
+                    std::string path_name;
+                    // scan forward
+                    if (i > 0 && gfa_buf[i-1] == '\n' && gfa_buf[i] == 'P') {
+                        // path line
+                        // scan forward to find name
+                        i += 2;
+                        while (gfa_buf[i] != '\t') {
+                            path_name.push_back(gfa_buf[i++]);
+                        }
+                        ++i; // get to path id/orientation description
+                        size_t j = i;
+                        while (gfa_buf[j++] != '\t');
+                        // now j points to the overlaps
+ 			char b = gfa_buf[i], c = gfa_buf[j];
+                        bool is_empty = true;
+                        while (b != '\t' && j != gfa_filesize) {
+                            string id;
+                            if (b == ',') b = gfa_buf[++i];
+                            while (b != ',' && b != '\t' && b != '+' && b != '-') {
+                                id.push_back(b);
+                                b = gfa_buf[++i];
+                            }
+                            bool is_rev = b=='-';
+                            b = gfa_buf[++i];
+                            string overlap;
+                            if (c == ',') c = gfa_buf[++j];
+                            while (c != ',' && c != '\t' && c != '\n' && c != ' ' && j != gfa_filesize) {
+				        overlap.push_back(c);
+                                c = gfa_buf[++j];
+                            }
+                            func(path_name, id, is_rev, overlap, false, false);
+                            is_empty = false;
+                        }
+                        if (is_empty) {
+                            func(path_name, 0, false, "", true, false);
                         }
                     }
                     ++i;
                 }
                 mmap_close(gfa_buf, gfa_fd, gfa_filesize);
             };
-
-            // Only supports GFA 1.0 style paths
+**/
+	    
             inline void for_each_path_line_in_file(const char* filename, std::function<void(gfak::path_elem)> func){
-                std::ifstream gfi;
+	        std::ifstream gfi;
                 gfi.open(filename, std::ifstream::in);
                 if (!gfi.good()){
                     std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
                     exit(1);
                 }
+		for_each_path_line_in_file(gfi, func);	
+	    };
+
+            // Only supports GFA 1.0 style paths
+            inline void for_each_path_line_in_file(std::istream& gfi, std::function<void(gfak::path_elem)> func){
+
                 std::string line;
                 while (getline(gfi, line)){
                     if (determine_line_type(line.c_str()) == PATH_LINE){
@@ -1120,7 +1189,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
             // Only supports GFA 2.0 style paths (i.e. groups, both ordered and unordered)
             inline void for_each_ordered_group_line_in_file(const char* filename, std::function<void(gfak::group_elem)> func){
@@ -1170,7 +1239,7 @@ namespace gfak{
                         header[h.key] = h;
                     } 
                 }
-            };
+            }
 
 
             // GFAKluge does not, but maybe should, enforce graph structure,
@@ -1445,7 +1514,7 @@ namespace gfak{
             // GFA2 getters
             inline std::map<std::string, std::vector<edge_elem>> get_seq_to_edges(){
                 return seq_to_edges;
-            };
+            }
             inline std::map<std::string, std::vector<fragment_elem>> get_seq_to_fragments(){
                 return seq_to_fragments;
             }
@@ -1587,7 +1656,7 @@ namespace gfak{
                     }
                     this->one_compat = true;
                 }
-            };
+            }
             // Wraps both gfa_1_ize() and gfa_2_ize()
             inline void compatibilize(){
                 gfa_1_ize();
@@ -1996,7 +2065,7 @@ namespace gfak{
                 base_group_id = std::get<4>(new_mx);
                 std::uint64_t seg_diff = base_seq_id;
                 // Segments
-                int num_segs = name_to_seq.size();
+                //int num_segs = name_to_seq.size();
 
                 // locally cache name_to_seq,
                 // seq_to_edges, seq_to_fragments, groups,
@@ -2017,7 +2086,7 @@ namespace gfak{
 
 
 
-                    uint64_t edge_count = 0;
+                    //uint64_t edge_count = 0;
                     // Edges
                     for (auto e : seq_to_edges[old_name]){
                         e.source_name = ns.second.name;
@@ -2071,7 +2140,7 @@ namespace gfak{
             inline void re_id(std::string new_mx_str){
                 std::vector<uint64_t> starts(5);
                 std::vector<std::string> starts_strs = pliib::split(new_mx_str, ':');
-                for (int i = 0; i < starts_strs.size(); ++i){
+                for (size_t i = 0; i < starts_strs.size(); ++i){
                     starts[i] = stoul(starts_strs[i]);
                 }
                 std::tuple<std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t, std::uint64_t> n_ids = std::make_tuple(starts[0], starts[1],
@@ -2267,7 +2336,7 @@ namespace gfak{
                         name_to_seq.erase(n_to_s);
                         graph_modified = true;
                     }
-                    else if (minlen > 0 && s.length < minlen){
+                    else if (minlen > 0 && s.length < (size_t)minlen){
                         dropped_seqs.insert(s.name);
                         name_to_seq.erase(n_to_s);
                         graph_modified = true;
@@ -2309,14 +2378,19 @@ namespace gfak{
 
             /** Parse a GFA file to a GFAKluge object. */
             inline bool parse_gfa_file(const std::string &filename) {
+                std::istream ist(nullptr);
                 std::ifstream gfi;
-                gfi.open(filename.c_str(), std::ifstream::in);
-                if (!gfi.good()){
-                    std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
-                    exit(1);
+                if (filename == "-") ist.rdbuf(std::cin.rdbuf());
+                else {
+                    gfi.open(filename.c_str(), std::ifstream::in);
+                    if (!gfi.good()){
+                        std::cerr << "Couldn't open GFA file " << filename << "." << std::endl;
+                        exit(1);
+                    }
+                    ist.rdbuf(gfi.rdbuf());
                 }
 
-                bool ret = parse_gfa_file(gfi);
+                bool ret = parse_gfa_file(ist);
                 gfi.close();
                 return ret;
 
@@ -2705,8 +2779,8 @@ namespace gfak{
 
                 return true;
 
-            };
+            }
         };
 
-    };
+    }
 #endif

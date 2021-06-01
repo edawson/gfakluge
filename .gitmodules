@@ -10,6 +10,3 @@
 [submodule "bash-tap"]
 	path = bash-tap
 	url = https://github.com/illusori/bash-tap.git
-[submodule "src/tinyFA"]
-	path = src/tinyFA
-	url = https://github.com/edawson/tinyFA
