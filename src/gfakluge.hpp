@@ -734,21 +734,26 @@ namespace gfak{
                 }
                 string line;
                 while (getline(gfi, line)){
-                    if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        vector<string> tokens = pliib::split(line, '\t');
-                        header_elem h;
-                        vector<string> line_tokens = pliib::split(tokens[1], ':');
-                        //TODO this is not well implemented
-                        // GFA places no guarantees on header format
-                        h.key = line_tokens[0];
-                        h.type = line_tokens[1];
-                        h.val = line_tokens[2];
-                        if (h.key.compare("VN") == 0){
-                            set_version(stod(h.val));
-                            break;
+                    try {
+                        if (determine_line_type(line.c_str()) == HEADER_LINE){
+                            vector<string> tokens = pliib::split(line, '\t');
+                            header_elem h;
+                            vector<string> line_tokens = pliib::split(tokens.at(1), ':');
+                            //TODO this is not well implemented
+                            // GFA places no guarantees on header format
+                            h.key = line_tokens.at(0);
+                            h.type = line_tokens.at(1);
+                            h.val = line_tokens.at(2);
+                            if (h.key.compare("VN") == 0){
+                                set_version(stod(h.val));
+                                break;
+                            }
+                            header[h.key] = h;
                         }
-                        header[h.key] = h;
-                    } 
+                    } catch (std::out_of_range& e) {
+                        cerr << "Missing value at GFA line: " << line << endl;
+                        exit(1);
+                    }
                 }
                 return this->version;
             };
@@ -761,59 +766,69 @@ namespace gfak{
                     cerr << "Couldn't open GFA file " << filename << "." << endl;
                     exit(1);
                 }
-                string line;
                 size_t i = 0;
                 bool seen_newline = true;
                 while (i < gfa_filesize) {
                     // are we on a sequence line?
                     if (gfa_buf[i] == 'S' && (i == 0 || gfa_buf[i-1] == '\n')) {
-                        // accumulate the tokens
-                        vector<string> tokens; // = pliib::split(line, '\t');
-                        tokens.emplace_back();
-                        string* tok = &tokens.back();
-                        char c;
-                        while (i < gfa_filesize) {
-                            while (i < gfa_filesize && (c = gfa_buf[++i]) && c != '\t' && c != ' ' && c != '\n') {
-                                tok->push_back(c);
-                            }
-                            if (c == '\n') break;
-                            tokens.emplace_back();
-                            tok = &tokens.back();
-                        }
+                        size_t line_start = i;
                         sequence_elem s;
-                        int tag_index = 3;
-                        s.name = tokens[1];
+                        try {
+                            // accumulate the tokens
+                            vector<string> tokens;
+                            tokens.emplace_back();
+                            string* tok = &tokens.back();
+                            char c;
+                            while (i < gfa_filesize) {
+                                while (i < gfa_filesize && (c = gfa_buf[++i]) && c != '\t' && c != ' ' && c != '\n') {
+                                    tok->push_back(c);
+                                }
+                                if (c == '\n') break;
+                                tokens.emplace_back();
+                                tok = &tokens.back();
+                            }
+                            int tag_index = 3;
+                            s.name = tokens.at(1);
 
-                        if (this->version >= 2.0 || string_is_number(tokens[2])){
-                            s.length = stoi(tokens[2]); 
-                            s.sequence = tokens[3];
-                            tag_index = 4;
-                        }
-                        else{
-
-                            s.sequence = tokens[2];
-                            if (tokens[2] == "*"){
-                                s.length = UINT64_MAX;
+                            if (this->version >= 2.0 || string_is_number(tokens.at(2))){
+                                s.length = stoi(tokens.at(2)); 
+                                s.sequence = tokens.at(3);
+                                tag_index = 4;
                             }
                             else{
-                                s.length = s.sequence.length();
-                            }
-                            tag_index = 3;
-                        }
 
-                        if (tokens.size() > 3){
-                            for (size_t j = tag_index; j < tokens.size(); j++){
-                                //opt fields are in key:type:val format
-                                vector<string> opt_field = pliib::split(tokens[j], ':');
-                                opt_elem o;
-                                o.key = opt_field[0];
-                                o.type = opt_field[1];
-                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
-                                s.opt_fields.push_back(o);
-                                if (o.key == "LN" && s.length == UINT64_MAX){
-                                    s.length = stoul(o.val);
+                                s.sequence = tokens.at(2);
+                                if (tokens.at(2) == "*"){
+                                    s.length = UINT64_MAX;
+                                }
+                                else{
+                                    s.length = s.sequence.length();
+                                }
+                                tag_index = 3;
+                            }
+
+                            if (tokens.size() > 3){
+                                for (size_t j = tag_index; j < tokens.size(); j++){
+                                    //opt fields are in key:type:val format
+                                    vector<string> opt_field = pliib::split(tokens[j], ':');
+                                    opt_elem o;
+                                    o.key = opt_field.at(0);
+                                    o.type = opt_field.at(1);
+                                    o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                    s.opt_fields.push_back(o);
+                                    if (o.key == "LN" && s.length == UINT64_MAX){
+                                        s.length = stoul(o.val);
+                                    }
                                 }
                             }
+                        } catch (std::out_of_range& e) {
+                            cerr << "Missing value at GFA line: ";
+                            size_t p = line_start;
+                            while (p < gfa_filesize && gfa_buf[p] != '\n') {
+                                cerr << gfa_buf[p++];
+                            }
+                            cerr << endl;
+                            exit(1);
                         }
                         func(s);
                     }
@@ -830,11 +845,9 @@ namespace gfak{
                     cerr << "Couldn't open GFA file " << filename << "." << endl;
                     exit(1);
                 }
-                string line;
                 size_t i = 0;
                 bool seen_newline = true;
                 auto build_tokens = [&](vector<string>& tokens) {
-                    //vector<string> tokens; // = pliib::split(line, '\t');
                     tokens.clear();
                     tokens.emplace_back();
                     string* tok = &tokens.back();
@@ -850,114 +863,125 @@ namespace gfak{
                 };
                 while (i < gfa_filesize) {
                     // are we on a sequence line?
-                    //if (determine_line_type(line.c_str()) == EDGE_LINE){
                     if (i == 0 || gfa_buf[i-1] == '\n') {
                         vector<string> tokens;
-                        char t = gfa_buf[i];
-                        int line_type = determine_line_type(&t);
-                        if (line_type == EDGE_LINE) {
-                            build_tokens(tokens);
+                        size_t line_start = i;
+                        int line_type = determine_line_type(gfa_buf + line_start);
+                        bool is_edge = true;
+                        edge_elem e;
+                        try {
+                            if (line_type == EDGE_LINE) {
+                                build_tokens(tokens);
+                                
+                                e.id = tokens.at(1);
 
-                            edge_elem e;
-                            e.id = tokens[1];
+                                string x = tokens.at(2);
+                                e.source_name = x.substr(0, x.length() - 1);
+                                e.source_orientation_forward = (x.back() == '+');
 
-                            string x = tokens[2];
-                            e.source_name = x.substr(0, x.length() - 1);
-                            e.source_orientation_forward = (x.back() == '+');
+                                x = tokens.at(3);
+                                e.sink_name = x.substr(0, x.length() - 1);
+                                e.sink_orientation_forward = (x.back() == '+');
 
-                            x = tokens[3];
-                            e.sink_name = x.substr(0, x.length() - 1);
-                            e.sink_orientation_forward = (x.back() == '+');
+                                x = tokens.at(4);
+                                e.ends.set(0, (x.back() == '$' ? 1 : 0));
+                                e.source_begin = (e.ends.test(0) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
-                            x = tokens[4];
-                            e.ends.set(0, (x.back() == '$' ? 1 : 0));
-                            e.source_begin = (e.ends.test(0) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+                                x = tokens.at(5);
+                                e.ends.set(1, (x.back() == '$' ? 1 : 0));
+                                e.source_end = (e.ends.test(1) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
-                            x = tokens[5];
-                            e.ends.set(1, (x.back() == '$' ? 1 : 0));
-                            e.source_end = (e.ends.test(1) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
-
-                            x = tokens[6];
-                            e.ends.set(2, (x.back() == '$' ? 1 : 0));
-                            e.sink_begin = (e.ends.test(2) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+                                x = tokens.at(6);
+                                e.ends.set(2, (x.back() == '$' ? 1 : 0));
+                                e.sink_begin = (e.ends.test(2) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
 
-                            x = tokens[7];
-                            e.ends.set(3, (x.back() == '$' ? 1 : 0));
-                            e.sink_end = (e.ends.test(3) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
+                                x = tokens.at(7);
+                                e.ends.set(3, (x.back() == '$' ? 1 : 0));
+                                e.sink_end = (e.ends.test(3) ? stoul(x.substr(0, x.length() - 1)) : stoul(x));
 
-                            e.alignment = tokens[8];
+                                e.alignment = tokens.at(8);
 
-                            if (tokens.size() > 9){
-                                for (size_t i = 9; i < tokens.size(); i++){
-                                    //opt fields are in key:type:val format
-                                    vector<string> opt_field = pliib::split(tokens[i], ':');
-                                    opt_elem o;
-                                    o.key = opt_field[0];
-                                    o.type = opt_field[1];
-                                    o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
-                                    e.tags[o.key] = o;
+                                if (tokens.size() > 9){
+                                    for (size_t i = 9; i < tokens.size(); i++){
+                                        //opt fields are in key:type:val format
+                                        vector<string> opt_field = pliib::split(tokens[i], ':');
+                                        opt_elem o;
+                                        o.key = opt_field.at(0);
+                                        o.type = opt_field.at(1);
+                                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                        e.tags[o.key] = o;
 
+                                    }
                                 }
                             }
+                            else if (line_type == LINK_LINE){
+                                build_tokens(tokens);
+                                e.type = 1;
+                                e.source_name = tokens.at(1);
+                                e.sink_name = tokens.at(3);
+                                //TODO: search the input strings for "-" and "+" and set using ternary operator
+                                e.source_orientation_forward = tokens.at(2) == "+" ? true : false;
+                                e.ends.set(0, 1);
+                                e.ends.set(1,1);
+                                e.ends.set(2,0);
+                                e.ends.set(3, 0);
+                                e.sink_orientation_forward = tokens.at(4) == "+" ? true : false;
+                                if (tokens.size() >= 6){
+                                    e.alignment = tokens.at(5);
+                                }
+                                else{
+                                    e.alignment = "*";
+                                }
 
-                            func(e);
-                        }
-                        else if (line_type == LINK_LINE){
-                            build_tokens(tokens);
-                            edge_elem e;
-                            e.type = 1;
-                            e.source_name = tokens[1];
-                            e.sink_name = tokens[3];
-                            //TODO: search the input strings for "-" and "+" and set using ternary operator
-                            e.source_orientation_forward = tokens[2] == "+" ? true : false;
-                            e.ends.set(0, 1);
-                            e.ends.set(1,1);
-                            e.ends.set(2,0);
-                            e.ends.set(3, 0);
-                            e.sink_orientation_forward = tokens[4] == "+" ? true : false;
-                            if (tokens.size() >= 6){
-                                e.alignment = tokens[5];
-                            }
-                            else{
-                                e.alignment = "*";
-                            }
+                                if (tokens.size() >= 7){
+                                    for (size_t i = 6; i < tokens.size(); i++){
+                                        //opt fields are in key:type:val format
+                                        vector<string> opt_field = pliib::split(tokens[i], ':');
+                                        opt_elem o;
+                                        o.key = opt_field.at(0);
+                                        o.type = opt_field.at(1);
+                                        o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                        e.tags[o.key] = o;
 
-                            if (tokens.size() >= 7){
-                                for (size_t i = 6; i < tokens.size(); i++){
-                                    //opt fields are in key:type:val format
-                                    vector<string> opt_field = pliib::split(tokens[i], ':');
-                                    opt_elem o;
-                                    o.key = opt_field[0];
-                                    o.type = opt_field[1];
-                                    o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
-                                    e.tags[o.key] = o;
-
+                                    }
                                 }
                             }
+                            else if (line_type == CONTAINED_LINE){
+                                build_tokens(tokens);
+                                contained_elem c;
 
-                            func(e);
-                        }
-                        else if (line_type == CONTAINED_LINE){
-                            build_tokens(tokens);
-                            contained_elem c;
-
-                            edge_elem e(c);
-                            func(e);
-                        }
-                        else if (line_type == HEADER_LINE){
-                            build_tokens(tokens);
-                            header_elem h;
-                            vector<string> line_tokens = pliib::split(tokens[1], ':');
-                            //TODO this is not well implemented
-                            // GFA places no guarantees on header format
-                            h.key = line_tokens[0];
-                            h.type = line_tokens[1];
-                            h.val = line_tokens[2];
-                            if (h.key.compare("VN") == 0){
-                                set_version(stod(h.val));
+                                e = edge_elem(c);
                             }
-                            header[h.key] = h;
+                            else {
+                                is_edge = false;
+                                if (line_type == HEADER_LINE) {
+                                    build_tokens(tokens);
+                                    header_elem h;
+                                    vector<string> line_tokens = pliib::split(tokens[1], ':');
+                                    //TODO this is not well implemented
+                                    // GFA places no guarantees on header format
+                                    h.key = line_tokens.at(0);
+                                    h.type = line_tokens.at(1);
+                                    h.val = line_tokens.at(2);
+                                    if (h.key.compare("VN") == 0){
+                                        set_version(stod(h.val));
+                                    }
+                                    header[h.key] = h;
+                                }
+                            }
+                        } catch (std::out_of_range& e) {
+                            cerr << "Missing value at GFA line: ";
+                            size_t p = line_start;
+                            while (p < gfa_filesize && gfa_buf[p] != '\n') {
+                                cerr << gfa_buf[p++];
+                            }
+                            cerr << endl;
+                            exit(1);
+                        }
+
+                        if (is_edge) {
+                            func(e);
                         }
                     }
                     ++i;
@@ -974,7 +998,6 @@ namespace gfak{
                     cerr << "Couldn't open GFA file " << filename << "." << endl;
                     exit(1);
                 }
-                string line;
                 size_t i = 0;
                 bool seen_newline = true;
                 while (i < gfa_filesize) {
@@ -984,12 +1007,24 @@ namespace gfak{
                         // path line
                         // scan forward to find name
                         i += 2;
-                        while (gfa_buf[i] != '\t') {
+                        while (i < gfa_filesize && gfa_buf[i] != '\t' && gfa_buf[i] != '\n') {
                             path_name.push_back(gfa_buf[i++]);
+                        }
+                        if (i == gfa_filesize || gfa_buf[i] == '\n') {
+                            // Line ended before contents
+                            cerr << "Missing path contents for GFA path \"" << path_name << "\"" << endl;
+                            exit(1);
                         }
                         ++i; // get to path id/orientation description
                         size_t j = i;
-                        while (gfa_buf[j++] != '\t');
+                        while (j < gfa_filesize && gfa_buf[j] != '\t' && gfa_buf[j] != '\n') {
+                            j++;
+                        }
+                        if (j == gfa_filesize || gfa_buf[j] == '\n') {
+                            // Line ended before overlaps
+                            cerr << "Missing overlaps for GFA path \"" << path_name << "\"" << endl;
+                            exit(1);
+                        }
                         // now j points to the overlaps
                         char b = gfa_buf[i], c = gfa_buf[j];
                         bool is_empty = true;
@@ -1034,51 +1069,63 @@ namespace gfak{
                 }
                 string line;
                 while (getline(gfi, line)){
-                    if (determine_line_type(line.c_str()) == PATH_LINE){
-                        vector<string> tokens = pliib::split(line, '\t');
-                        path_elem p;
-                        // Parse a GFA 1.0 path element
-                        p.name = tokens[1];
-                        vector<string> ids_and_orientations;
-                        pliib::split(tokens[2], ',', ids_and_orientations);
-                        p.segment_names.resize(ids_and_orientations.size());
-                        p.orientations.resize(ids_and_orientations.size());
-                        for (size_t t = 0; t < ids_and_orientations.size(); ++t){
-                            string x = ids_and_orientations[t];
-                            bool orientation = ((x.back()) == '+' || x.front() == '+');
-                            string id = x.substr(0, x.length() - 1);
-                            p.segment_names[t] = id;
-                            p.orientations[t] = orientation;
-                        }
-                        if (tokens.size() > 3){
-                            vector<string> spltz = pliib::split(tokens[3], ',');
-                            for (auto z : spltz){
-                                p.overlaps.push_back(z);
+                    bool is_path = true;
+                    path_elem p;
+                    try {
+                        if (determine_line_type(line.c_str()) == PATH_LINE){
+                            vector<string> tokens = pliib::split(line, '\t');
+                            // Parse a GFA 1.0 path element
+                            p.name = tokens.at(1);
+                            vector<string> ids_and_orientations;
+                            pliib::split(tokens.at(2), ',', ids_and_orientations);
+                            p.segment_names.resize(ids_and_orientations.size());
+                            p.orientations.resize(ids_and_orientations.size());
+                            for (size_t t = 0; t < ids_and_orientations.size(); ++t){
+                                string x = ids_and_orientations[t];
+                                bool orientation = ((x.back()) == '+' || x.front() == '+');
+                                string id = x.substr(0, x.length() - 1);
+                                p.segment_names[t] = id;
+                                p.orientations[t] = orientation;
                             }
-                            //p.overlaps.assign( spltz.begin(), spltz.end());
-                        }
-                        else{
-                            //p.overlaps.assign(p.segment_names.size(), "*");
-                            for (auto z : p.segment_names){
-                                p.overlaps.push_back("*");
+                            if (tokens.size() > 3){
+                                vector<string> spltz = pliib::split(tokens[3], ',');
+                                for (auto z : spltz){
+                                    p.overlaps.push_back(z);
+                                }
+                                //p.overlaps.assign( spltz.begin(), spltz.end());
+                            }
+                            else{
+                                //p.overlaps.assign(p.segment_names.size(), "*");
+                                for (auto z : p.segment_names){
+                                    p.overlaps.push_back("*");
+                                }
                             }
                         }
+                        else {
+                            is_path = false;
+                            if (determine_line_type(line.c_str()) == HEADER_LINE) {
+                                vector<string> tokens = pliib::split(line, '\t');
+                                header_elem h;
+                                vector<string> line_tokens = pliib::split(tokens.at(1), ':');
+                                //TODO this is not well implemented
+                                // GFA places no guarantees on header format
+                                h.key = line_tokens.at(0);
+                                h.type = line_tokens.at(1);
+                                h.val = line_tokens.at(2);
+                                if (h.key.compare("VN") == 0){
+                                    set_version(stod(h.val));
+                                }
+                                header[h.key] = h;
+                            }
+                        }
+                    } catch (std::out_of_range& e) {
+                        cerr << "Missing value at GFA line: " << line << endl;
+                        exit(1); 
+                    }
+                    
+                    if (is_path) {
                         func(p);
                     }
-                    else if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        vector<string> tokens = pliib::split(line, '\t');
-                        header_elem h;
-                        vector<string> line_tokens = pliib::split(tokens[1], ':');
-                        //TODO this is not well implemented
-                        // GFA places no guarantees on header format
-                        h.key = line_tokens[0];
-                        h.type = line_tokens[1];
-                        h.val = line_tokens[2];
-                        if (h.key.compare("VN") == 0){
-                            set_version(stod(h.val));
-                        }
-                        header[h.key] = h;
-                    } 
                 }
             };
 
@@ -1092,43 +1139,55 @@ namespace gfak{
                 }
                 string line;
                 while (getline(gfi, line)){
-                    if (determine_line_type(line.c_str()) == PATH_LINE){
-                        vector<string> tokens = pliib::split(line, '\t');
-                        group_elem g;
-                        g.ordered = false;
-                        g.id = tokens[0];
-                        if (g.id == "*"){
-                            g.id = std::to_string(++base_group_id);
-                        }
-                        g.items = pliib::split(tokens[2], ' ');
-                        if (tokens.size() > 8){
-                            for (size_t i = 9; i < tokens.size(); i++){
-                                //opt fields are in key:type:val format
-                                vector<string> opt_field = pliib::split(tokens[i], ':');
-                                opt_elem o;
-                                o.key = opt_field[0];
-                                o.type = opt_field[1];
-                                o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
-                                g.tags[o.key] = o;
+                    bool is_group = true;
+                    group_elem g;
+                    try {
+                        if (determine_line_type(line.c_str()) == PATH_LINE){
+                            vector<string> tokens = pliib::split(line, '\t');
+                            g.ordered = false;
+                            g.id = tokens.at(0);
+                            if (g.id == "*"){
+                                g.id = std::to_string(++base_group_id);
+                            }
+                            g.items = pliib::split(tokens.at(2), ' ');
+                            if (tokens.size() > 8){
+                                for (size_t i = 9; i < tokens.size(); i++){
+                                    //opt fields are in key:type:val format
+                                    vector<string> opt_field = pliib::split(tokens[i], ':');
+                                    opt_elem o;
+                                    o.key = opt_field.at(0);
+                                    o.type = opt_field.at(1);
+                                    o.val = join(vector<string> (opt_field.begin() + 2, opt_field.end()), ":");
+                                    g.tags[o.key] = o;
 
+                                }
                             }
                         }
+                        else {
+                            is_group = false;
+                            if (determine_line_type(line.c_str()) == HEADER_LINE){
+                                vector<string> tokens = pliib::split(line, '\t');
+                                header_elem h;
+                                vector<string> line_tokens = pliib::split(tokens.at(1), ':');
+                                //TODO this is not well implemented
+                                // GFA places no guarantees on header format
+                                h.key = line_tokens.at(0);
+                                h.type = line_tokens.at(1);
+                                h.val = line_tokens.at(2);
+                                if (h.key.compare("VN") == 0){
+                                    set_version(stod(h.val));
+                                }
+                                header[h.key] = h;
+                            }
+                        }
+                    } catch (std::out_of_range& e) {
+                        cerr << "Missing value at GFA line: " << line << endl;
+                        exit(1);
+                    }
+                    
+                    if (is_group) {
                         func(g);
                     }
-                    else if (determine_line_type(line.c_str()) == HEADER_LINE){
-                        vector<string> tokens = pliib::split(line, '\t');
-                        header_elem h;
-                        vector<string> line_tokens = pliib::split(tokens[1], ':');
-                        //TODO this is not well implemented
-                        // GFA places no guarantees on header format
-                        h.key = line_tokens[0];
-                        h.type = line_tokens[1];
-                        h.val = line_tokens[2];
-                        if (h.key.compare("VN") == 0){
-                            set_version(stod(h.val));
-                        }
-                        header[h.key] = h;
-                    } 
                 }
             };
             
