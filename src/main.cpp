@@ -650,7 +650,7 @@ int convert_main(int argc, char** argv){
 int ids_main(int argc, char** argv){
     vector<string> g_files;
     bool block_order = false;
-    string start_string;
+    string start_string = "0:0:0:0:0";
     double spec = 0.0;
 
     if (argc == 1){
