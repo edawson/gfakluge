@@ -113,7 +113,7 @@ They reside in gfakluge.hpp.
 GFAKluge now supports GFA2! This brings with it four new structs: `edge_elem`, `gap_elem`, `fragment_elem`, and `group_elem`. They're contained in maps much like those for the GFA1 structs.  
 
 A few caveats apply:  
-    1. As GFA2 is a **superset** of GFA1, we support only support legal GFA2 -> GFA1 conversions. Information can be lost along the way (e.g. unordered groups won't be output).
+    1. As GFA2 is a **superset** of GFA1, we only support legal GFA2 -> GFA1 conversions. Information can be lost along the way (e.g. unordered groups won't be output).
     2. Our GFA2 testing is a bit limited but we've verified several times to be on-spec.
 
 Tags we specifically do not (i.e. cannot) support in GFA2 -> GFA1 conversion: G - gap, U - unordered group, F - fragment.
